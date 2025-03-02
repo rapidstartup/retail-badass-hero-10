@@ -14,6 +14,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
   const { signIn, isAuthenticated } = useAuth();
@@ -70,63 +72,100 @@ const Login = () => {
       return;
     }
     
+    if (!firstName.trim() || !lastName.trim()) {
+      toast.error("Please enter your first and last name");
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      // Check if the staff member exists in the database
-      const { data: staffData, error: staffError } = await supabase
+      // Check if the staff member already exists in the database
+      const { data: existingStaff } = await supabase
         .from('staff')
-        .select('id, email')
+        .select('id, email, auth_id')
         .eq('email', email)
-        .single();
+        .maybeSingle();
       
-      if (staffError) {
-        if (staffError.code === 'PGRST116') {
-          throw new Error("No staff account found with this email. Please contact your administrator.");
-        }
-        throw staffError;
+      let staffId;
+      
+      // If the staff doesn't exist, create a new staff record
+      if (!existingStaff) {
+        const { data: newStaff, error: createStaffError } = await supabase
+          .from('staff')
+          .insert({
+            email,
+            first_name: firstName,
+            last_name: lastName,
+            role: 'staff'
+          })
+          .select('id')
+          .single();
+          
+        if (createStaffError) throw createStaffError;
+        staffId = newStaff.id;
+      } else {
+        staffId = existingStaff.id;
       }
       
-      // First create the user account since it doesn't exist yet
+      // Try to sign up the user (create auth record)
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password: newPassword,
       });
       
-      if (signUpError) throw signUpError;
+      if (signUpError && !signUpError.message.includes("User already registered")) {
+        throw signUpError;
+      }
       
-      // Update the staff record with the auth_id
+      // Update the staff record with the auth_id if the auth account was created
       if (data?.user?.id) {
         const { error: updateError } = await supabase
           .from('staff')
           .update({ auth_id: data.user.id })
-          .eq('email', email);
+          .eq('id', staffId);
           
         if (updateError) throw updateError;
-      }
-      
-      toast.success("Password set successfully! You can now login");
-      
-      // Automatically sign in with the new credentials
-      await signIn(email, newPassword);
-    } catch (error: any) {
-      // Handle case where user might already exist in auth but failed login
-      if (error.message.includes("User already registered")) {
+        
+        toast.success("Account created successfully! You can now login");
+      } else if (signUpError?.message.includes("User already registered")) {
+        // If the auth user already exists, try to update password instead
         try {
-          // Try to update password instead
-          const { error: updateError } = await supabase.auth.updateUser({
-            password: newPassword
+          // First try to sign in with current credentials
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password: newPassword,
           });
           
-          if (updateError) throw updateError;
+          if (signInError) {
+            // If can't sign in, try to update password
+            const { error: updateError } = await supabase.auth.updateUser({
+              password: newPassword
+            });
+            
+            if (updateError) throw updateError;
+          }
+          
+          // Update staff record in case it wasn't linked before
+          const { data: userData } = await supabase.auth.getUser();
+          if (userData?.user?.id) {
+            await supabase
+              .from('staff')
+              .update({ auth_id: userData.user.id })
+              .eq('id', staffId);
+          }
           
           toast.success("Password updated successfully! You can now login");
-          await signIn(email, newPassword);
         } catch (updateError: any) {
           toast.error(updateError.message || "Failed to update password");
+          throw updateError;
         }
-      } else {
-        toast.error(error.message || "Failed to set password");
       }
+      
+      // Try to sign in with the new credentials
+      await signIn(email, newPassword);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to setup account");
+      console.error("Setup error:", error);
     } finally {
       setIsLoading(false);
       setIsFirstTimeLogin(false);
@@ -144,6 +183,8 @@ const Login = () => {
     setPassword("");
     setNewPassword("");
     setConfirmPassword("");
+    setFirstName("");
+    setLastName("");
   };
 
   // Redirect if already authenticated
@@ -156,11 +197,11 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            {isFirstTimeLogin ? `Set Your Password` : `${settings.storeName || "NextPOS"} Staff Login`}
+            {isFirstTimeLogin ? `Set Up Your Account` : `${settings.storeName || "NextPOS"} Staff Login`}
           </CardTitle>
           <CardDescription className="text-center">
             {isFirstTimeLogin 
-              ? "Welcome! Please set your password to continue" 
+              ? "Welcome! Please set up your account to continue" 
               : "Enter your credentials to sign in to your account"}
           </CardDescription>
         </CardHeader>
@@ -169,6 +210,10 @@ const Login = () => {
           <PasswordSetupForm
             email={email}
             setEmail={setEmail}
+            firstName={firstName}
+            setFirstName={setFirstName}
+            lastName={lastName}
+            setLastName={setLastName}
             newPassword={newPassword}
             setNewPassword={setNewPassword}
             confirmPassword={confirmPassword}

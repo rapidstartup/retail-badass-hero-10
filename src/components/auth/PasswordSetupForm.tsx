@@ -8,6 +8,10 @@ import { CardContent, CardFooter } from "@/components/ui/card";
 interface PasswordSetupFormProps {
   email: string;
   setEmail: (email: string) => void;
+  firstName: string;
+  setFirstName: (firstName: string) => void;
+  lastName: string;
+  setLastName: (lastName: string) => void;
   newPassword: string;
   setNewPassword: (password: string) => void;
   confirmPassword: string;
@@ -20,6 +24,10 @@ interface PasswordSetupFormProps {
 const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
   email,
   setEmail,
+  firstName,
+  setFirstName,
+  lastName,
+  setLastName,
   newPassword,
   setNewPassword,
   confirmPassword,
@@ -42,8 +50,30 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
             required
           />
           <p className="text-sm text-muted-foreground">
-            Enter the email registered for your staff account
+            Enter the email for your staff account
           </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="firstName">First Name</Label>
+          <Input 
+            id="firstName" 
+            type="text" 
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Your first name"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Last Name</Label>
+          <Input 
+            id="lastName" 
+            type="text" 
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Your last name"
+            required
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="newPassword">New Password</Label>
@@ -78,7 +108,7 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
           type="submit" 
           disabled={isLoading}
         >
-          {isLoading ? "Setting password..." : "Set Password & Login"}
+          {isLoading ? "Creating account..." : "Create Account & Login"}
         </Button>
       </CardFooter>
     </form>
