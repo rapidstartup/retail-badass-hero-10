@@ -21,11 +21,19 @@ interface POSSettings {
   theme: "light" | "dark";
   lightModeColors: {
     background: string;
+    sidebar: string;
     accent: string;
+    text: string;
+    accentHover: string;
+    sidebarHover: string;
   };
   darkModeColors: {
     background: string;
+    sidebar: string;
     accent: string;
+    text: string;
+    accentHover: string;
+    sidebarHover: string;
   };
 }
 
@@ -43,11 +51,19 @@ const defaultSettings: POSSettings = {
   theme: "light",
   lightModeColors: {
     background: "#ffffff",
+    sidebar: "#f8f9fa",
     accent: "#0ea5e9", // Default blue accent
+    text: "#1e293b",
+    accentHover: "#0284c7",
+    sidebarHover: "#f1f5f9",
   },
   darkModeColors: {
     background: "#1e293b",
+    sidebar: "#0f172a",
     accent: "#38bdf8", // Slightly lighter blue for dark mode
+    text: "#f8fafc",
+    accentHover: "#0ea5e9",
+    sidebarHover: "#1e293b",
   },
 };
 
@@ -73,12 +89,20 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     
     if (settings.theme === "light") {
       // Light mode colors
-      root.style.setProperty("--background-color", settings.lightModeColors.background);
-      root.style.setProperty("--accent-color", settings.lightModeColors.accent);
+      root.style.setProperty("--theme-background-color", settings.lightModeColors.background);
+      root.style.setProperty("--theme-sidebar-color", settings.lightModeColors.sidebar);
+      root.style.setProperty("--theme-accent-color", settings.lightModeColors.accent);
+      root.style.setProperty("--theme-text-color", settings.lightModeColors.text);
+      root.style.setProperty("--theme-accent-hover-color", settings.lightModeColors.accentHover);
+      root.style.setProperty("--theme-sidebar-hover-color", settings.lightModeColors.sidebarHover);
     } else {
       // Dark mode colors
-      root.style.setProperty("--background-color", settings.darkModeColors.background);
-      root.style.setProperty("--accent-color", settings.darkModeColors.accent);
+      root.style.setProperty("--theme-background-color", settings.darkModeColors.background);
+      root.style.setProperty("--theme-sidebar-color", settings.darkModeColors.sidebar);
+      root.style.setProperty("--theme-accent-color", settings.darkModeColors.accent);
+      root.style.setProperty("--theme-text-color", settings.darkModeColors.text);
+      root.style.setProperty("--theme-accent-hover-color", settings.darkModeColors.accentHover);
+      root.style.setProperty("--theme-sidebar-hover-color", settings.darkModeColors.sidebarHover);
     }
   }, [settings]);
 

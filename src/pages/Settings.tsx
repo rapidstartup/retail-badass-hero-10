@@ -61,6 +61,17 @@ const Settings = () => {
   }, [settings]);
   
   const handleSaveSettings = () => {
+    // Define default sidebar and text colors based on backgrounds
+    const lightSidebar = "#f8f9fa";
+    const lightText = "#1e293b";
+    const lightAccentHover = "#0284c7";
+    const lightSidebarHover = "#f1f5f9";
+    
+    const darkSidebar = "#0f172a";
+    const darkText = "#f8fafc";
+    const darkAccentHover = "#0ea5e9";
+    const darkSidebarHover = "#1e293b";
+  
     // Update the global settings context
     updateSettings({
       taxRate,
@@ -75,11 +86,19 @@ const Settings = () => {
       theme,
       lightModeColors: {
         background: lightBackground,
-        accent: lightAccent
+        accent: lightAccent,
+        sidebar: lightSidebar,
+        text: lightText,
+        accentHover: lightAccentHover,
+        sidebarHover: lightSidebarHover
       },
       darkModeColors: {
         background: darkBackground,
-        accent: darkAccent
+        accent: darkAccent,
+        sidebar: darkSidebar,
+        text: darkText,
+        accentHover: darkAccentHover,
+        sidebarHover: darkSidebarHover
       }
     });
     

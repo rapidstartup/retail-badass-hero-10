@@ -55,9 +55,14 @@ const Layout = ({ children }: LayoutProps) => {
               className={cn(
                 "w-full justify-start gap-2",
                 location.pathname === item.path 
-                  ? "bg-primary text-primary-foreground" 
-                  : "hover:bg-secondary"
+                  ? "theme-accent-bg text-white" 
+                  : "hover:bg-theme-sidebar-hover"
               )}
+              style={{
+                backgroundColor: location.pathname === item.path 
+                  ? 'var(--theme-accent-color)' 
+                  : undefined
+              }}
             >
               {item.icon}
               {item.label}
@@ -69,7 +74,7 @@ const Layout = ({ children }: LayoutProps) => {
   );
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex theme-bg">
       {isMobile ? (
         <>
           <Sheet open={open} onOpenChange={setOpen}>
@@ -82,7 +87,7 @@ const Layout = ({ children }: LayoutProps) => {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 pt-10 w-[250px]">
+            <SheetContent side="left" className="p-0 pt-10 w-[250px] theme-sidebar-bg">
               <NavContent />
             </SheetContent>
           </Sheet>
@@ -94,7 +99,7 @@ const Layout = ({ children }: LayoutProps) => {
         </>
       ) : (
         <>
-          <div className="w-[250px] h-screen overflow-auto border-r bg-sidebar">
+          <div className="w-[250px] h-screen overflow-auto border-r theme-sidebar-bg">
             <NavContent />
           </div>
           <div className="flex-1 overflow-auto">

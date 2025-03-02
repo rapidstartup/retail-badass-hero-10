@@ -53,6 +53,7 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Enhanced sidebar colors with better organization
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -63,10 +64,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-                // Custom theme colors
+                // Next POS theme colors - better organized
                 theme: {
-                    background: 'var(--background-color)',
-                    accent: 'var(--accent-color)',
+                    background: 'var(--theme-background-color)',
+                    sidebar: 'var(--theme-sidebar-color)',
+                    accent: 'var(--theme-accent-color)',
+                    text: 'var(--theme-text-color)',
+                    'accent-hover': 'var(--theme-accent-hover-color)',
+                    'sidebar-hover': 'var(--theme-sidebar-hover-color)',
                 }
 			},
 			borderRadius: {
