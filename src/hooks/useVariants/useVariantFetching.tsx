@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { ProductVariant, fetchVariantsByProductId } from "@/api/inventoryApi";
+import { ProductVariant } from "@/api/types/inventoryTypes";
+import { fetchVariantsByProductId } from "@/api/variantApi";
 
 export function useVariantFetching(productId: string) {
   const [variants, setVariants] = useState<ProductVariant[]>([]);
@@ -9,7 +10,15 @@ export function useVariantFetching(productId: string) {
   const fetchVariants = async () => {
     setLoading(true);
     try {
+      if (!productId) {
+        console.error("No product ID provided for fetching variants");
+        setVariants([]);
+        return [];
+      }
+      
+      console.log("Fetching variants for product ID:", productId);
       const data = await fetchVariantsByProductId(productId);
+      console.log("Fetched variants:", data);
       setVariants(data);
       return data;
     } catch (error) {
@@ -23,6 +32,9 @@ export function useVariantFetching(productId: string) {
   useEffect(() => {
     if (productId) {
       fetchVariants();
+    } else {
+      setVariants([]);
+      setLoading(false);
     }
   }, [productId]);
 

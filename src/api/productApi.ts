@@ -6,6 +6,8 @@ import { Product } from "./types/inventoryTypes";
 // Products API
 export const fetchProducts = async (): Promise<Product[]> => {
   try {
+    console.log("Fetching all products");
+    
     const { data, error } = await supabase
       .from("products")
       .select(`
@@ -15,9 +17,11 @@ export const fetchProducts = async (): Promise<Product[]> => {
       .order("name");
       
     if (error) {
+      console.error("Supabase error fetching products:", error);
       throw error;
     }
     
+    console.log("Fetched products:", data);
     return data || [];
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -28,6 +32,8 @@ export const fetchProducts = async (): Promise<Product[]> => {
 
 export const fetchProductById = async (id: string): Promise<Product | null> => {
   try {
+    console.log("Fetching product with ID:", id);
+    
     const { data, error } = await supabase
       .from("products")
       .select(`
@@ -38,9 +44,11 @@ export const fetchProductById = async (id: string): Promise<Product | null> => {
       .single();
       
     if (error) {
+      console.error("Supabase error fetching product by ID:", error);
       throw error;
     }
     
+    console.log("Fetched product:", data);
     return data;
   } catch (error) {
     console.error("Error fetching product:", error);
@@ -56,6 +64,8 @@ export const createProduct = async (product: Omit<Product, 'id' | 'created_at' |
       throw new Error("Product name and price are required");
     }
 
+    console.log("Creating product with data:", product);
+
     const { data, error } = await supabase
       .from("products")
       .insert(product)
@@ -63,20 +73,24 @@ export const createProduct = async (product: Omit<Product, 'id' | 'created_at' |
       .single();
       
     if (error) {
+      console.error("Supabase error creating product:", error);
       throw error;
     }
     
+    console.log("Product created successfully:", data);
     toast.success("Product created successfully");
     return data;
   } catch (error) {
     console.error("Error creating product:", error);
-    toast.error("Failed to create product");
+    toast.error(`Failed to create product: ${error instanceof Error ? error.message : "Unknown error"}`);
     return null;
   }
 };
 
 export const updateProduct = async (id: string, product: Partial<Product>): Promise<Product | null> => {
   try {
+    console.log("Updating product ID:", id, "with data:", product);
+    
     const { data, error } = await supabase
       .from("products")
       .update(product)
@@ -85,20 +99,24 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
       .single();
       
     if (error) {
+      console.error("Supabase error updating product:", error);
       throw error;
     }
     
+    console.log("Product updated successfully:", data);
     toast.success("Product updated successfully");
     return data;
   } catch (error) {
     console.error("Error updating product:", error);
-    toast.error("Failed to update product");
+    toast.error(`Failed to update product: ${error instanceof Error ? error.message : "Unknown error"}`);
     return null;
   }
 };
 
 export const deleteProduct = async (id: string): Promise<boolean> => {
   try {
+    console.log("Deleting product ID:", id);
+    
     // First delete any variants
     const { error: variantsError } = await supabase
       .from("product_variants")
@@ -106,6 +124,7 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
       .eq("product_id", id);
       
     if (variantsError) {
+      console.error("Supabase error deleting product variants:", variantsError);
       throw variantsError;
     }
     
@@ -116,14 +135,16 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
       .eq("id", id);
       
     if (error) {
+      console.error("Supabase error deleting product:", error);
       throw error;
     }
     
+    console.log("Product deleted successfully");
     toast.success("Product deleted successfully");
     return true;
   } catch (error) {
     console.error("Error deleting product:", error);
-    toast.error("Failed to delete product");
+    toast.error(`Failed to delete product: ${error instanceof Error ? error.message : "Unknown error"}`);
     return false;
   }
 };
@@ -131,20 +152,24 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
 // Inventory adjustment
 export const adjustProductStock = async (id: string, stock: number): Promise<boolean> => {
   try {
+    console.log("Adjusting product stock, ID:", id, "new stock:", stock);
+    
     const { error } = await supabase
       .from("products")
       .update({ stock, updated_at: new Date().toISOString() })
       .eq("id", id);
       
     if (error) {
+      console.error("Supabase error adjusting product stock:", error);
       throw error;
     }
     
+    console.log("Product stock updated successfully");
     toast.success("Inventory updated successfully");
     return true;
   } catch (error) {
     console.error("Error adjusting inventory:", error);
-    toast.error("Failed to update inventory");
+    toast.error(`Failed to update inventory: ${error instanceof Error ? error.message : "Unknown error"}`);
     return false;
   }
 };

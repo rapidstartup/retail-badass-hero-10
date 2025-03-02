@@ -7,14 +7,17 @@ import { useSkuGenerator } from "./useVariants/useSkuGenerator";
 import { Product } from "@/api/types/inventoryTypes";
 
 export const useVariantManager = (product: Product) => {
+  // Ensure we have a valid product ID
+  const productId = product?.id || '';
+  
   // Combine all the smaller hooks
-  const { variants, loading, fetchVariants } = useVariantFetching(product.id);
+  const { variants, loading, fetchVariants } = useVariantFetching(productId);
   
   const { handleCreateVariant, handleUpdateVariant, handleDeleteVariant, creatingVariant } = 
-    useVariantCRUD(product.id, fetchVariants);
+    useVariantCRUD(productId, fetchVariants);
   
   const { newVariant, setNewVariant, showAddVariant, setShowAddVariant, mode, setMode, resetForm } = 
-    useVariantForm(product.id, product.price);
+    useVariantForm(productId, product?.price || 0);
   
   const {
     colorOptions,
@@ -33,9 +36,9 @@ export const useVariantManager = (product: Product) => {
     removeSizeOption,
     generateBulkVariants,
     initializeBulkGenerator
-  } = useBulkVariantGenerator(product.id, handleCreateVariant);
+  } = useBulkVariantGenerator(productId, handleCreateVariant);
   
-  const { skuPrefix, setSkuPrefix, generateSku } = useSkuGenerator(product.sku || '');
+  const { skuPrefix, setSkuPrefix, generateSku } = useSkuGenerator(product?.sku || '');
 
   // Return all the props and methods from the combined hooks
   return {
