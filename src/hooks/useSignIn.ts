@@ -30,28 +30,29 @@ export function useSignIn(
     try {
       console.log("Checking for staff with email:", email);
       
-      // First check if a staff record exists with this email
-      const { data: staffData, error: staffError } = await supabase
+      // Try a different approach to query the staff table
+      const { data: staffList, error: staffListError } = await supabase
         .from('staff')
         .select('*')
-        .eq('email', email.toLowerCase().trim())
-        .single();
+        .ilike('email', email.trim());
       
-      console.log("Staff check result:", { staffData, staffError });
+      console.log("Staff check result:", { staffList, staffListError });
       
-      if (staffError && staffError.code !== 'PGRST116') {
-        // This is a server error, not a "not found" error
-        console.error("Staff lookup error:", staffError);
+      if (staffListError) {
+        console.error("Staff lookup error:", staffListError);
         toast.error("Error checking staff records. Please try again.");
         setIsLoading(false);
         return;
       }
       
-      if (!staffData) {
+      // If no staff found or empty array
+      if (!staffList || staffList.length === 0) {
         toast.error("No staff account found with this email");
         setIsLoading(false);
         return;
       }
+      
+      const staffData = staffList[0];
       
       // Check if staff has an auth_id (has completed setup)
       if (!staffData.auth_id) {
