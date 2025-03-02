@@ -1,27 +1,25 @@
 
-import { Product, ProductVariant } from "@/types";
+export interface VariantType {
+  name: string;
+  values: string[];
+}
 
 export interface VariantCombination {
   id?: string;
-  attributes: Record<string, string>;
   sku: string;
   price: number;
   stock_count: number;
-  product_id: string;
+  color?: string;
+  size?: string;
+  flavor?: string; // Make sure flavor is included
+  [key: string]: any;
 }
 
-export interface UseProductVariantsReturn {
-  variants: ProductVariant[];
-  variantTypes: Map<string, string[]>;
+export interface ProductVariantState {
+  variants: any[];
+  variantTypes: VariantType[];
   combinations: VariantCombination[];
   loading: boolean;
   saving: boolean;
   error: string | null;
-  fetchVariants: () => Promise<void>;
-  setVariantTypes: React.Dispatch<React.SetStateAction<Map<string, string[]>>>;
-  setCombinations: React.Dispatch<React.SetStateAction<VariantCombination[]>>;
-  updateCombination: (index: number, updates: Partial<VariantCombination>) => void;
-  deleteCombination: (index: number) => void;
-  saveVariants: () => Promise<boolean>;
-  generateCombinations: () => void;
 }
