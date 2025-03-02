@@ -38,16 +38,12 @@ const IntegrationSettings = ({
   setGoHighLevelApiKey,
 }: IntegrationSettingsProps) => {
   // Password visibility toggles
-  const [showLiveSecretKey, setShowLiveSecretKey] = useState<boolean>(false);
-  const [showTestSecretKey, setShowTestSecretKey] = useState<boolean>(false);
+  const [showSecretKey, setShowSecretKey] = useState<boolean>(false);
   const [showGoHighLevelKey, setShowGoHighLevelKey] = useState<boolean>(false);
 
   // Toggle function for password visibility
-  const toggleKeyVisibility = (
-    field: "liveSK" | "testSK" | "goHighLevel"
-  ) => {
-    if (field === "liveSK") setShowLiveSecretKey(!showLiveSecretKey);
-    else if (field === "testSK") setShowTestSecretKey(!showTestSecretKey);
+  const toggleKeyVisibility = (field: "secretKey" | "goHighLevel") => {
+    if (field === "secretKey") setShowSecretKey(!showSecretKey);
     else if (field === "goHighLevel") setShowGoHighLevelKey(!showGoHighLevelKey);
   };
 
@@ -82,87 +78,51 @@ const IntegrationSettings = ({
           <Separator className="my-4" />
           
           <div className="space-y-6">
-            <h3 className="font-medium text-lg">Live Mode API Keys</h3>
+            <h3 className="font-medium text-lg">
+              {stripeMode === "live" ? "Live Mode API Keys" : "Test Mode API Keys"}
+            </h3>
             <div className="space-y-1">
-              <Label htmlFor="stripe-live-sk">Secret Key (SK)</Label>
+              <Label htmlFor="stripe-secret-key">Secret Key (SK)</Label>
               <div className="relative">
                 <Input
-                  id="stripe-live-sk"
-                  value={stripeLiveSecretKey}
-                  onChange={(e) => setStripeLiveSecretKey(e.target.value)}
-                  type={showLiveSecretKey ? "text" : "password"}
+                  id="stripe-secret-key"
+                  value={stripeMode === "live" ? stripeLiveSecretKey : stripeTestSecretKey}
+                  onChange={(e) => stripeMode === "live" 
+                    ? setStripeLiveSecretKey(e.target.value) 
+                    : setStripeTestSecretKey(e.target.value)
+                  }
+                  type={showSecretKey ? "text" : "password"}
                   className="pr-10"
-                  placeholder="sk_live_..."
+                  placeholder={stripeMode === "live" ? "sk_live_..." : "sk_test_..."}
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   className="absolute right-0 top-0 h-full"
-                  onClick={() => toggleKeyVisibility("liveSK")}
+                  onClick={() => toggleKeyVisibility("secretKey")}
                 >
-                  {showLiveSecretKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showSecretKey ? <EyeOff size={16} /> : <Eye size={16} />}
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                Your Stripe Live mode Secret Key.
+                Your Stripe {stripeMode === "live" ? "Live" : "Test"} mode Secret Key.
               </p>
             </div>
             
             <div className="space-y-1">
-              <Label htmlFor="stripe-live-pk">Publishable Key (PK)</Label>
+              <Label htmlFor="stripe-public-key">Publishable Key (PK)</Label>
               <Input
-                id="stripe-live-pk"
-                value={stripeLivePublicKey}
-                onChange={(e) => setStripeLivePublicKey(e.target.value)}
-                placeholder="pk_live_..."
+                id="stripe-public-key"
+                value={stripeMode === "live" ? stripeLivePublicKey : stripeTestPublicKey}
+                onChange={(e) => stripeMode === "live" 
+                  ? setStripeLivePublicKey(e.target.value) 
+                  : setStripeTestPublicKey(e.target.value)
+                }
+                placeholder={stripeMode === "live" ? "pk_live_..." : "pk_test_..."}
               />
               <p className="text-sm text-muted-foreground mt-1">
-                Your Stripe Live mode Publishable Key.
-              </p>
-            </div>
-          </div>
-          
-          <Separator className="my-4" />
-          
-          <div className="space-y-6">
-            <h3 className="font-medium text-lg">Test Mode API Keys</h3>
-            <div className="space-y-1">
-              <Label htmlFor="stripe-test-sk">Secret Key (SK)</Label>
-              <div className="relative">
-                <Input
-                  id="stripe-test-sk"
-                  value={stripeTestSecretKey}
-                  onChange={(e) => setStripeTestSecretKey(e.target.value)}
-                  type={showTestSecretKey ? "text" : "password"}
-                  className="pr-10"
-                  placeholder="sk_test_..."
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-0 top-0 h-full"
-                  onClick={() => toggleKeyVisibility("testSK")}
-                >
-                  {showTestSecretKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground mt-1">
-                Your Stripe Test mode Secret Key.
-              </p>
-            </div>
-            
-            <div className="space-y-1">
-              <Label htmlFor="stripe-test-pk">Publishable Key (PK)</Label>
-              <Input
-                id="stripe-test-pk"
-                value={stripeTestPublicKey}
-                onChange={(e) => setStripeTestPublicKey(e.target.value)}
-                placeholder="pk_test_..."
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                Your Stripe Test mode Publishable Key.
+                Your Stripe {stripeMode === "live" ? "Live" : "Test"} mode Publishable Key.
               </p>
             </div>
           </div>
