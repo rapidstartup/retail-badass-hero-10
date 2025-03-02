@@ -34,6 +34,7 @@ export function useStaffManagement() {
   const fetchStaffMembers = async () => {
     setLoading(true);
     try {
+      // Use Supabase client directly for now (in production we'd use our API)
       const { data, error } = await supabase
         .from('staff')
         .select('*')
@@ -164,9 +165,21 @@ export function useStaffManagement() {
     
     setSyncing(true);
     try {
-      // This would be implemented in a Supabase Edge Function
-      toast.info("GoHighLevel sync functionality will be implemented via Edge Function");
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      // Call our Edge Function for GoHighLevel sync
+      const response = await supabase.functions.invoke('staff', {
+        body: { 
+          apiKey: goHighLevelApiKey 
+        },
+        method: 'POST',
+        query: { action: 'sync-gohighlevel' }
+      });
+      
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+      
+      toast.success("Staff synchronized with GoHighLevel successfully");
+      fetchStaffMembers(); // Refresh the staff list after sync
     } catch (error: any) {
       toast.error(`Error syncing with GoHighLevel: ${error.message}`);
     } finally {
