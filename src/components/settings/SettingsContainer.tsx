@@ -91,25 +91,23 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-4 space-y-4">
-      <div className="flex flex-row justify-between items-center gap-4">
-        <h1 className="text-xl font-bold">System Settings</h1>
-        <Button onClick={handleSaveSettings}>Save Settings</Button>
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">System Settings</h1>
+        <Button onClick={handleSaveSettings}>Save All Settings</Button>
       </div>
       
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-1 mb-3">
-          <TabsTrigger value="general" className="text-sm py-2 px-3">General</TabsTrigger>
-          <TabsTrigger value="tax" className="text-sm py-2 px-3">Tax</TabsTrigger>
-          <TabsTrigger value="tab" className="text-sm py-2 px-3">Tab System</TabsTrigger>
-          <TabsTrigger value="integrations" className="text-sm py-2 px-3">Integrations</TabsTrigger>
-          <TabsTrigger value="design" className="text-sm py-2 px-3">Design</TabsTrigger>
-          <TabsTrigger value="staff" className="text-sm py-2 px-3">Staff</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="tax">Tax Settings</TabsTrigger>
+          <TabsTrigger value="tab">Tab System</TabsTrigger>
+          <TabsTrigger value="integrations">Integrations</TabsTrigger>
+          <TabsTrigger value="design">Design</TabsTrigger>
+          <TabsTrigger value="staff">Staff</TabsTrigger>
         </TabsList>
         
-        <div className="bg-card rounded-md border border-border p-4 shadow-sm">
-          {children}
-        </div>
+        {children}
       </Tabs>
     </div>
   );
