@@ -1,7 +1,47 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { createProduct, updateProduct, fetchCategories } from '@/api/inventoryApi';
 import { Product } from '@/types';
+import { 
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter
+} from '@/components/ui/card';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+import { 
+  Package,
+  Save, 
+  X,
+  DollarSign, 
+  Barcode, 
+  ImageIcon, 
+  Layers,
+  ShoppingCart
+} from 'lucide-react';
 
 interface FormData {
   name: string;
@@ -25,22 +65,26 @@ interface ProductFormProps {
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, onSave }) => {
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    description: '',
-    price: undefined,
-    cost: undefined,
-    stock: undefined,
-    sku: '',
-    barcode: '',
-    image_url: '',
-    category: '',
-    category_id: '',
-    has_variants: false,
-  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string; }[]>([]);
+
+  // Initialize form with useForm
+  const form = useForm<FormData>({
+    defaultValues: {
+      name: '',
+      description: '',
+      price: undefined,
+      cost: undefined,
+      stock: undefined,
+      sku: '',
+      barcode: '',
+      image_url: '',
+      category: '',
+      category_id: '',
+      has_variants: false,
+    }
+  });
 
   useEffect(() => {
     const fetchCategoriesData = async () => {
@@ -59,7 +103,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
   useEffect(() => {
     if (product) {
       setIsEditing(true);
-      setFormData({
+      form.reset({
         name: product.name || '',
         description: product.description || '',
         price: product.price,
@@ -81,7 +125,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
             throw new Error(`HTTP error! status: ${response.status}`);
           }
           const productData = await response.json();
-          setFormData({
+          form.reset({
             name: productData.name,
             description: productData.description,
             price: productData.price,
@@ -102,53 +146,15 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
 
       fetchProductDetails();
     }
-  }, [product, productId]);
+  }, [product, productId, form]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    
-    if (type === 'checkbox') {
-      const target = e.target as HTMLInputElement;
-      setFormData(prev => ({
-        ...prev,
-        [name]: target.checked,
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  };
-
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value === '' ? undefined : parseFloat(value),
-    }));
-  };
-
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOption = e.target.options[e.target.selectedIndex];
-    const categoryName = selectedOption.textContent || '';
-    
-    setFormData(prev => ({
-      ...prev,
-      category_id: e.target.value,
-      category: categoryName,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-  
-    if (!formData.name) {
+  const onSubmit = async (data: FormData) => {
+    if (!data.name) {
       toast.error("Product name is required");
       return;
     }
   
-    if (formData.price === undefined || isNaN(Number(formData.price))) {
+    if (data.price === undefined || isNaN(Number(data.price))) {
       toast.error("Valid product price is required");
       return;
     }
@@ -157,17 +163,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
       setIsSubmitting(true);
     
       const productData = {
-        name: formData.name,
-        description: formData.description,
-        price: Number(formData.price),
-        cost: Number(formData.cost),
-        stock: Number(formData.stock),
-        sku: formData.sku,
-        barcode: formData.barcode,
-        image_url: formData.image_url,
-        category_id: formData.category_id,
-        category: formData.category,
-        has_variants: Boolean(formData.has_variants)
+        name: data.name,
+        description: data.description,
+        price: Number(data.price),
+        cost: Number(data.cost),
+        stock: Number(data.stock),
+        sku: data.sku,
+        barcode: data.barcode,
+        image_url: data.image_url,
+        category_id: data.category_id,
+        category: data.category,
+        has_variants: Boolean(data.has_variants)
       };
     
       if (isEditing && (productId || (product && product.id))) {
@@ -188,134 +194,254 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-4">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-        <input
-          type="text"
-          name="name"
-          id="name"
-          value={formData.name}
-          onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-        <textarea
-          name="description"
-          id="description"
-          value={formData.description}
-          onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div>
-        <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
-        <input
-          type="number"
-          name="price"
-          id="price"
-          value={formData.price === undefined ? '' : formData.price}
-          onChange={handleNumberChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="cost" className="block text-sm font-medium text-gray-700">Cost</label>
-        <input
-          type="number"
-          name="cost"
-          id="cost"
-          value={formData.cost === undefined ? '' : formData.cost}
-          onChange={handleNumberChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div>
-        <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Stock</label>
-        <input
-          type="number"
-          name="stock"
-          id="stock"
-          value={formData.stock === undefined ? '' : formData.stock}
-          onChange={handleNumberChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div>
-        <label htmlFor="sku" className="block text-sm font-medium text-gray-700">SKU</label>
-        <input
-          type="text"
-          name="sku"
-          id="sku"
-          value={formData.sku}
-          onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div>
-        <label htmlFor="barcode" className="block text-sm font-medium text-gray-700">Barcode</label>
-        <input
-          type="text"
-          name="barcode"
-          id="barcode"
-          value={formData.barcode}
-          onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div>
-        <label htmlFor="image_url" className="block text-sm font-medium text-gray-700">Image URL</label>
-        <input
-          type="text"
-          name="image_url"
-          id="image_url"
-          value={formData.image_url}
-          onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div>
-        <label htmlFor="category_id" className="block text-sm font-medium text-gray-700">Category</label>
-        <select
-          id="category_id"
-          name="category_id"
-          value={formData.category_id}
-          onChange={handleCategoryChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        >
-          <option value="">Select a category</option>
-          {categories.map(category => (
-            <option key={category.id} value={category.id}>{category.name}</option>
-          ))}
-        </select>
-      </div>
-      <div className="flex items-center">
-        <input
-          id="has_variants"
-          name="has_variants"
-          type="checkbox"
-          checked={formData.has_variants}
-          onChange={handleChange}
-          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-        />
-        <label htmlFor="has_variants" className="ml-2 block text-sm text-gray-900">
-          Has Variants
-        </label>
-      </div>
-      <div>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          {isSubmitting ? 'Saving...' : 'Save Product'}
-        </button>
-      </div>
-    </form>
+    <Card className="max-w-3xl mx-auto mt-6 shadow-lg border border-border/30 bg-card">
+      <CardHeader className="bg-muted/30 rounded-t-lg border-b border-border/30">
+        <div className="flex items-center gap-2">
+          <Package className="h-5 w-5 text-primary" />
+          <CardTitle className="text-xl">{isEditing ? 'Edit Product' : 'Add New Product'}</CardTitle>
+        </div>
+        <CardDescription>
+          {isEditing ? 'Update product information in your inventory' : 'Add a new product to your inventory'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-6 pt-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter product name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            className="pl-10"
+                            value={field.value === undefined ? '' : field.value}
+                            onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="cost"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cost</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            className="pl-10"
+                            value={field.value === undefined ? '' : field.value}
+                            onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="stock"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Stock Quantity</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <ShoppingCart className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            className="pl-10"
+                            value={field.value === undefined ? '' : field.value}
+                            onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="sku"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>SKU</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Barcode className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input placeholder="Enter SKU" className="pl-10" {...field} />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="barcode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Barcode</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter barcode" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="image_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image URL</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <ImageIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input placeholder="Image URL" className="pl-10" {...field} />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="category_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          const selectedCategory = categories.find(cat => cat.id === value);
+                          if (selectedCategory) {
+                            form.setValue('category', selectedCategory.name);
+                          }
+                        }}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map(category => (
+                            <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter product description" 
+                      className="min-h-[120px]" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="has_variants"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base flex items-center gap-2">
+                      <Layers className="h-4 w-4" />
+                      Has Variants
+                    </FormLabel>
+                    <FormDescription>
+                      Enable if this product has multiple variants (e.g., sizes, colors)
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            
+            <CardFooter className="px-0 pb-0 pt-4 flex justify-end gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+              >
+                <X className="mr-2 h-4 w-4" />
+                Cancel
+              </Button>
+              <Button 
+                type="submit"
+                disabled={isSubmitting}
+                className="min-w-[120px]"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {isSubmitting ? 'Saving...' : 'Save Product'}
+              </Button>
+            </CardFooter>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 };
 
