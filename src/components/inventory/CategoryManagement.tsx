@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -65,13 +64,11 @@ const CategoryManagement: React.FC = () => {
     
     try {
       setIsLoading(true);
-      // Ensure we're passing an object with a required name property
       createCategory({
         name: newCategory.name,
         description: newCategory.description
       });
       
-      // Reset form (the actual refresh will happen via the onSuccess callback)
       setNewCategory({ name: '', description: '' });
     } catch (error) {
       console.error("Error creating category:", error);
@@ -126,8 +123,7 @@ const CategoryManagement: React.FC = () => {
             <Button 
               disabled={isLoading} 
               onClick={handleCreateCategory} 
-              className="inline-flex items-center justify-center w-full md:w-auto mr-4"
-              style={{ backgroundColor: "#9b87f5" }}
+              className="inline-flex items-center justify-center w-full md:w-auto mr-4 theme-accent-bg hover:opacity-90"
             >
               {isLoading ? 'Creating...' : 'Create Category'}
             </Button>
