@@ -8,6 +8,7 @@ import LoginForm from "@/components/auth/LoginForm";
 import PasswordSetupForm from "@/components/auth/PasswordSetupForm";
 import { useSignIn } from "@/hooks/useSignIn";
 import { usePasswordSetup } from "@/hooks/usePasswordSetup";
+import { Button } from "@/components/ui/button";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,7 +19,7 @@ const Login = () => {
   const [lastName, setLastName] = useState("");
   const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
   const [isNewStaffSetup, setIsNewStaffSetup] = useState(false);
-  const { signIn, isAuthenticated } = useAuth();
+  const { signIn, isAuthenticated, bypassAuth, setBypassAuth } = useAuth();
   const { settings } = useSettings();
   const location = useLocation();
 
@@ -76,6 +77,11 @@ const Login = () => {
     setFirstName("");
     setLastName("");
   };
+  
+  const handleBypassAuth = () => {
+    setBypassAuth(true);
+    window.location.href = '/'; // Hard redirect to ensure full app reload
+  };
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
@@ -119,17 +125,29 @@ const Login = () => {
             isNewStaffSetup={isNewStaffSetup}
           />
         ) : (
-          <LoginForm
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setPassword={setPassword}
-            handleSignIn={handleSignInSubmit}
-            isLoading={isSignInLoading}
-            onFirstTimeLoginDetected={setIsFirstTimeLogin}
-            onFirstTimeSetupClick={handleFirstTimeSetupClick}
-            onNewStaffSetupClick={handleNewStaffSetupClick}
-          />
+          <>
+            <LoginForm
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              handleSignIn={handleSignInSubmit}
+              isLoading={isSignInLoading}
+              onFirstTimeLoginDetected={setIsFirstTimeLogin}
+              onFirstTimeSetupClick={handleFirstTimeSetupClick}
+              onNewStaffSetupClick={handleNewStaffSetupClick}
+            />
+            <div className="px-6 pb-4">
+              <Button 
+                type="button" 
+                variant="secondary" 
+                className="w-full mt-2" 
+                onClick={handleBypassAuth}
+              >
+                Skip Login (Development Mode)
+              </Button>
+            </div>
+          </>
         )}
       </Card>
     </div>

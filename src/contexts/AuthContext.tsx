@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -11,6 +12,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
+  bypassAuth: boolean;
+  setBypassAuth: (bypass: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +22,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [bypassAuth, setBypassAuth] = useState(true); // Default to bypassing authentication
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -113,7 +117,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         signIn,
         signOut,
-        isAuthenticated: !!user,
+        isAuthenticated: bypassAuth || !!user, // Consider authenticated if bypassing or actual user exists
+        bypassAuth,
+        setBypassAuth,
       }}
     >
       {children}

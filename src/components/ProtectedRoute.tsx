@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,15 +7,15 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, bypassAuth } = useAuth();
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
   
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+  if (bypassAuth || isAuthenticated) {
+    return <>{children}</>;
   }
-
-  return <>{children}</>;
+  
+  return <Navigate to="/login" replace />;
 };
