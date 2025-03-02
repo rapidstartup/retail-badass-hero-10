@@ -55,7 +55,7 @@ const defaultSettings: POSSettings = {
   tabMaxDays: 7,
   storeName: "NextPOS",
   stripeMode: "test",
-  theme: "light",
+  theme: "dark",  // Changed from "light" to "dark" as default
   lightModeColors: {
     background: "#ffffff",
     sidebar: "#f8f9fa",
