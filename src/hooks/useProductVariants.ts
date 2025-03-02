@@ -251,7 +251,7 @@ export function useProductVariants(
           });
           processedVariantIds.add(existingId);
         } else {
-          // Create new variant
+          // Create new variant with flavor included
           await createVariant({
             product_id: product.id,
             sku: combination.sku,

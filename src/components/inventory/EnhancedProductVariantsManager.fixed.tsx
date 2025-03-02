@@ -124,8 +124,8 @@ const EnhancedProductVariantsManager = ({ product, onClose }: EnhancedProductVar
                 
                 <VariantCombinationsTable 
                   combinations={combinations}
-                  updateCombination={updateCombination}
-                  deleteCombination={deleteCombination}
+                  onUpdateCombination={updateCombination}
+                  onDeleteCombination={deleteCombination}
                   basePrice={product.price}
                 />
                 
