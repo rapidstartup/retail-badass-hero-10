@@ -72,6 +72,7 @@ export default {
                     text: 'var(--theme-text-color)',
                     'accent-hover': 'var(--theme-accent-hover-color)',
                     'sidebar-hover': 'var(--theme-sidebar-hover-color)',
+                    container: 'var(--theme-container-color)', // Add container color
                 }
 			},
 			borderRadius: {

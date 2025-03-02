@@ -42,6 +42,9 @@ const Settings = () => {
   const [darkBackground, setDarkBackground] = useState<string>(settings.darkModeColors.background);
   const [darkSidebar, setDarkSidebar] = useState<string>(settings.darkModeColors.sidebar);
   const [darkAccent, setDarkAccent] = useState<string>(settings.darkModeColors.accent);
+  // Add container color states
+  const [lightContainer, setLightContainer] = useState<string>(settings.lightModeColors.container || "#f8fafc");
+  const [darkContainer, setDarkContainer] = useState<string>(settings.darkModeColors.container || "#1e293b");
   
   // Sync local state with context when settings change
   useEffect(() => {
@@ -65,6 +68,9 @@ const Settings = () => {
     setDarkBackground(settings.darkModeColors.background);
     setDarkSidebar(settings.darkModeColors.sidebar);
     setDarkAccent(settings.darkModeColors.accent);
+    // Update container color states
+    setLightContainer(settings.lightModeColors.container || "#f8fafc");
+    setDarkContainer(settings.darkModeColors.container || "#1e293b");
   }, [settings]);
 
   // Redirect to login page if not authenticated
@@ -95,6 +101,8 @@ const Settings = () => {
         darkBackground={darkBackground}
         darkSidebar={darkSidebar}
         darkAccent={darkAccent}
+        lightContainer={lightContainer}
+        darkContainer={darkContainer}
       >
         {/* General Settings Tab */}
         <TabsContent value="general">
@@ -154,6 +162,10 @@ const Settings = () => {
             setDarkSidebar={setDarkSidebar}
             darkAccent={darkAccent}
             setDarkAccent={setDarkAccent}
+            lightContainer={lightContainer}
+            setLightContainer={setLightContainer}
+            darkContainer={darkContainer}
+            setDarkContainer={setDarkContainer}
           />
         </TabsContent>
         

@@ -31,6 +31,7 @@
     --theme-text-color: #1e293b;
     --theme-accent-hover-color: #0284c7;
     --theme-sidebar-hover-color: #f1f5f9;
+    --theme-container-color: #f8fafc;
   }
  
   .dark {
@@ -59,6 +60,7 @@
     --theme-text-color: #f8fafc;
     --theme-accent-hover-color: #0ea5e9;
     --theme-sidebar-hover-color: #1e293b;
+    --theme-container-color: #1e293b;
   }
 }
 
@@ -77,6 +79,10 @@
 
 .theme-sidebar-hover {
   background-color: var(--theme-sidebar-hover-color);
+}
+
+.theme-container-bg {
+  background-color: var(--theme-container-color);
 }
  
 @layer base {

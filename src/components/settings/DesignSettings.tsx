@@ -45,10 +45,44 @@ const DesignSettings = ({
   const lightText = "#1e293b";
   const lightAccentHover = "#0284c7";
   const lightSidebarHover = "#f1f5f9";
+  const lightContainer = "#f8fafc";  // Default light container color
   
   const darkText = "#f8fafc";
   const darkAccentHover = "#0ea5e9";
   const darkSidebarHover = "#1e293b";
+  const darkContainer = "#1e293b";  // Default dark container color
+
+  // Get current settings context to update container colors
+  const { settings, updateSettings } = useSettings();
+
+  // Add state for container colors
+  const [lightContainerColor, setLightContainerColor] = React.useState(
+    settings.lightModeColors.container || lightContainer
+  );
+  const [darkContainerColor, setDarkContainerColor] = React.useState(
+    settings.darkModeColors.container || darkContainer
+  );
+
+  // Handle container color changes
+  const handleLightContainerChange = (color: string) => {
+    setLightContainerColor(color);
+    updateSettings({
+      lightModeColors: {
+        ...settings.lightModeColors,
+        container: color
+      }
+    });
+  };
+
+  const handleDarkContainerChange = (color: string) => {
+    setDarkContainerColor(color);
+    updateSettings({
+      darkModeColors: {
+        ...settings.darkModeColors,
+        container: color
+      }
+    });
+  };
 
   return (
     <Card>
@@ -98,6 +132,12 @@ const DesignSettings = ({
               value={lightAccent}
               onChange={setLightAccent}
             />
+            {/* New Container Color Picker */}
+            <ColorPicker 
+              label="Container Color" 
+              value={lightContainerColor}
+              onChange={handleLightContainerChange}
+            />
             
             {/* Preview */}
             <div className="mt-4 border rounded-md overflow-hidden">
@@ -130,6 +170,13 @@ const DesignSettings = ({
                   >
                     Action Button
                   </Button>
+                  {/* Container Preview */}
+                  <div 
+                    className="p-3 rounded border mt-2"
+                    style={{ backgroundColor: lightContainerColor }}
+                  >
+                    <span className="text-xs">Container Element</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -152,6 +199,12 @@ const DesignSettings = ({
               label="Accent Color" 
               value={darkAccent}
               onChange={setDarkAccent}
+            />
+            {/* New Container Color Picker */}
+            <ColorPicker 
+              label="Container Color" 
+              value={darkContainerColor}
+              onChange={handleDarkContainerChange}
             />
             
             {/* Preview */}
@@ -185,6 +238,13 @@ const DesignSettings = ({
                   >
                     Action Button
                   </Button>
+                  {/* Container Preview */}
+                  <div 
+                    className="p-3 rounded border mt-2"
+                    style={{ backgroundColor: darkContainerColor }}
+                  >
+                    <span className="text-xs">Container Element</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -194,12 +254,13 @@ const DesignSettings = ({
         <div className="bg-muted p-4 rounded-md mt-6">
           <h3 className="font-medium mb-2">Theme Usage</h3>
           <p className="text-sm text-muted-foreground">
-            Your theme consists of three main color areas:
+            Your theme consists of four main color areas:
           </p>
           <ul className="text-sm text-muted-foreground list-disc pl-5 mt-2 space-y-1">
             <li><strong>Main Background:</strong> The primary color for content areas</li>
             <li><strong>Sidebar Background:</strong> Color for the navigation sidebar</li>
             <li><strong>Accent Color:</strong> Used for buttons, active items, and interactive elements</li>
+            <li><strong>Container Color:</strong> Used for cards, panels, and other container elements</li>
           </ul>
           <p className="text-sm text-muted-foreground mt-2">
             Click "Save All Settings" to apply your changes.
