@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2, RefreshCw } from "lucide-react";
-import { ProductVariant } from "@/api/inventoryApi";
+import { ProductVariant } from "@/api/types/inventoryTypes";
 
 interface VariantsTableProps {
   variants: ProductVariant[];
@@ -98,8 +98,8 @@ const VariantsTable = ({
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                          className="bg-destructive text-destructive-foreground"
                           onClick={() => handleDeleteVariant(variant.id)}
+                          variant="destructive"
                         >
                           Delete
                         </AlertDialogAction>

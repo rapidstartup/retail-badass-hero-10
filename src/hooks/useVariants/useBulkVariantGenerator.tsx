@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ProductVariant, createVariant } from "@/api/inventoryApi";
+import { ProductVariant } from "@/api/types/inventoryTypes";
 import { toast } from "sonner";
 
 export function useBulkVariantGenerator(
@@ -18,7 +18,7 @@ export function useBulkVariantGenerator(
   const [creatingBulkVariants, setCreatingBulkVariants] = useState(false);
   
   // Function to initialize bulk generator with product data
-  const initializeBulkGenerator = (price: number, existingVariants: any[]) => {
+  const initializeBulkGenerator = (price: number, existingVariants: ProductVariant[]) => {
     setBulkBasePrice(price);
     
     // Extract unique colors, sizes, and flavors from existing variants
@@ -85,8 +85,8 @@ export function useBulkVariantGenerator(
             sku: "",
             stock_count: bulkBaseStock,
             color: color,
-            size: "",
-            flavor: "",
+            size: null,
+            flavor: null,
             variant_attributes: {}
           });
         }
@@ -98,9 +98,9 @@ export function useBulkVariantGenerator(
             price: bulkBasePrice,
             sku: "",
             stock_count: bulkBaseStock,
-            color: "",
+            color: null,
             size: size,
-            flavor: "",
+            flavor: null,
             variant_attributes: {}
           });
         }
@@ -112,8 +112,8 @@ export function useBulkVariantGenerator(
             price: bulkBasePrice,
             sku: "",
             stock_count: bulkBaseStock,
-            color: "",
-            size: "",
+            color: null,
+            size: null,
             flavor: flavor,
             variant_attributes: {}
           });
@@ -130,7 +130,7 @@ export function useBulkVariantGenerator(
               stock_count: bulkBaseStock,
               color: color,
               size: size,
-              flavor: "",
+              flavor: null,
               variant_attributes: {}
             });
           }
@@ -145,7 +145,7 @@ export function useBulkVariantGenerator(
               sku: "",
               stock_count: bulkBaseStock,
               color: color,
-              size: "",
+              size: null,
               flavor: flavor,
               variant_attributes: {}
             });
@@ -160,7 +160,7 @@ export function useBulkVariantGenerator(
               price: bulkBasePrice,
               sku: "",
               stock_count: bulkBaseStock,
-              color: "",
+              color: null,
               size: size,
               flavor: flavor,
               variant_attributes: {}

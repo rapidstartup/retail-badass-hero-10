@@ -1,13 +1,13 @@
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { VariantType, VariantCombination } from './types';
 
 export const useCombinationGenerator = (
+  productId: string,
+  basePrice: number,
   variantTypes: VariantType[],
   currentCombinations: VariantCombination[],
-  setCombinations: React.Dispatch<React.SetStateAction<VariantCombination[]>>,
-  productId: string,
-  basePrice: number
+  setCombinations: React.Dispatch<React.SetStateAction<VariantCombination[]>>
 ) => {
   const generateCombinations = useCallback(() => {
     if (variantTypes.length === 0) {
@@ -71,7 +71,5 @@ export const useCombinationGenerator = (
     setCombinations(newCombinations);
   }, [variantTypes, currentCombinations, setCombinations, productId, basePrice]);
 
-  return {
-    generateCombinations
-  };
+  return { generateCombinations };
 };

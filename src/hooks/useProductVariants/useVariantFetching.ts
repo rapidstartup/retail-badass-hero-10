@@ -1,29 +1,39 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { ProductVariant } from '@/api/types/inventoryTypes';
 import { fetchVariantsByProductId } from '@/api/variantApi';
 
 export const useVariantFetching = (productId: string) => {
   const [variants, setVariants] = useState<ProductVariant[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const fetchVariants = useCallback(async () => {
-    if (!productId) return;
-    
+  const fetchVariants = async () => {
     setLoading(true);
     try {
+      if (!productId) {
+        console.error('No product ID provided');
+        setVariants([]);
+        return;
+      }
+
       const fetchedVariants = await fetchVariantsByProductId(productId);
       setVariants(fetchedVariants);
     } catch (error) {
       console.error('Error fetching variants:', error);
+      setVariants([]);
     } finally {
       setLoading(false);
     }
-  }, [productId]);
+  };
 
   useEffect(() => {
-    fetchVariants();
-  }, [fetchVariants]);
+    if (productId) {
+      fetchVariants();
+    } else {
+      setVariants([]);
+      setLoading(false);
+    }
+  }, [productId]);
 
   return { variants, loading, fetchVariants };
 };
