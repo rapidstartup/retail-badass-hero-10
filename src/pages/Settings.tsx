@@ -14,6 +14,7 @@ import IntegrationSettings from "@/components/settings/IntegrationSettings";
 import DesignSettings from "@/components/settings/DesignSettings";
 import StaffSettings from "@/components/settings/StaffSettings";
 import SettingsContainer from "@/components/settings/SettingsContainer";
+import { defaultLightColors, defaultDarkColors } from "@/types/settings";
 
 const Settings = () => {
   const { settings } = useSettings();
@@ -43,13 +44,13 @@ const Settings = () => {
   const [darkSidebar, setDarkSidebar] = useState<string>(settings.darkModeColors.sidebar);
   const [darkAccent, setDarkAccent] = useState<string>(settings.darkModeColors.accent);
   // Container color states
-  const [lightContainer, setLightContainer] = useState<string>(settings.lightModeColors.container || "#f8fafc");
-  const [darkContainer, setDarkContainer] = useState<string>(settings.darkModeColors.container || "#1e293b");
+  const [lightContainer, setLightContainer] = useState<string>(settings.lightModeColors.container);
+  const [darkContainer, setDarkContainer] = useState<string>(settings.darkModeColors.container);
   // Section color states
-  const [lightSection, setLightSection] = useState<string>(settings.lightModeColors.section || "#f1f5f9");
-  const [darkSection, setDarkSection] = useState<string>(settings.darkModeColors.section || "#1e293b");
-  const [lightSectionSelected, setLightSectionSelected] = useState<string>(settings.lightModeColors.sectionSelected || "#e2e8f0");
-  const [darkSectionSelected, setDarkSectionSelected] = useState<string>(settings.darkModeColors.sectionSelected || "#0f172a");
+  const [lightSection, setLightSection] = useState<string>(settings.lightModeColors.section);
+  const [darkSection, setDarkSection] = useState<string>(settings.darkModeColors.section);
+  const [lightSectionSelected, setLightSectionSelected] = useState<string>(settings.lightModeColors.sectionSelected);
+  const [darkSectionSelected, setDarkSectionSelected] = useState<string>(settings.darkModeColors.sectionSelected);
   
   // Sync local state with context when settings change
   useEffect(() => {
@@ -67,20 +68,24 @@ const Settings = () => {
     
     // Theme settings
     setTheme(settings.theme);
-    setLightBackground(settings.lightModeColors.background);
-    setLightSidebar(settings.lightModeColors.sidebar);
-    setLightAccent(settings.lightModeColors.accent);
-    setDarkBackground(settings.darkModeColors.background);
-    setDarkSidebar(settings.darkModeColors.sidebar);
-    setDarkAccent(settings.darkModeColors.accent);
-    // Update container color states
-    setLightContainer(settings.lightModeColors.container || "#f8fafc");
-    setDarkContainer(settings.darkModeColors.container || "#1e293b");
-    // Update section color states
-    setLightSection(settings.lightModeColors.section || "#f1f5f9");
-    setDarkSection(settings.darkModeColors.section || "#1e293b");
-    setLightSectionSelected(settings.lightModeColors.sectionSelected || "#e2e8f0");
-    setDarkSectionSelected(settings.darkModeColors.sectionSelected || "#0f172a");
+    
+    // Light Mode Colors
+    const lightColors = settings.lightModeColors || defaultLightColors;
+    setLightBackground(lightColors.background);
+    setLightSidebar(lightColors.sidebar);
+    setLightAccent(lightColors.accent);
+    setLightContainer(lightColors.container);
+    setLightSection(lightColors.section);
+    setLightSectionSelected(lightColors.sectionSelected);
+    
+    // Dark Mode Colors
+    const darkColors = settings.darkModeColors || defaultDarkColors;
+    setDarkBackground(darkColors.background);
+    setDarkSidebar(darkColors.sidebar);
+    setDarkAccent(darkColors.accent);
+    setDarkContainer(darkColors.container);
+    setDarkSection(darkColors.section);
+    setDarkSectionSelected(darkColors.sectionSelected);
   }, [settings]);
 
   // Redirect to login page if not authenticated
