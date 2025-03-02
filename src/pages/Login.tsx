@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,6 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
-  const [resetToken, setResetToken] = useState("");
   const { signIn, isAuthenticated } = useAuth();
   const { settings } = useSettings();
 
@@ -36,15 +36,8 @@ const Login = () => {
           .single();
         
         if (staffData) {
-          const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + '/login?firstTime=true',
-          });
-          
-          if (!resetError) {
-            toast.success("Check your email for a password setup link");
-          } else {
-            toast.error(resetError.message);
-          }
+          setIsFirstTimeLogin(true);
+          toast.info("First time login detected. Please set your password.");
         } else {
           toast.error("No staff account found with this email");
         }
@@ -71,40 +64,52 @@ const Login = () => {
     
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
+      // First create the user account since it doesn't exist yet
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password: newPassword,
       });
       
-      if (error) throw error;
+      if (signUpError) throw signUpError;
       
       toast.success("Password set successfully! You can now login");
-      setIsFirstTimeLogin(false);
       
+      // Automatically sign in with the new credentials
       await signIn(email, newPassword);
     } catch (error: any) {
-      toast.error(error.message || "Failed to set password");
+      // Handle case where user might already exist in auth but failed login
+      if (error.message.includes("User already registered")) {
+        try {
+          // Try to update password instead
+          const { error: updateError } = await supabase.auth.updateUser({
+            password: newPassword
+          });
+          
+          if (updateError) throw updateError;
+          
+          toast.success("Password updated successfully! You can now login");
+          await signIn(email, newPassword);
+        } catch (updateError: any) {
+          toast.error(updateError.message || "Failed to update password");
+        }
+      } else {
+        toast.error(error.message || "Failed to set password");
+      }
     } finally {
       setIsLoading(false);
+      setIsFirstTimeLogin(false);
     }
   };
 
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const firstTime = params.get('firstTime');
-    const token = params.get('token');
-    
-    if (firstTime === 'true' && token) {
-      setIsFirstTimeLogin(true);
-      setResetToken(token);
-      
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const extractedEmail = hashParams.get('email');
-      if (extractedEmail) {
-        setEmail(extractedEmail);
-      }
-    }
-  }, []);
+  // Return to login form
+  const handleBackToLogin = () => {
+    setIsFirstTimeLogin(false);
+    setPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
 
+  // Redirect if already authenticated
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
@@ -133,7 +138,7 @@ const Login = () => {
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={!!email}
+                  disabled={true}
                   required
                 />
               </div>
@@ -158,10 +163,16 @@ const Login = () => {
                 />
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex justify-between">
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={handleBackToLogin}
+              >
+                Back to Login
+              </Button>
               <Button 
                 type="submit" 
-                className="w-full" 
                 disabled={isLoading}
               >
                 {isLoading ? "Setting password..." : "Set Password & Login"}
