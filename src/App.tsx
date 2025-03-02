@@ -37,48 +37,48 @@ function App() {
     return <>{children}</>;
   };
   
+  const router = createBrowserRouter([
+    {
+      path: "/login",
+      element: isAuthenticated ? <Navigate to="/" replace /> : <Login />
+    },
+    {
+      path: "/register",
+      element: isAuthenticated ? <Navigate to="/" replace /> : <Register />
+    },
+    {
+      path: "/",
+      element: <ProtectedRoute><Dashboard /></ProtectedRoute>
+    },
+    {
+      path: "/pos",
+      element: <ProtectedRoute><POS /></ProtectedRoute>
+    },
+    {
+      path: "/clients",
+      element: <ProtectedRoute><Clients /></ProtectedRoute>
+    },
+    {
+      path: "/transactions",
+      element: <ProtectedRoute><Transactions /></ProtectedRoute>
+    },
+    {
+      path: "/reports",
+      element: <ProtectedRoute><Reports /></ProtectedRoute>
+    },
+    {
+      path: "/settings",
+      element: <ProtectedRoute><Settings /></ProtectedRoute>
+    },
+    {
+      path: "/inventory",
+      element: <ProtectedRoute><Inventory /></ProtectedRoute>
+    },
+  ]);
+  
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={
-        createBrowserRouter([
-          {
-            path: "/login",
-            element: isAuthenticated ? <Navigate to="/" replace /> : <Login />
-          },
-          {
-            path: "/register",
-            element: isAuthenticated ? <Navigate to="/" replace /> : <Register />
-          },
-          {
-            path: "/",
-            element: <ProtectedRoute><Dashboard /></ProtectedRoute>
-          },
-          {
-            path: "/pos",
-            element: <ProtectedRoute><POS /></ProtectedRoute>
-          },
-          {
-            path: "/clients",
-            element: <ProtectedRoute><Clients /></ProtectedRoute>
-          },
-          {
-            path: "/transactions",
-            element: <ProtectedRoute><Transactions /></ProtectedRoute>
-          },
-          {
-            path: "/reports",
-            element: <ProtectedRoute><Reports /></ProtectedRoute>
-          },
-          {
-            path: "/settings",
-            element: <ProtectedRoute><Settings /></ProtectedRoute>
-          },
-          {
-            path: "/inventory",
-            element: <ProtectedRoute><Inventory /></ProtectedRoute>
-          },
-        ])
-      } />
+      <RouterProvider router={router} />
       <Toaster position="top-right" />
     </QueryClientProvider>
   );
