@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -18,6 +18,15 @@ const Login = () => {
   const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
   const { signIn, isAuthenticated } = useAuth();
   const { settings } = useSettings();
+  const location = useLocation();
+
+  // Check if URL has firstTime parameter
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('firstTime') === 'true') {
+      setIsFirstTimeLogin(true);
+    }
+  }, [location]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +72,20 @@ const Login = () => {
     
     setIsLoading(true);
     try {
+      // Check if the staff member exists in the database
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('id, email')
+        .eq('email', email)
+        .single();
+      
+      if (staffError) {
+        if (staffError.code === 'PGRST116') {
+          throw new Error("No staff account found with this email. Please contact your administrator.");
+        }
+        throw staffError;
+      }
+      
       // First create the user account since it doesn't exist yet
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -70,6 +93,16 @@ const Login = () => {
       });
       
       if (signUpError) throw signUpError;
+      
+      // Update the staff record with the auth_id
+      if (data?.user?.id) {
+        const { error: updateError } = await supabase
+          .from('staff')
+          .update({ auth_id: data.user.id })
+          .eq('email', email);
+          
+        if (updateError) throw updateError;
+      }
       
       toast.success("Password set successfully! You can now login");
       
@@ -135,6 +168,7 @@ const Login = () => {
         {isFirstTimeLogin ? (
           <PasswordSetupForm
             email={email}
+            setEmail={setEmail}
             newPassword={newPassword}
             setNewPassword={setNewPassword}
             confirmPassword={confirmPassword}

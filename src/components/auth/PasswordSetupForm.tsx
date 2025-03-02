@@ -7,6 +7,7 @@ import { CardContent, CardFooter } from "@/components/ui/card";
 
 interface PasswordSetupFormProps {
   email: string;
+  setEmail: (email: string) => void;
   newPassword: string;
   setNewPassword: (password: string) => void;
   confirmPassword: string;
@@ -18,6 +19,7 @@ interface PasswordSetupFormProps {
 
 const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
   email,
+  setEmail,
   newPassword,
   setNewPassword,
   confirmPassword,
@@ -35,10 +37,13 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
             id="email" 
             type="email" 
             value={email}
-            onChange={() => {}} // Disabled input doesn't need an onChange handler
-            disabled={true}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your staff email"
             required
           />
+          <p className="text-sm text-muted-foreground">
+            Enter the email registered for your staff account
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="newPassword">New Password</Label>
