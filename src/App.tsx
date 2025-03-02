@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   createBrowserRouter,
@@ -5,7 +6,7 @@ import {
   Navigate
 } from "react-router-dom";
 import { useAuth } from '@/contexts/AuthContext';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
 
 import Dashboard from "@/pages/Dashboard";
