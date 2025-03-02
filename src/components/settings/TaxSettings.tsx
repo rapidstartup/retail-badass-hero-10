@@ -1,79 +1,99 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { useSettings } from "@/contexts/SettingsContext";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import POSNumpad from "@/components/pos/POSNumpad";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TaxSettingsProps {
   taxRate: number;
-  setTaxRate: React.Dispatch<React.SetStateAction<number>>;
+  setTaxRate: (rate: number) => void;
 }
 
 const TaxSettings: React.FC<TaxSettingsProps> = ({ taxRate, setTaxRate }) => {
-  const { settings, updateSettings, saveSettings } = useSettings();
+  const [showNumpad, setShowNumpad] = useState(false);
+  const [inputMode, setInputMode] = useState<"standard" | "numpad">("standard");
   
-  const handleTaxRateChange = (value: string) => {
-    const numValue = parseFloat(value);
-    setTaxRate(isNaN(numValue) ? 0 : numValue);
-  };
-  
-  const handleSave = async () => {
-    try {
-      await updateSettings({ taxRate });
-      toast.success("Tax rate updated");
-    } catch (error) {
-      toast.error("Failed to update tax rate");
-      console.error("Error updating tax rate:", error);
+  const handleValueChange = (value: string) => {
+    if (value === "") {
+      setTaxRate(0);
+    } else {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        setTaxRate(numValue);
+      }
     }
   };
-
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Tax Configuration</CardTitle>
+        <CardTitle>Tax Settings</CardTitle>
         <CardDescription>
-          Set up tax rates for your transactions.
+          Configure tax rates for your transactions
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-1">
-          <Label htmlFor="default-tax-rate">Default Tax Rate (%)</Label>
-          <Input
-            id="default-tax-rate"
-            type="number"
-            value={taxRate}
-            onChange={(e) => handleTaxRateChange(e.target.value)}
-            step="0.01"
-            min="0"
-            max="100"
-          />
-          <p className="text-sm text-muted-foreground mt-1">
-            This is the default tax rate that will be applied to all transactions.
-          </p>
-        </div>
+      <CardContent className="space-y-6">
+        <Tabs defaultValue={inputMode} onValueChange={(value) => setInputMode(value as "standard" | "numpad")}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="standard">Standard Input</TabsTrigger>
+            <TabsTrigger value="numpad">Numpad Input</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="standard">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="taxRate">Sales Tax Rate (%)</Label>
+                <Input
+                  id="taxRate"
+                  type="number"
+                  value={taxRate}
+                  onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+                  min="0"
+                  max="100"
+                  step="0.1"
+                />
+                <p className="text-sm text-muted-foreground">
+                  This is the default tax rate applied to all transactions
+                </p>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="numpad">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="taxRateNumpad">Sales Tax Rate (%)</Label>
+                <div className="flex items-center">
+                  <div className="text-2xl font-medium p-2 bg-muted/30 rounded-md w-full text-right">
+                    {taxRate}%
+                  </div>
+                </div>
+                <POSNumpad 
+                  initialValue={taxRate.toString()}
+                  isPercentage={true}
+                  onValueChange={handleValueChange}
+                  hideItemName={true}
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
         
-        <Separator className="my-4" />
-        
-        <div>
-          <h3 className="font-medium mb-2">Category-specific Tax Rates</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Set different tax rates for specific product categories (coming soon).
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Future Enhancements</h3>
+          <p className="text-sm text-muted-foreground">
+            In future updates, you'll be able to configure:
           </p>
-          {/* Placeholder for future category-specific tax rates */}
-          <div className="p-4 border border-dashed rounded-md text-center text-muted-foreground">
-            Category-specific tax rates will be available in a future update.
-          </div>
+          <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+            <li>Product-specific tax rates</li>
+            <li>Regional tax rules</li>
+            <li>Tax exemptions</li>
+            <li>Multiple tax categories</li>
+          </ul>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button onClick={handleSave}>
-          Save Tax Settings
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

@@ -7,11 +7,24 @@ import NumpadGrid from "./numpad/NumpadGrid";
 interface POSNumpadProps {
   addToCart?: (product: any) => void;
   onKeyPress?: (value: string) => void;
+  initialValue?: string;
+  isPercentage?: boolean;
+  onValueChange?: (value: string) => void;
+  hideItemName?: boolean;
+  label?: string;
 }
 
-const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart, onKeyPress }) => {
-  const [amount, setAmount] = useState("");
-  const [customItemName, setCustomItemName] = useState("Custom Item");
+const POSNumpad: React.FC<POSNumpadProps> = ({ 
+  addToCart, 
+  onKeyPress,
+  initialValue = "",
+  isPercentage = false,
+  onValueChange,
+  hideItemName = false,
+  label = "Custom Item"
+}) => {
+  const [amount, setAmount] = useState(initialValue);
+  const [customItemName, setCustomItemName] = useState(label);
   
   const appendDigit = (digit: string) => {
     // If using external handler, delegate to it
@@ -31,9 +44,13 @@ const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart, onKeyPress }) => {
     
     // Replace a lone zero with the new digit unless it's a decimal point
     if (amount === "0" && digit !== ".") {
-      setAmount(digit);
+      const newAmount = digit;
+      setAmount(newAmount);
+      if (onValueChange) onValueChange(newAmount);
     } else {
-      setAmount(prev => prev + digit);
+      const newAmount = amount + digit;
+      setAmount(newAmount);
+      if (onValueChange) onValueChange(newAmount);
     }
   };
   
@@ -43,6 +60,7 @@ const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart, onKeyPress }) => {
       return;
     }
     setAmount("");
+    if (onValueChange) onValueChange("");
   };
   
   const handleBackspace = () => {
@@ -50,7 +68,9 @@ const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart, onKeyPress }) => {
       onKeyPress("backspace");
       return;
     }
-    setAmount(prev => prev.slice(0, -1));
+    const newAmount = amount.slice(0, -1);
+    setAmount(newAmount);
+    if (onValueChange) onValueChange(newAmount);
   };
   
   const handleAddToCart = () => {
@@ -89,6 +109,8 @@ const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart, onKeyPress }) => {
         customItemName={customItemName}
         setCustomItemName={setCustomItemName}
         amount={amount}
+        hideItemName={hideItemName}
+        isPercentage={isPercentage}
       />
       
       <Card>
@@ -97,7 +119,7 @@ const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart, onKeyPress }) => {
             onDigitPress={appendDigit}
             onBackspace={handleBackspace}
             onClear={handleClear}
-            showAddToCart={true}
+            showAddToCart={addToCart !== undefined}
             onAddToCart={handleAddToCart}
             disableAddToCart={!amount || parseFloat(amount) <= 0}
           />

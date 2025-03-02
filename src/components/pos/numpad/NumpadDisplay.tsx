@@ -8,15 +8,22 @@ interface NumpadDisplayProps {
   setCustomItemName: (name: string) => void;
   amount: string;
   hideItemName?: boolean;
+  isPercentage?: boolean;
 }
 
 const NumpadDisplay: React.FC<NumpadDisplayProps> = ({ 
   customItemName, 
   setCustomItemName, 
   amount,
-  hideItemName = false
+  hideItemName = false,
+  isPercentage = false
 }) => {
-  const displayAmount = amount ? formatCurrency(parseFloat(amount) || 0) : "$0.00";
+  // Format the display value based on whether it's a percentage or currency
+  const displayAmount = amount 
+    ? isPercentage
+      ? `${parseFloat(amount) || 0}%`
+      : formatCurrency(parseFloat(amount) || 0)
+    : isPercentage ? "0%" : "$0.00";
 
   if (hideItemName) {
     return (
