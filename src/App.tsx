@@ -1,98 +1,56 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
+import { Toaster } from "sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import POS from "./pages/POS";
-import Settings from "./pages/Settings";
-import Login from "./pages/Login";
-import { SettingsProvider } from "./contexts/SettingsContext";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 
-// Create placeholder pages for future implementation
-const PlaceholderPage = ({ title }: { title: string }) => (
-  <div className="flex items-center justify-center h-screen">
-    <h1 className="text-2xl font-bold">{title} - Coming Soon</h1>
-  </div>
-);
+import { AuthProvider } from "@/contexts/AuthContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 
-const ClientsPage = () => <PlaceholderPage title="Clients" />;
-const TransactionsPage = () => <PlaceholderPage title="Transactions" />;
-const ReportsPage = () => <PlaceholderPage title="Reports" />;
+import { Login } from "@/pages/Login";
+import { PasswordSetup } from "@/pages/PasswordSetup";
+import { Index } from "@/pages/Index";
+import { POS } from "@/pages/POS";
+import { Settings } from "@/pages/Settings";
+import { NotFound } from "@/pages/NotFound";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Layout } from "@/components/Layout";
+import Inventory from "@/pages/Inventory";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <SettingsProvider>
-          <AuthProvider>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SettingsProvider>
+        <AuthProvider>
+          <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
-              
-              <Route 
-                path="/" 
+              <Route path="/password-setup" element={<PasswordSetup />} />
+              <Route
+                path="/"
                 element={
                   <ProtectedRoute>
-                    <Index />
+                    <Layout />
                   </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/pos" 
-                element={
-                  <ProtectedRoute>
-                    <POS />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/clients" 
-                element={
-                  <ProtectedRoute>
-                    <ClientsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/transactions" 
-                element={
-                  <ProtectedRoute>
-                    <TransactionsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/reports" 
-                element={
-                  <ProtectedRoute>
-                    <ReportsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/settings" 
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } 
-              />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                }
+              >
+                <Route index element={<Index />} />
+                <Route path="pos" element={<POS />} />
+                <Route path="inventory" element={<Inventory />} />
+                <Route path="settings/*" element={<Settings />} />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </AuthProvider>
-        </SettingsProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+          </BrowserRouter>
+          <Toaster />
+        </AuthProvider>
+      </SettingsProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
