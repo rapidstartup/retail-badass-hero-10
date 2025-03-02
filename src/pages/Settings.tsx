@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
 // Import refactored components
 import GeneralSettings from "@/components/settings/GeneralSettings";
@@ -13,11 +13,10 @@ import TabSettings from "@/components/settings/TabSettings";
 import IntegrationSettings from "@/components/settings/IntegrationSettings";
 import DesignSettings from "@/components/settings/DesignSettings";
 import StaffSettings from "@/components/settings/StaffSettings";
-import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import SettingsContainer from "@/components/settings/SettingsContainer";
 
 const Settings = () => {
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
   const { isAuthenticated, loading } = useAuth();
   
   // Local state for form values
@@ -67,50 +66,6 @@ const Settings = () => {
     setDarkSidebar(settings.darkModeColors.sidebar);
     setDarkAccent(settings.darkModeColors.accent);
   }, [settings]);
-  
-  const handleSaveSettings = () => {
-    // Define hover and text colors
-    const lightText = "#1e293b";
-    const lightAccentHover = "#0284c7";
-    const lightSidebarHover = "#f1f5f9";
-    
-    const darkText = "#f8fafc";
-    const darkAccentHover = "#0ea5e9";
-    const darkSidebarHover = "#1e293b";
-  
-    // Update the global settings context
-    updateSettings({
-      taxRate,
-      tabEnabled,
-      tabThreshold,
-      stripeLiveSecretKey,
-      stripeLivePublicKey,
-      stripeTestSecretKey,
-      stripeTestPublicKey,
-      stripeMode,
-      goHighLevelApiKey,
-      theme,
-      lightModeColors: {
-        background: lightBackground,
-        sidebar: lightSidebar,
-        accent: lightAccent,
-        text: lightText,
-        accentHover: lightAccentHover,
-        sidebarHover: lightSidebarHover
-      },
-      darkModeColors: {
-        background: darkBackground,
-        sidebar: darkSidebar,
-        accent: darkAccent,
-        text: darkText,
-        accentHover: darkAccentHover,
-        sidebarHover: darkSidebarHover
-      }
-    });
-    
-    // Show success notification
-    toast.success("Settings saved successfully!");
-  };
 
   // Redirect to login page if not authenticated
   if (loading) {
@@ -123,89 +78,90 @@ const Settings = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto py-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">System Settings</h1>
-          <Button onClick={handleSaveSettings}>Save All Settings</Button>
-        </div>
+      <SettingsContainer
+        taxRate={taxRate}
+        tabEnabled={tabEnabled}
+        tabThreshold={tabThreshold}
+        stripeLiveSecretKey={stripeLiveSecretKey}
+        stripeLivePublicKey={stripeLivePublicKey}
+        stripeTestSecretKey={stripeTestSecretKey}
+        stripeTestPublicKey={stripeTestPublicKey}
+        stripeMode={stripeMode}
+        goHighLevelApiKey={goHighLevelApiKey}
+        theme={theme}
+        lightBackground={lightBackground}
+        lightSidebar={lightSidebar}
+        lightAccent={lightAccent}
+        darkBackground={darkBackground}
+        darkSidebar={darkSidebar}
+        darkAccent={darkAccent}
+      >
+        {/* General Settings Tab */}
+        <TabsContent value="general">
+          <GeneralSettings />
+        </TabsContent>
         
-        <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="tax">Tax Settings</TabsTrigger>
-            <TabsTrigger value="tab">Tab System</TabsTrigger>
-            <TabsTrigger value="integrations">Integrations</TabsTrigger>
-            <TabsTrigger value="design">Design</TabsTrigger>
-            <TabsTrigger value="staff">Staff</TabsTrigger>
-          </TabsList>
-          
-          {/* General Settings Tab */}
-          <TabsContent value="general">
-            <GeneralSettings />
-          </TabsContent>
-          
-          {/* Tax Settings Tab */}
-          <TabsContent value="tax">
-            <TaxSettings 
-              taxRate={taxRate}
-              setTaxRate={setTaxRate}
-            />
-          </TabsContent>
-          
-          {/* Tab System Settings */}
-          <TabsContent value="tab">
-            <TabSettings 
-              tabEnabled={tabEnabled}
-              setTabEnabled={setTabEnabled}
-              tabThreshold={tabThreshold}
-              setTabThreshold={setTabThreshold}
-            />
-          </TabsContent>
-          
-          {/* Integrations Tab */}
-          <TabsContent value="integrations">
-            <IntegrationSettings 
-              stripeLiveSecretKey={stripeLiveSecretKey}
-              setStripeLiveSecretKey={setStripeLiveSecretKey}
-              stripeLivePublicKey={stripeLivePublicKey}
-              setStripeLivePublicKey={setStripeLivePublicKey}
-              stripeTestSecretKey={stripeTestSecretKey}
-              setStripeTestSecretKey={setStripeTestSecretKey}
-              stripeTestPublicKey={stripeTestPublicKey}
-              setStripeTestPublicKey={setStripeTestPublicKey}
-              stripeMode={stripeMode}
-              setStripeMode={setStripeMode}
-              goHighLevelApiKey={goHighLevelApiKey}
-              setGoHighLevelApiKey={setGoHighLevelApiKey}
-            />
-          </TabsContent>
-          
-          {/* Design Tab */}
-          <TabsContent value="design">
-            <DesignSettings 
-              theme={theme}
-              setTheme={setTheme}
-              lightBackground={lightBackground}
-              setLightBackground={setLightBackground}
-              lightSidebar={lightSidebar}
-              setLightSidebar={setLightSidebar}
-              lightAccent={lightAccent}
-              setLightAccent={setLightAccent}
-              darkBackground={darkBackground}
-              setDarkBackground={setDarkBackground}
-              darkSidebar={darkSidebar}
-              setDarkSidebar={setDarkSidebar}
-              darkAccent={darkAccent}
-              setDarkAccent={setDarkAccent}
-            />
-          </TabsContent>
-          
-          {/* Staff Tab */}
-          <TabsContent value="staff">
-            <StaffSettings />
-          </TabsContent>
-        </Tabs>
-      </div>
+        {/* Tax Settings Tab */}
+        <TabsContent value="tax">
+          <TaxSettings 
+            taxRate={taxRate}
+            setTaxRate={setTaxRate}
+          />
+        </TabsContent>
+        
+        {/* Tab System Settings */}
+        <TabsContent value="tab">
+          <TabSettings 
+            tabEnabled={tabEnabled}
+            setTabEnabled={setTabEnabled}
+            tabThreshold={tabThreshold}
+            setTabThreshold={setTabThreshold}
+          />
+        </TabsContent>
+        
+        {/* Integrations Tab */}
+        <TabsContent value="integrations">
+          <IntegrationSettings 
+            stripeLiveSecretKey={stripeLiveSecretKey}
+            setStripeLiveSecretKey={setStripeLiveSecretKey}
+            stripeLivePublicKey={stripeLivePublicKey}
+            setStripeLivePublicKey={setStripeLivePublicKey}
+            stripeTestSecretKey={stripeTestSecretKey}
+            setStripeTestSecretKey={setStripeTestSecretKey}
+            stripeTestPublicKey={stripeTestPublicKey}
+            setStripeTestPublicKey={setStripeTestPublicKey}
+            stripeMode={stripeMode}
+            setStripeMode={setStripeMode}
+            goHighLevelApiKey={goHighLevelApiKey}
+            setGoHighLevelApiKey={setGoHighLevelApiKey}
+          />
+        </TabsContent>
+        
+        {/* Design Tab */}
+        <TabsContent value="design">
+          <DesignSettings 
+            theme={theme}
+            setTheme={setTheme}
+            lightBackground={lightBackground}
+            setLightBackground={setLightBackground}
+            lightSidebar={lightSidebar}
+            setLightSidebar={setLightSidebar}
+            lightAccent={lightAccent}
+            setLightAccent={setLightAccent}
+            darkBackground={darkBackground}
+            setDarkBackground={setDarkBackground}
+            darkSidebar={darkSidebar}
+            setDarkSidebar={setDarkSidebar}
+            darkAccent={darkAccent}
+            setDarkAccent={setDarkAccent}
+          />
+        </TabsContent>
+        
+        {/* Staff Tab */}
+        <TabsContent value="staff">
+          <StaffSettings />
+        </TabsContent>
+      </SettingsContainer>
     </Layout>
   );
 };
