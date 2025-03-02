@@ -16,6 +16,8 @@ interface POSCartProps {
   tax: number;
   total: number;
   selectedCustomer: any | null;
+  taxRate: number;
+  storeName?: string;
 }
 
 const POSCart: React.FC<POSCartProps> = ({
@@ -26,7 +28,9 @@ const POSCart: React.FC<POSCartProps> = ({
   subtotal,
   tax,
   total,
-  selectedCustomer
+  selectedCustomer,
+  taxRate,
+  storeName = "NextPOS"
 }) => {
   const [paymentModalOpen, setPaymentModalOpen] = React.useState(false);
   
@@ -34,7 +38,7 @@ const POSCart: React.FC<POSCartProps> = ({
     <>
       <Card className="flex-1 flex flex-col">
         <CardHeader className="py-4 px-6 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-medium">Current Order</CardTitle>
+          <CardTitle className="text-lg font-medium">{storeName}</CardTitle>
           {selectedCustomer ? (
             <div className="flex items-center gap-2 text-sm">
               <User size={16} className="text-primary" />
@@ -105,7 +109,7 @@ const POSCart: React.FC<POSCartProps> = ({
             <span>{formatCurrency(subtotal)}</span>
           </div>
           <div className="flex justify-between py-1">
-            <span className="text-muted-foreground">Tax (8%)</span>
+            <span className="text-muted-foreground">Tax ({taxRate}%)</span>
             <span>{formatCurrency(tax)}</span>
           </div>
           <Separator className="my-2" />
@@ -169,6 +173,8 @@ const POSCart: React.FC<POSCartProps> = ({
         tax={tax}
         total={total}
         customer={selectedCustomer}
+        taxRate={taxRate}
+        storeName={storeName}
         onSuccess={() => {
           clearCart();
           setPaymentModalOpen(false);

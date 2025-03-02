@@ -9,6 +9,141 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      customers: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          first_name: string
+          gohighlevel_id: string | null
+          id: string
+          last_name: string
+          loyalty_points: number | null
+          notes: string | null
+          phone: string | null
+          photo_url: string | null
+          stripe_customer_id: string | null
+          tier: string | null
+          total_spend: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          first_name: string
+          gohighlevel_id?: string | null
+          id?: string
+          last_name: string
+          loyalty_points?: number | null
+          notes?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          stripe_customer_id?: string | null
+          tier?: string | null
+          total_spend?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          first_name?: string
+          gohighlevel_id?: string | null
+          id?: string
+          last_name?: string
+          loyalty_points?: number | null
+          notes?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          stripe_customer_id?: string | null
+          tier?: string | null
+          total_spend?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          barcode: string | null
+          category: string | null
+          cost: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          price: number
+          sku: string | null
+          stock: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          barcode?: string | null
+          category?: string | null
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price: number
+          sku?: string | null
+          stock?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          barcode?: string | null
+          category?: string | null
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price?: number
+          sku?: string | null
+          stock?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          store_address: string | null
+          store_name: string | null
+          store_phone: string | null
+          tab_enabled: boolean | null
+          tab_max_days: number | null
+          tab_threshold: number | null
+          tax_rate: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          store_address?: string | null
+          store_name?: string | null
+          store_phone?: string | null
+          tab_enabled?: boolean | null
+          tab_max_days?: number | null
+          tab_threshold?: number | null
+          tax_rate?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          store_address?: string | null
+          store_name?: string | null
+          store_phone?: string | null
+          tab_enabled?: boolean | null
+          tab_max_days?: number | null
+          tab_threshold?: number | null
+          tax_rate?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       staff: {
         Row: {
           auth_id: string | null
@@ -44,6 +179,66 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      transactions: {
+        Row: {
+          cashier_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          customer_id: string | null
+          id: string
+          items: Json
+          payment_method: string | null
+          status: string
+          subtotal: number
+          tax: number
+          total: number
+          updated_at: string | null
+        }
+        Insert: {
+          cashier_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          items: Json
+          payment_method?: string | null
+          status?: string
+          subtotal: number
+          tax: number
+          total: number
+          updated_at?: string | null
+        }
+        Update: {
+          cashier_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          items?: Json
+          payment_method?: string | null
+          status?: string
+          subtotal?: number
+          tax?: number
+          total?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_cashier_id_fkey"
+            columns: ["cashier_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

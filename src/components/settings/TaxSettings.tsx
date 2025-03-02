@@ -1,16 +1,37 @@
 
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { useSettings } from "@/contexts/SettingsContext";
+import { toast } from "sonner";
 
-interface TaxSettingsProps {
-  taxRate: number;
-  setTaxRate: (value: number) => void;
-}
+const TaxSettings = () => {
+  const { settings, updateSettings, saveSettings } = useSettings();
+  const [taxRate, setTaxRate] = useState(settings.taxRate);
+  
+  // Update local state when settings change
+  useEffect(() => {
+    setTaxRate(settings.taxRate);
+  }, [settings.taxRate]);
+  
+  const handleTaxRateChange = (value: string) => {
+    const numValue = parseFloat(value);
+    setTaxRate(isNaN(numValue) ? 0 : numValue);
+  };
+  
+  const handleSave = async () => {
+    try {
+      await updateSettings({ taxRate });
+      toast.success("Tax rate updated");
+    } catch (error) {
+      toast.error("Failed to update tax rate");
+      console.error("Error updating tax rate:", error);
+    }
+  };
 
-const TaxSettings = ({ taxRate, setTaxRate }: TaxSettingsProps) => {
   return (
     <Card>
       <CardHeader>
@@ -26,7 +47,7 @@ const TaxSettings = ({ taxRate, setTaxRate }: TaxSettingsProps) => {
             id="default-tax-rate"
             type="number"
             value={taxRate}
-            onChange={(e) => setTaxRate(parseFloat(e.target.value))}
+            onChange={(e) => handleTaxRateChange(e.target.value)}
             step="0.01"
             min="0"
             max="100"
@@ -49,6 +70,11 @@ const TaxSettings = ({ taxRate, setTaxRate }: TaxSettingsProps) => {
           </div>
         </div>
       </CardContent>
+      <CardFooter>
+        <Button onClick={handleSave}>
+          Save Tax Settings
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

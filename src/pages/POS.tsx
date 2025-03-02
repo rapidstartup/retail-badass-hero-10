@@ -137,6 +137,8 @@ const POS = () => {
             tax={getTaxAmount()}
             total={getTotal()}
             selectedCustomer={selectedCustomer}
+            taxRate={settings.taxRate}
+            storeName={settings.storeName}
           />
         </div>
       </div>

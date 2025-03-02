@@ -1,24 +1,38 @@
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useSettings } from "@/contexts/SettingsContext";
+import { toast } from "sonner";
 
 const GeneralSettings = () => {
-  const { settings, updateSettings } = useSettings();
+  const { settings, updateSettings, saveSettings } = useSettings();
   const [storeName, setStoreName] = useState(settings.storeName || "NextPOS");
   const [storeAddress, setStoreAddress] = useState(settings.storeAddress || "");
   const [storePhone, setStorePhone] = useState(settings.storePhone || "");
-
-  // Update the context when input values change
+  
+  // Update local state when settings change
   useEffect(() => {
-    updateSettings({
-      storeName,
-      storeAddress,
-      storePhone
-    });
-  }, [storeName, storeAddress, storePhone, updateSettings]);
+    setStoreName(settings.storeName || "NextPOS");
+    setStoreAddress(settings.storeAddress || "");
+    setStorePhone(settings.storePhone || "");
+  }, [settings.storeName, settings.storeAddress, settings.storePhone]);
+  
+  const handleSave = async () => {
+    try {
+      await updateSettings({
+        storeName,
+        storeAddress,
+        storePhone
+      });
+      toast.success("General settings updated");
+    } catch (error) {
+      toast.error("Failed to update general settings");
+      console.error("Error updating general settings:", error);
+    }
+  };
 
   return (
     <Card>
@@ -57,6 +71,11 @@ const GeneralSettings = () => {
           />
         </div>
       </CardContent>
+      <CardFooter>
+        <Button onClick={handleSave}>
+          Save General Settings
+        </Button>
+      </CardFooter>
     </Card>
   );
 };
