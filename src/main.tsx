@@ -6,7 +6,7 @@ import './index.css'
 import { AuthProvider } from '@/contexts/AuthContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 
-console.log("Initializing app...");
+console.log("Initializing app with BrowserRouter...");
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Root element not found");
 

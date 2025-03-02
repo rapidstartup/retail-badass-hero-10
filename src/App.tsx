@@ -1,17 +1,14 @@
 
 import React, { useState } from 'react';
 import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
+  Routes,
   Route,
-  createRoutesFromElements,
+  Navigate,
   Outlet
 } from "react-router-dom";
-import { useAuth, AuthProvider } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
-import { SettingsProvider } from '@/contexts/SettingsContext';
 
 // Import pages
 import Dashboard from "@/pages/Dashboard";
@@ -26,7 +23,21 @@ const Clients = () => <div className="p-8 text-lg">Clients Page</div>;
 const Transactions = () => <div className="p-8 text-lg">Transactions Page</div>;
 const Reports = () => <div className="p-8 text-lg">Reports Page</div>;
 
-// Root component for nested routes
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
+// Root component for layout with toaster
 function Root() {
   return (
     <>
@@ -36,59 +47,55 @@ function Root() {
   );
 }
 
-// Create router instance outside of components to avoid recreation
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Root />,
-    children: [
-      {
-        path: "/login",
-        element: <Login />
-      },
-      {
-        path: "/register",
-        element: <Register />
-      },
-      {
-        path: "/",
-        element: <Dashboard />
-      },
-      {
-        path: "/pos",
-        element: <POS />
-      },
-      {
-        path: "/clients",
-        element: <Clients />
-      },
-      {
-        path: "/transactions",
-        element: <Transactions />
-      },
-      {
-        path: "/reports",
-        element: <Reports />
-      },
-      {
-        path: "/settings",
-        element: <Settings />
-      },
-      {
-        path: "/inventory",
-        element: <Inventory />
-      }
-    ]
-  }
-]);
-
 function App() {
   const [queryClient] = useState(() => new QueryClient());
-  console.log("App rendering");
+  console.log("App rendering with standard Routes");
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <div className="app-container">
+        <Routes>
+          <Route path="/" element={<Root />}>
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+            <Route index element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="pos" element={
+              <ProtectedRoute>
+                <POS />
+              </ProtectedRoute>
+            } />
+            <Route path="clients" element={
+              <ProtectedRoute>
+                <Clients />
+              </ProtectedRoute>
+            } />
+            <Route path="transactions" element={
+              <ProtectedRoute>
+                <Transactions />
+              </ProtectedRoute>
+            } />
+            <Route path="reports" element={
+              <ProtectedRoute>
+                <Reports />
+              </ProtectedRoute>
+            } />
+            <Route path="settings" element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } />
+            <Route path="inventory" element={
+              <ProtectedRoute>
+                <Inventory />
+              </ProtectedRoute>
+            } />
+          </Route>
+        </Routes>
+      </div>
     </QueryClientProvider>
   );
 }
