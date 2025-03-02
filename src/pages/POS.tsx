@@ -15,6 +15,7 @@ import { TabManager } from "@/components/pos/TabManager";
 import { InventoryTracker } from "@/components/inventory/InventoryTracker";
 import { calculateTotalTax, formatTaxRulesFromSettings } from "@/utils/taxCalculator";
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 // Define product interface for type safety
 interface Product {
@@ -31,6 +32,18 @@ interface Product {
 interface CartItem extends Product {
   quantity: number;
 }
+
+// Helper function to type guard and convert Json to CartItem
+const isValidCartItem = (item: Json): item is CartItem => {
+  return (
+    typeof item === 'object' && 
+    item !== null && 
+    'id' in item && 
+    'name' in item && 
+    'price' in item && 
+    'quantity' in item
+  );
+};
 
 const POS = () => {
   const { settings } = useSettings();
@@ -156,9 +169,14 @@ const POS = () => {
         }
       }
       
-      // Load tab items into cart
+      // Load tab items into cart with proper type checking
       if (data.items && Array.isArray(data.items)) {
-        setCartItems(data.items as CartItem[]);
+        // Filter and convert items to CartItem type
+        const validCartItems = data.items
+          .filter(isValidCartItem)
+          .map(item => item as CartItem);
+          
+        setCartItems(validCartItems);
       }
     } catch (error) {
       console.error("Unexpected error loading tab:", error);
