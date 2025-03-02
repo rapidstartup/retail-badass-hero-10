@@ -15,6 +15,7 @@ interface LoginFormProps {
   handleSignIn: (e: React.FormEvent) => Promise<void>;
   isLoading: boolean;
   onFirstTimeLoginDetected: (isFirstTime: boolean) => void;
+  onFirstTimeSetupClick: () => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({
@@ -24,7 +25,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
   setPassword,
   handleSignIn,
   isLoading,
-  onFirstTimeLoginDetected
+  onFirstTimeLoginDetected,
+  onFirstTimeSetupClick
 }) => {
   return (
     <form onSubmit={handleSignIn}>
@@ -76,13 +78,21 @@ const LoginForm: React.FC<LoginFormProps> = ({
           />
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col space-y-2">
         <Button 
           type="submit" 
           className="w-full" 
           disabled={isLoading}
         >
           {isLoading ? "Signing in..." : "Sign In"}
+        </Button>
+        <Button 
+          type="button" 
+          variant="link" 
+          className="text-sm"
+          onClick={onFirstTimeSetupClick}
+        >
+          First Time Staff Setup
         </Button>
       </CardFooter>
     </form>

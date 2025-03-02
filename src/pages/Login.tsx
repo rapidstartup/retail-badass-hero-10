@@ -100,6 +100,11 @@ const Login = () => {
     }
   };
 
+  // Handle first time setup click
+  const handleFirstTimeSetupClick = () => {
+    setIsFirstTimeLogin(true);
+  };
+
   // Return to login form
   const handleBackToLogin = () => {
     setIsFirstTimeLogin(false);
@@ -147,6 +152,7 @@ const Login = () => {
             handleSignIn={handleSignIn}
             isLoading={isLoading}
             onFirstTimeLoginDetected={setIsFirstTimeLogin}
+            onFirstTimeSetupClick={handleFirstTimeSetupClick}
           />
         )}
       </Card>
