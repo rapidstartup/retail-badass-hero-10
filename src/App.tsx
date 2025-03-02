@@ -5,9 +5,10 @@ import {
   RouterProvider,
   Navigate
 } from "react-router-dom";
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, AuthProvider } from '@/contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
+import { SettingsProvider } from '@/contexts/SettingsContext';
 
 // Import pages
 import Dashboard from "@/pages/Dashboard";
@@ -22,9 +23,8 @@ const Clients = () => <div>Clients Page</div>;
 const Transactions = () => <div>Transactions Page</div>;
 const Reports = () => <div>Reports Page</div>;
 
-function App() {
+function AppRoutes() {
   const { user, session, loading, isAuthenticated } = useAuth();
-  const [queryClient] = useState(() => new QueryClient());
 
   // Protected route component
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -76,10 +76,20 @@ function App() {
     },
   ]);
   
+  return <RouterProvider router={router} />;
+}
+
+function App() {
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <Toaster position="top-right" />
+      <AuthProvider>
+        <SettingsProvider>
+          <AppRoutes />
+          <Toaster position="top-right" />
+        </SettingsProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
