@@ -123,7 +123,11 @@ const CategoryManagement: React.FC = () => {
           </div>
           
           <div className="pt-2">
-            <Button disabled={isLoading} onClick={handleCreateCategory} className="w-full">
+            <Button 
+              disabled={isLoading} 
+              onClick={handleCreateCategory} 
+              className="inline-flex items-center justify-center w-full md:w-auto mr-4"
+            >
               {isLoading ? 'Creating...' : 'Create Category'}
             </Button>
           </div>
