@@ -4,23 +4,7 @@ import { Product, ProductVariant } from "@/types";
 import { useVariantFetching } from "./useVariantFetching";
 import { useCombinationGenerator } from "./useCombinationGenerator";
 import { useVariantOperations } from "./useVariantOperations";
-import { VariantType, VariantCombination } from "./types";
-
-export interface UseProductVariantsReturn {
-  variants: ProductVariant[];
-  variantTypes: VariantType[];
-  combinations: VariantCombination[];
-  loading: boolean;
-  saving: boolean;
-  error: string | null;
-  fetchVariants: () => Promise<void>;
-  setVariantTypes: React.Dispatch<React.SetStateAction<VariantType[]>>;
-  setCombinations: React.Dispatch<React.SetStateAction<VariantCombination[]>>;
-  updateCombination: (index: number, updates: Partial<VariantCombination>) => void;
-  deleteCombination: (index: number) => void;
-  saveVariants: () => Promise<boolean>;
-  generateCombinations: () => void;
-}
+import { VariantType, VariantCombination, UseProductVariantsReturn } from "./types";
 
 export function useProductVariants(
   product: Product,

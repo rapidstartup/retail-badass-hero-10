@@ -8,13 +8,14 @@ import {
   DialogFooter 
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCw, FileText, Grid3X3 } from "lucide-react";
+import { Plus, RefreshCw, FileText } from "lucide-react";
 import { Product } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useProductVariants } from "@/hooks/useProductVariants";
 import VariantCombinationsTable from "./variants/VariantCombinationsTable";
 import VariantTypesForm from "./variants/VariantTypesForm";
+import { VariantType } from "@/hooks/useProductVariants/types";
 
 interface EnhancedProductVariantsManagerProps {
   product: Product;

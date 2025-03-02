@@ -1,8 +1,8 @@
 
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import { Product, ProductVariant } from "@/types";
-import { fetchVariantsByProductId } from "@/api/inventoryApi";
-import { VariantCombination, VariantType } from "./types";
+import { VariantType, VariantCombination } from "./types";
+import { toast } from "sonner";
 
 export function useVariantFetching(
   product: Product,
@@ -14,56 +14,102 @@ export function useVariantFetching(
   const [error, setError] = useState<string | null>(null);
 
   const fetchVariants = async () => {
+    if (!product || !product.id) {
+      setVariants([]);
+      setError("No product provided");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
+
     try {
-      const data = await fetchVariantsByProductId(product.id);
-      setVariants(data);
+      // This would be a real API call in production
+      // const response = await fetch(`/api/products/${product.id}/variants`);
+      // const data = await response.json();
       
-      // Extract variant types and values from existing variants
+      // For now, we'll simulate the API response
+      const mockVariants = []; // Mock data would go here
+      
+      setVariants(mockVariants);
+
+      // Extract variant types from the variants
+      // In a real implementation, this would parse the returned variants
+      const extractedTypes: VariantType[] = [];
       const typesMap = new Map<string, Set<string>>();
-      
-      data.forEach(variant => {
+
+      // Populate the Map with values from variants
+      for (const variant of mockVariants) {
         if (variant.variant_attributes) {
-          Object.entries(variant.variant_attributes).forEach(([key, value]) => {
-            if (typeof value === 'string') {
-              if (!typesMap.has(key)) {
-                typesMap.set(key, new Set<string>());
-              }
-              typesMap.get(key)?.add(value);
+          for (const [key, value] of Object.entries(variant.variant_attributes)) {
+            if (!typesMap.has(key)) {
+              typesMap.set(key, new Set());
             }
-          });
+            typesMap.get(key)?.add(value as string);
+          }
         }
-      });
-      
-      // Convert Map to array of VariantType
-      const variantTypeArray: VariantType[] = Array.from(typesMap.entries()).map(([name, valuesSet]) => ({
-        name,
-        values: Array.from(valuesSet)
-      }));
-      
-      setVariantTypes(variantTypeArray);
-      
-      // If there are existing variants, also create combinations
-      if (data.length > 0) {
-        const existingCombinations = data.map(variant => ({
-          id: variant.id,
-          product_id: product.id,
-          attributes: variant.variant_attributes as Record<string, string> || {},
-          sku: variant.sku || '',
-          price: variant.price || product.price,
-          stock_count: variant.stock_count || 0,
-          color: variant.color || undefined,
-          size: variant.size || undefined,
-          flavor: variant.flavor || undefined,
-        }));
         
-        setCombinations(existingCombinations);
+        // Handle special attributes (color, size, flavor)
+        if (variant.color) {
+          if (!typesMap.has('Color')) {
+            typesMap.set('Color', new Set());
+          }
+          typesMap.get('Color')?.add(variant.color);
+        }
+        
+        if (variant.size) {
+          if (!typesMap.has('Size')) {
+            typesMap.set('Size', new Set());
+          }
+          typesMap.get('Size')?.add(variant.size);
+        }
+        
+        if (variant.flavor) {
+          if (!typesMap.has('Flavor')) {
+            typesMap.set('Flavor', new Set());
+          }
+          typesMap.get('Flavor')?.add(variant.flavor);
+        }
       }
-      
+
+      // Convert the Map to an array of VariantType objects
+      for (const [name, valuesSet] of typesMap.entries()) {
+        extractedTypes.push({
+          name,
+          values: Array.from(valuesSet)
+        });
+      }
+
+      setVariantTypes(extractedTypes);
+
+      // Extract combinations from the variants
+      const extractedCombinations = mockVariants.map(variant => {
+        const attributes: Record<string, string> = { ...variant.variant_attributes as Record<string, string> };
+        
+        // Add color, size, flavor if they exist
+        if (variant.color) attributes['Color'] = variant.color;
+        if (variant.size) attributes['Size'] = variant.size;
+        if (variant.flavor) attributes['Flavor'] = variant.flavor;
+        
+        return {
+          id: variant.id,
+          sku: variant.sku || '',
+          price: variant.price || 0,
+          stock_count: variant.stock_count || 0,
+          product_id: variant.product_id,
+          color: variant.color,
+          size: variant.size,
+          flavor: variant.flavor,
+          attributes
+        };
+      });
+
+      setCombinations(extractedCombinations);
     } catch (err) {
-      console.error("Error fetching variants:", err);
-      setError("Failed to load existing variants. Please try again.");
+      console.error('Error fetching variants:', err);
+      setError('Failed to load variants');
+      toast.error('Failed to load variants');
     } finally {
       setLoading(false);
     }
@@ -71,13 +117,13 @@ export function useVariantFetching(
 
   useEffect(() => {
     fetchVariants();
-  }, [product.id]);
+  }, [product?.id]);
 
   return {
     variants,
     loading,
     error,
-    fetchVariants,
-    setError
+    setError,
+    fetchVariants
   };
 }

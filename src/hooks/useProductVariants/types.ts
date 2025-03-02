@@ -19,15 +19,6 @@ export interface VariantCombination {
   attributes: Record<string, string>;
 }
 
-export interface ProductVariantState {
-  variants: ProductVariant[];
-  variantTypes: VariantType[];
-  combinations: VariantCombination[];
-  loading: boolean;
-  saving: boolean;
-  error: string | null;
-}
-
 export interface UseProductVariantsReturn {
   variants: ProductVariant[];
   variantTypes: VariantType[];

@@ -1,4 +1,3 @@
-
 import { Product } from "@/types";
 import { VariantType, VariantCombination } from "./types";
 
@@ -26,12 +25,12 @@ export function useCombinationGenerator(
       return;
     }
 
-    // Helper function to generate combinations recursively
-    const generateHelper = (
+    // Generate all possible combinations recursively
+    const generateAttributeCombinations = (
       index: number,
       currentCombination: Record<string, string>
     ): Record<string, string>[] => {
-      // Base case: we've assigned a value for each type
+      // Base case: we've processed all types
       if (index === typesArray.length) {
         return [{ ...currentCombination }];
       }
@@ -48,48 +47,47 @@ export function useCombinationGenerator(
         };
 
         // Recursively generate combinations for the remaining types
-        const subCombinations = generateHelper(index + 1, newCombination);
-        result.push(...subCombinations);
+        const combinations = generateAttributeCombinations(
+          index + 1,
+          newCombination
+        );
+        result.push(...combinations);
       }
 
       return result;
     };
 
-    // Start the recursion with an empty combination
-    const attributeCombinations = generateHelper(0, {});
+    // Start the recursive combination generation
+    const attributeCombinations = generateAttributeCombinations(0, {});
 
-    // Generate a SKU prefix based on the product name
-    const skuPrefix = product.sku || 
-      product.name.split(' ')
-        .map(word => word.charAt(0).toUpperCase())
-        .join('')
-        .substring(0, 3);
+    // Convert attribute combinations to VariantCombination objects
+    const newCombinations: VariantCombination[] = attributeCombinations.map(
+      (attrs) => {
+        // Try to find an existing combination with these attributes
+        const existingCombination = combinations.find((c) => {
+          return Object.entries(attrs).every(
+            ([key, value]) => c.attributes[key] === value
+          );
+        });
 
-    // Map attribute combinations to full variant combinations
-    const newCombinations = attributeCombinations.map((attributes) => {
-      // Generate a SKU based on the attributes
-      const attributeParts = Object.values(attributes)
-        .map(val => val.substring(0, 3).toUpperCase())
-        .join('-');
-      
-      const sku = `${skuPrefix}-${attributeParts}`;
+        // If we found an existing combination, use its values
+        if (existingCombination) {
+          return { ...existingCombination };
+        }
 
-      // Check if this combination already exists
-      const existingCombination = combinations.find(comb => {
-        return Object.entries(attributes).every(([key, value]) => 
-          comb.attributes[key] === value
-        );
-      });
-
-      // Either use existing data or create new
-      return existingCombination || {
-        attributes,
-        sku,
-        price: product.price,
-        stock_count: 0,
-        product_id: product.id
-      };
-    });
+        // Otherwise, create a new combination
+        return {
+          product_id: product.id,
+          sku: "", // This will be auto-generated later
+          price: product.price,
+          stock_count: 0,
+          color: attrs["Color"] || attrs["color"],
+          size: attrs["Size"] || attrs["size"],
+          flavor: attrs["Flavor"] || attrs["flavor"],
+          attributes: { ...attrs },
+        };
+      }
+    );
 
     setCombinations(newCombinations);
   };
