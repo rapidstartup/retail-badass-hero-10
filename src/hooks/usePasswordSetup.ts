@@ -92,78 +92,75 @@ export function usePasswordSetup(
       if (data?.user?.id) {
         console.log("User created with ID:", data.user.id);
         
-        // Important: If this is a new staff creation, create the staff record
-        if (isNewStaffSetup) {
-          // Wait longer to ensure the auth user is fully created
-          await new Promise(resolve => setTimeout(resolve, 5000));
+        try {
+          // Wait to ensure the auth user is fully created
+          await new Promise(resolve => setTimeout(resolve, 2000));
           
-          // Instead of using admin API, we'll check if the user can fetch their own session
-          // This confirms the user exists in the auth system
-          try {
-            const { data: session } = await supabase.auth.getSession();
-            console.log("Session check after user creation:", !!session);
-          } catch (sessionError) {
-            console.error("Session check error:", sessionError);
-            // Continue anyway, as we still have the user ID from signup
-          }
+          console.log("Creating/updating staff record for user ID:", data.user.id);
           
-          const { error: createStaffError } = await supabase
-            .from('staff')
-            .insert({ 
-              email: email,
-              auth_id: data.user.id,
-              first_name: firstName,
-              last_name: lastName,
-              role: 'staff' // Default role
-            });
+          if (isNewStaffSetup) {
+            // For new staff, create a new staff record
+            const { error: createStaffError } = await supabase
+              .from('staff')
+              .insert({ 
+                email: email,
+                auth_id: data.user.id,
+                first_name: firstName,
+                last_name: lastName,
+                role: 'staff' // Default role
+              });
+              
+            if (createStaffError) {
+              console.error("Staff creation error:", createStaffError);
+              throw createStaffError;
+            }
             
-          if (createStaffError) {
-            console.error("Staff creation error:", createStaffError);
-            throw createStaffError;
-          }
-          
-          toast.success("New staff account created successfully! You can now login");
-        } else {
-          // For existing staff, update the auth_id
-          // Wait longer to ensure the auth user is fully created
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          
-          // Instead of using admin API, we'll check if the user can fetch their own session
-          // This confirms the user exists in the auth system
-          try {
-            const { data: session } = await supabase.auth.getSession();
-            console.log("Session check after user creation:", !!session);
-          } catch (sessionError) {
-            console.error("Session check error:", sessionError);
-            // Continue anyway, as we still have the user ID from signup
-          }
-          
-          const { error: updateStaffError } = await supabase
-            .from('staff')
-            .update({ 
-              auth_id: data.user.id,
-              first_name: firstName,
-              last_name: lastName
-            })
-            .eq('email', email);
+            console.log("New staff record created successfully");
+            toast.success("New staff account created successfully! You can now login");
+          } else {
+            // For existing staff, update the auth_id
+            const { error: updateStaffError } = await supabase
+              .from('staff')
+              .update({ 
+                auth_id: data.user.id,
+                first_name: firstName,
+                last_name: lastName
+              })
+              .eq('email', email);
+              
+            if (updateStaffError) {
+              console.error("Staff update error:", updateStaffError);
+              throw updateStaffError;
+            }
             
-          if (updateStaffError) {
-            console.error("Staff update error:", updateStaffError);
-            throw updateStaffError;
+            console.log("Existing staff record updated successfully");
+            toast.success("Account created successfully! You can now login");
           }
           
-          toast.success("Account created successfully! You can now login");
+          // Wait a moment before signing in to ensure data is properly saved
+          setTimeout(async () => {
+            try {
+              await signIn(email, newPassword);
+            } catch (signInError) {
+              console.error("Sign in after registration failed:", signInError);
+              toast.info("Account created, but automatic login failed. Please try logging in manually.");
+            }
+          }, 2000);
+          
+        } catch (dbError: any) {
+          console.error("Database operation error:", dbError);
+          toast.error(`Database error: ${dbError.message || "Failed to save staff record"}`);
+          
+          // We should still consider this a partial success since the auth user was created
+          setTimeout(async () => {
+            try {
+              await signIn(email, newPassword);
+            } catch (signInError) {
+              console.error("Sign in after registration failed:", signInError);
+              toast.info("Auth account created, but staff record failed. Please contact an administrator.");
+            }
+          }, 2000);
         }
-        
-        // Wait a moment before signing in to ensure data is properly saved
-        setTimeout(async () => {
-          try {
-            await signIn(email, newPassword);
-          } catch (signInError) {
-            console.error("Sign in after registration failed:", signInError);
-            toast.info("Account created, but automatic login failed. Please try logging in manually.");
-          }
-        }, 6000);
       } else {
         toast.error("Failed to create account");
       }
