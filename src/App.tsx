@@ -9,16 +9,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
 
-// Temporary placeholder pages until actual components are created
-const Dashboard = () => <div>Dashboard Page</div>;
-const Login = () => <div>Login Page</div>;
+// Import pages
+import Dashboard from "@/pages/Dashboard";
+import Login from "@/pages/Login";
+import POS from "@/pages/POS";
+import Inventory from "@/pages/Inventory";
+import Settings from "@/pages/Settings";
+
+// Temporary placeholder pages for components not yet implemented
 const Register = () => <div>Register Page</div>;
-const POS = () => <div>POS Page</div>;
 const Clients = () => <div>Clients Page</div>;
 const Transactions = () => <div>Transactions Page</div>;
 const Reports = () => <div>Reports Page</div>;
-const SettingsPage = () => <div>Settings Page</div>;
-const Inventory = () => <div>Inventory Page</div>;
 
 function App() {
   const { user, session, loading, isAuthenticated } = useAuth();
@@ -69,7 +71,7 @@ function App() {
           },
           {
             path: "/settings",
-            element: <ProtectedRoute><SettingsPage /></ProtectedRoute>
+            element: <ProtectedRoute><Settings /></ProtectedRoute>
           },
           {
             path: "/inventory",
