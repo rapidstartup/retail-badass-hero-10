@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { 
   Dialog, 
@@ -20,7 +21,9 @@ import {
   Plus, 
   Save, 
   Trash2, 
-  RefreshCw 
+  RefreshCw,
+  Grid3X3,
+  FileText
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { Product, ProductVariant } from "@/types";
@@ -28,17 +31,32 @@ import { fetchVariantsByProductId, createVariant, updateVariant, deleteVariant }
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ProductVariantsManagerProps {
   product: Product;
   onClose: () => void;
 }
 
+interface BulkGeneratorForm {
+  colors: string[];
+  sizes: string[];
+  basePrice: number;
+  baseStock: number;
+  priceAdjustments: Record<string, number>;
+}
+
 const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProps) => {
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddVariant, setShowAddVariant] = useState(false);
+  const [mode, setMode] = useState<"single" | "bulk">("single");
   
+  // New variant state
   const [newVariant, setNewVariant] = useState<ProductVariant>({
     id: '',
     product_id: product.id,
@@ -52,6 +70,17 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
     updated_at: new Date().toISOString()
   });
   
+  // Colors and sizes for bulk generation
+  const [colorOptions, setColorOptions] = useState<string[]>([]);
+  const [sizeOptions, setSizeOptions] = useState<string[]>([]);
+  const [newColorOption, setNewColorOption] = useState("");
+  const [newSizeOption, setNewSizeOption] = useState("");
+  const [bulkBasePrice, setBulkBasePrice] = useState<number>(product.price);
+  const [bulkBaseStock, setBulkBaseStock] = useState<number>(0);
+  
+  // Custom SKU prefix for generated variants
+  const [skuPrefix, setSkuPrefix] = useState(product.sku || product.name.substring(0, 3).toUpperCase());
+  
   const [creatingVariant, setCreatingVariant] = useState(false);
 
   const fetchVariants = async () => {
@@ -59,6 +88,14 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
     try {
       const data = await fetchVariantsByProductId(product.id);
       setVariants(data);
+      
+      // Extract unique colors and sizes from existing variants
+      const uniqueColors = Array.from(new Set(data.map(v => v.color).filter(Boolean))) as string[];
+      const uniqueSizes = Array.from(new Set(data.map(v => v.size).filter(Boolean))) as string[];
+      
+      if (uniqueColors.length > 0) setColorOptions(uniqueColors);
+      if (uniqueSizes.length > 0) setSizeOptions(uniqueSizes);
+      
     } catch (error) {
       console.error("Error fetching variants:", error);
     } finally {
@@ -70,10 +107,20 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
     fetchVariants();
   }, [product.id]);
 
+  // Function to generate SKU based on product info and variant attributes
+  const generateSku = (color: string = "", size: string = "") => {
+    // Basic pattern: PREFIX-COLOR-SIZE (e.g., TST-BLK-L)
+    const prefix = skuPrefix;
+    const colorCode = color ? `-${color.substring(0, 3).toUpperCase()}` : "";
+    const sizeCode = size ? `-${size.toUpperCase()}` : "";
+    
+    return `${prefix}${colorCode}${sizeCode}`;
+  };
+
   const handleCreateVariant = async () => {
     if (!newVariant.sku) {
-      toast.error("SKU is required for variant");
-      return;
+      // Auto-generate SKU if not provided
+      newVariant.sku = generateSku(newVariant.color, newVariant.size);
     }
     
     if (newVariant.price === undefined || isNaN(Number(newVariant.price))) {
@@ -109,6 +156,7 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
         updated_at: new Date().toISOString()
       });
       
+      setShowAddVariant(false);
       fetchVariants();
     } catch (error) {
       console.error("Error creating variant:", error);
@@ -134,6 +182,94 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
       console.error("Error deleting variant:", error);
     }
   };
+  
+  const addColorOption = () => {
+    if (!newColorOption) return;
+    if (!colorOptions.includes(newColorOption)) {
+      setColorOptions([...colorOptions, newColorOption]);
+    }
+    setNewColorOption("");
+  };
+  
+  const addSizeOption = () => {
+    if (!newSizeOption) return;
+    if (!sizeOptions.includes(newSizeOption)) {
+      setSizeOptions([...sizeOptions, newSizeOption]);
+    }
+    setNewSizeOption("");
+  };
+  
+  const removeColorOption = (color: string) => {
+    setColorOptions(colorOptions.filter(c => c !== color));
+  };
+  
+  const removeSizeOption = (size: string) => {
+    setSizeOptions(sizeOptions.filter(s => s !== size));
+  };
+  
+  const generateBulkVariants = async () => {
+    if (colorOptions.length === 0 && sizeOptions.length === 0) {
+      toast.error("You need to add at least one color or size option");
+      return;
+    }
+    
+    try {
+      setCreatingVariant(true);
+      
+      // If no colors but have sizes, create one variant per size
+      if (colorOptions.length === 0 && sizeOptions.length > 0) {
+        for (const size of sizeOptions) {
+          await createVariant({
+            product_id: product.id,
+            price: bulkBasePrice,
+            sku: generateSku("", size),
+            stock_count: bulkBaseStock,
+            color: "",
+            size: size,
+            variant_attributes: {}
+          });
+        }
+      }
+      // If no sizes but have colors, create one variant per color
+      else if (sizeOptions.length === 0 && colorOptions.length > 0) {
+        for (const color of colorOptions) {
+          await createVariant({
+            product_id: product.id,
+            price: bulkBasePrice,
+            sku: generateSku(color, ""),
+            stock_count: bulkBaseStock,
+            color: color,
+            size: "",
+            variant_attributes: {}
+          });
+        }
+      }
+      // If both colors and sizes, create a matrix of variants
+      else {
+        for (const color of colorOptions) {
+          for (const size of sizeOptions) {
+            await createVariant({
+              product_id: product.id,
+              price: bulkBasePrice,
+              sku: generateSku(color, size),
+              stock_count: bulkBaseStock,
+              color: color,
+              size: size,
+              variant_attributes: {}
+            });
+          }
+        }
+      }
+      
+      toast.success("Successfully generated variants");
+      fetchVariants();
+    } catch (error) {
+      console.error("Error generating variants:", error);
+      toast.error("Failed to generate variants");
+    } finally {
+      setCreatingVariant(false);
+    }
+  };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -154,12 +290,12 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
             </div>
             <div className="flex space-x-2">
               <Button 
-                onClick={() => setShowAddVariant(true)} 
+                onClick={() => setShowAddVariant(prev => !prev)} 
                 className="flex items-center gap-1"
-                disabled={showAddVariant}
+                variant={showAddVariant ? "secondary" : "default"}
               >
                 <Plus className="h-4 w-4" />
-                Add Variant
+                {showAddVariant ? "Cancel" : "Add Variant"}
               </Button>
               <Button 
                 variant="outline" 
@@ -171,6 +307,204 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
               </Button>
             </div>
           </div>
+
+          {showAddVariant && (
+            <Tabs defaultValue="single" className="border rounded-md p-4 mb-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="single" onClick={() => setMode("single")}>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Single Variant
+                </TabsTrigger>
+                <TabsTrigger value="bulk" onClick={() => setMode("bulk")}>
+                  <Grid3X3 className="h-4 w-4 mr-2" />
+                  Bulk Generator
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="single" className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">SKU</label>
+                    <Input
+                      placeholder="SKU"
+                      value={newVariant.sku || ""}
+                      onChange={(e) => setNewVariant({...newVariant, sku: e.target.value})}
+                    />
+                    <p className="text-xs text-muted-foreground">Leave blank to auto-generate</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Color</label>
+                    <Input
+                      placeholder="Color"
+                      value={newVariant.color || ""}
+                      onChange={(e) => setNewVariant({...newVariant, color: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Size</label>
+                    <Input
+                      placeholder="Size"
+                      value={newVariant.size || ""}
+                      onChange={(e) => setNewVariant({...newVariant, size: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Price</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="Price"
+                      value={newVariant.price || ""}
+                      onChange={(e) => setNewVariant({...newVariant, price: Number(e.target.value)})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Stock</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="Stock"
+                      value={newVariant.stock_count || ""}
+                      onChange={(e) => setNewVariant({...newVariant, stock_count: Number(e.target.value)})}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2 flex items-end">
+                    <Button 
+                      onClick={handleCreateVariant} 
+                      className="w-full"
+                      disabled={creatingVariant}
+                    >
+                      {creatingVariant ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                      Create Variant
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="bulk" className="space-y-4 p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">SKU Prefix</label>
+                      <Input
+                        placeholder="SKU Prefix"
+                        value={skuPrefix}
+                        onChange={(e) => setSkuPrefix(e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">Used to generate SKUs like {skuPrefix}-RED-L</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Base Price</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Base Price"
+                        value={bulkBasePrice}
+                        onChange={(e) => setBulkBasePrice(Number(e.target.value))}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Base Stock</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="Base Stock"
+                        value={bulkBaseStock}
+                        onChange={(e) => setBulkBaseStock(Number(e.target.value))}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Colors</label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add color (e.g. Red)"
+                          value={newColorOption}
+                          onChange={(e) => setNewColorOption(e.target.value)}
+                        />
+                        <Button onClick={addColorOption} type="button" size="sm">Add</Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {colorOptions.map(color => (
+                          <Badge key={color} variant="secondary" className="flex items-center gap-1">
+                            {color}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-4 w-4 p-0 ml-1"
+                              onClick={() => removeColorOption(color)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </Badge>
+                        ))}
+                        {colorOptions.length === 0 && (
+                          <p className="text-xs text-muted-foreground">No colors added yet</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Sizes</label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Add size (e.g. L)"
+                          value={newSizeOption}
+                          onChange={(e) => setNewSizeOption(e.target.value)}
+                        />
+                        <Button onClick={addSizeOption} type="button" size="sm">Add</Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {sizeOptions.map(size => (
+                          <Badge key={size} variant="secondary" className="flex items-center gap-1">
+                            {size}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-4 w-4 p-0 ml-1"
+                              onClick={() => removeSizeOption(size)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </Badge>
+                        ))}
+                        {sizeOptions.length === 0 && (
+                          <p className="text-xs text-muted-foreground">No sizes added yet</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="pt-4">
+                  <Button 
+                    onClick={generateBulkVariants} 
+                    className="w-full"
+                    disabled={creatingVariant || (colorOptions.length === 0 && sizeOptions.length === 0)}
+                  >
+                    {creatingVariant ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Grid3X3 className="h-4 w-4 mr-2" />}
+                    Generate {(colorOptions.length || 1) * (sizeOptions.length || 1)} Variants
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    This will create a variant for each color/size combination
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
 
           <div className="border rounded-md">
             <Table>
@@ -251,70 +585,6 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
                       </TableCell>
                     </TableRow>
                   ))
-                )}
-
-                {showAddVariant && (
-                  <TableRow>
-                    <TableCell>
-                      <Input
-                        placeholder="SKU"
-                        value={newVariant.sku || ""}
-                        onChange={(e) => setNewVariant({...newVariant, sku: e.target.value})}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        placeholder="Color"
-                        value={newVariant.color || ""}
-                        onChange={(e) => setNewVariant({...newVariant, color: e.target.value})}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        placeholder="Size"
-                        value={newVariant.size || ""}
-                        onChange={(e) => setNewVariant({...newVariant, size: e.target.value})}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        placeholder="Price"
-                        value={newVariant.price || ""}
-                        onChange={(e) => setNewVariant({...newVariant, price: Number(e.target.value)})}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="1"
-                        placeholder="Stock"
-                        value={newVariant.stock_count || ""}
-                        onChange={(e) => setNewVariant({...newVariant, stock_count: Number(e.target.value)})}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          onClick={handleCreateVariant} 
-                          size="icon" 
-                          variant="default"
-                        >
-                          <Save className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          onClick={() => setShowAddVariant(false)}
-                          size="icon"
-                          variant="outline"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
                 )}
               </TableBody>
             </Table>
