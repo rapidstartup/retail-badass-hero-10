@@ -10,11 +10,13 @@ import POSCart from "@/components/pos/POSCart";
 import POSProductGrid from "@/components/pos/POSProductGrid";
 import POSNumpad from "@/components/pos/POSNumpad";
 import POSCustomerSearch from "@/components/pos/POSCustomerSearch";
+import { useSettings } from "@/contexts/SettingsContext";
 
 // Temporary data until we connect to a database
 const categories = ["All", "Food", "Drinks", "Merchandise", "Services"];
 
 const POS = () => {
+  const { settings } = useSettings();
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
@@ -57,7 +59,8 @@ const POS = () => {
   };
 
   const getTaxAmount = () => {
-    return getSubtotal() * 0.08; // Assuming 8% tax rate
+    // Use the tax rate from settings
+    return getSubtotal() * (settings.taxRate / 100);
   };
 
   const getTotal = () => {
