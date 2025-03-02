@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useSettings } from "@/contexts/SettingsContext";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Sun, Moon } from "lucide-react";
+import { ColorPicker } from "@/components/ui/color-picker";
 
 const Settings = () => {
   const { settings, updateSettings } = useSettings();
@@ -29,6 +30,13 @@ const Settings = () => {
   // GoHighLevel integration field
   const [goHighLevelApiKey, setGoHighLevelApiKey] = useState<string>("");
   
+  // Theme settings
+  const [theme, setTheme] = useState<"light" | "dark">(settings.theme);
+  const [lightBackground, setLightBackground] = useState<string>(settings.lightModeColors.background);
+  const [lightAccent, setLightAccent] = useState<string>(settings.lightModeColors.accent);
+  const [darkBackground, setDarkBackground] = useState<string>(settings.darkModeColors.background);
+  const [darkAccent, setDarkAccent] = useState<string>(settings.darkModeColors.accent);
+  
   // Password visibility toggles
   const [showLiveSecretKey, setShowLiveSecretKey] = useState<boolean>(false);
   const [showTestSecretKey, setShowTestSecretKey] = useState<boolean>(false);
@@ -47,6 +55,13 @@ const Settings = () => {
     if (settings.stripeTestPublicKey) setStripeTestPublicKey(settings.stripeTestPublicKey);
     if (settings.stripeMode) setStripeMode(settings.stripeMode);
     if (settings.goHighLevelApiKey) setGoHighLevelApiKey(settings.goHighLevelApiKey);
+    
+    // Theme settings
+    setTheme(settings.theme);
+    setLightBackground(settings.lightModeColors.background);
+    setLightAccent(settings.lightModeColors.accent);
+    setDarkBackground(settings.darkModeColors.background);
+    setDarkAccent(settings.darkModeColors.accent);
   }, [settings]);
   
   const handleSaveSettings = () => {
@@ -60,24 +75,20 @@ const Settings = () => {
       stripeTestSecretKey,
       stripeTestPublicKey,
       stripeMode,
-      goHighLevelApiKey
+      goHighLevelApiKey,
+      theme,
+      lightModeColors: {
+        background: lightBackground,
+        accent: lightAccent
+      },
+      darkModeColors: {
+        background: darkBackground,
+        accent: darkAccent
+      }
     });
     
     // Show success notification
     toast.success("Settings saved successfully!");
-    
-    // Log the updated settings to console for debugging
-    console.log("Updated settings:", {
-      taxRate,
-      tabEnabled,
-      tabThreshold,
-      stripeLiveSecretKey: "***", // Don't log full keys for security
-      stripeLivePublicKey,
-      stripeTestSecretKey: "***", // Don't log full keys for security
-      stripeTestPublicKey,
-      stripeMode,
-      goHighLevelApiKey: "***" // Don't log full API key for security
-    });
   };
 
   // Toggle function for password visibility
@@ -98,11 +109,12 @@ const Settings = () => {
         </div>
         
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="tax">Tax Settings</TabsTrigger>
             <TabsTrigger value="tab">Tab System</TabsTrigger>
             <TabsTrigger value="integrations">Integrations</TabsTrigger>
+            <TabsTrigger value="design">Design</TabsTrigger>
           </TabsList>
           
           {/* General Settings Tab */}
@@ -231,7 +243,7 @@ const Settings = () => {
             </Card>
           </TabsContent>
           
-          {/* New Integrations Tab */}
+          {/* Integrations Tab */}
           <TabsContent value="integrations">
             <Card>
               <CardHeader>
@@ -390,6 +402,113 @@ const Settings = () => {
                       ? "GoHighLevel integration is configured. Save to apply changes."
                       : "GoHighLevel integration is not configured yet."
                     }
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* New Design Tab */}
+          <TabsContent value="design">
+            <Card>
+              <CardHeader>
+                <CardTitle>Theme Settings</CardTitle>
+                <CardDescription>
+                  Customize the appearance of your POS system.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="theme-mode">Theme Mode</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Select light or dark mode for your POS interface.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Sun size={20} className={theme === "light" ? "text-orange-400" : "text-muted-foreground"} />
+                    <Switch
+                      id="theme-mode"
+                      checked={theme === "dark"}
+                      onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                    />
+                    <Moon size={20} className={theme === "dark" ? "text-blue-400" : "text-muted-foreground"} />
+                  </div>
+                </div>
+                
+                <Separator className="my-4" />
+                
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Light Mode Colors */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-lg">Light Mode Colors</h3>
+                    <ColorPicker 
+                      label="Background Color" 
+                      value={lightBackground}
+                      onChange={setLightBackground}
+                    />
+                    <ColorPicker 
+                      label="Accent Color" 
+                      value={lightAccent}
+                      onChange={setLightAccent}
+                    />
+                    
+                    {/* Preview */}
+                    <div className="mt-4 border rounded-md overflow-hidden">
+                      <div className="text-sm font-medium p-2 bg-muted">Light Mode Preview</div>
+                      <div 
+                        className="p-4 flex flex-col items-center gap-2"
+                        style={{ backgroundColor: lightBackground }}
+                      >
+                        <span className="text-sm">Sample Text</span>
+                        <Button
+                          size="sm"
+                          style={{ backgroundColor: lightAccent }}
+                        >
+                          Sample Button
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Dark Mode Colors */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-lg">Dark Mode Colors</h3>
+                    <ColorPicker 
+                      label="Background Color" 
+                      value={darkBackground}
+                      onChange={setDarkBackground}
+                    />
+                    <ColorPicker 
+                      label="Accent Color" 
+                      value={darkAccent}
+                      onChange={setDarkAccent}
+                    />
+                    
+                    {/* Preview */}
+                    <div className="mt-4 border rounded-md overflow-hidden">
+                      <div className="text-sm font-medium p-2 bg-muted">Dark Mode Preview</div>
+                      <div 
+                        className="p-4 flex flex-col items-center gap-2"
+                        style={{ backgroundColor: darkBackground, color: "#ffffff" }}
+                      >
+                        <span className="text-sm">Sample Text</span>
+                        <Button
+                          size="sm"
+                          style={{ backgroundColor: darkAccent }}
+                        >
+                          Sample Button
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-muted p-4 rounded-md mt-6">
+                  <h3 className="font-medium mb-2">Theme Usage</h3>
+                  <p className="text-sm text-muted-foreground">
+                    These color settings will be applied throughout the POS system. 
+                    Click "Save All Settings" to apply your changes.
                   </p>
                 </div>
               </CardContent>

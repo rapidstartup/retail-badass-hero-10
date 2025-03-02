@@ -5,6 +5,11 @@
 
 @layer base {
   :root {
+    /* Default theme colors - will be overridden by JS */
+    --background-color: #ffffff;
+    --accent-color: #0ea5e9;
+    
+    /* Original theme colors */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -52,6 +57,9 @@
   }
 
   .dark {
+    --background-color: #1e293b;
+    --accent-color: #38bdf8;
+    
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
@@ -105,6 +113,20 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background-color: var(--background-color);
+  }
+  
+  /* Custom theme color classes */
+  .themed-accent {
+    color: var(--accent-color);
+  }
+  
+  .themed-accent-bg {
+    background-color: var(--accent-color);
+  }
+  
+  .themed-border {
+    border-color: var(--accent-color);
   }
 }
 
