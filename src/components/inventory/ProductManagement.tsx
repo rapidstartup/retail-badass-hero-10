@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useProducts } from "@/contexts/ProductContext";
 import { 
@@ -29,6 +30,7 @@ import ProductForm from "./ProductForm";
 import ProductVariantsManager from "./ProductVariantsManager";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { deleteProduct } from "@/api/inventoryApi";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const ProductManagement = () => {
   const { products, loading, refreshProducts, selectedProduct, setSelectedProduct } = useProducts();
@@ -216,12 +218,24 @@ const ProductManagement = () => {
         </CardContent>
       </Card>
 
-      {showAddForm && (
-        <ProductForm onClose={handleFormClose} onSave={refreshProducts} />
-      )}
+      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Add New Product</DialogTitle>
+          </DialogHeader>
+          <ProductForm onClose={handleFormClose} onSave={refreshProducts} />
+        </DialogContent>
+      </Dialog>
       
       {showEditForm && selectedProduct && (
-        <ProductForm product={selectedProduct} onClose={handleFormClose} onSave={refreshProducts} />
+        <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Edit Product</DialogTitle>
+            </DialogHeader>
+            <ProductForm product={selectedProduct} onClose={handleFormClose} onSave={refreshProducts} />
+          </DialogContent>
+        </Dialog>
       )}
       
       {showVariantsManager && selectedProduct && (
