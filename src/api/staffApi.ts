@@ -94,6 +94,7 @@ export const syncStaffWithGoHighLevel = async (goHighLevelApiKey: string | undef
   }
   
   // Call our Edge Function for GoHighLevel sync
+  // Fixed: Removed the 'query' property which doesn't exist in FunctionInvokeOptions
   const response = await supabase.functions.invoke('staff', {
     body: { 
       apiKey: goHighLevelApiKey 
