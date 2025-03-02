@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +21,6 @@ const Login = () => {
   const { settings } = useSettings();
   const location = useLocation();
 
-  // Check if URL has firstTime parameter
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     if (queryParams.get('firstTime') === 'true') {
@@ -79,105 +77,51 @@ const Login = () => {
     
     setIsLoading(true);
     try {
-      // Check if the staff member already exists in the database
-      const { data: existingStaff } = await supabase
-        .from('staff')
-        .select('id, email, auth_id')
-        .eq('email', email)
-        .maybeSingle();
-      
-      let staffId;
-      
-      // If the staff doesn't exist, create a new staff record
-      if (!existingStaff) {
-        const { data: newStaff, error: createStaffError } = await supabase
-          .from('staff')
-          .insert({
-            email,
-            first_name: firstName,
-            last_name: lastName,
-            role: 'staff'
-          })
-          .select('id')
-          .single();
-          
-        if (createStaffError) throw createStaffError;
-        staffId = newStaff.id;
-      } else {
-        staffId = existingStaff.id;
-      }
-      
-      // Try to sign up the user (create auth record)
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password: newPassword,
       });
       
-      if (signUpError && !signUpError.message.includes("User already registered")) {
+      if (signUpError) {
         throw signUpError;
       }
       
-      // Update the staff record with the auth_id if the auth account was created
       if (data?.user?.id) {
-        const { error: updateError } = await supabase
+        const { error: createStaffError } = await supabase
           .from('staff')
-          .update({ auth_id: data.user.id })
-          .eq('id', staffId);
-          
-        if (updateError) throw updateError;
-        
-        toast.success("Account created successfully! You can now login");
-      } else if (signUpError?.message.includes("User already registered")) {
-        // If the auth user already exists, try to update password instead
-        try {
-          // First try to sign in with current credentials
-          const { error: signInError } = await supabase.auth.signInWithPassword({
+          .insert({
             email,
-            password: newPassword,
+            first_name: firstName,
+            last_name: lastName,
+            auth_id: data.user.id,
+            role: 'staff'
           });
           
-          if (signInError) {
-            // If can't sign in, try to update password
-            const { error: updateError } = await supabase.auth.updateUser({
-              password: newPassword
-            });
-            
-            if (updateError) throw updateError;
-          }
-          
-          // Update staff record in case it wasn't linked before
-          const { data: userData } = await supabase.auth.getUser();
-          if (userData?.user?.id) {
-            await supabase
-              .from('staff')
-              .update({ auth_id: userData.user.id })
-              .eq('id', staffId);
-          }
-          
-          toast.success("Password updated successfully! You can now login");
-        } catch (updateError: any) {
-          toast.error(updateError.message || "Failed to update password");
-          throw updateError;
-        }
+        if (createStaffError) throw createStaffError;
+        
+        toast.success("Account created successfully! You can now login");
+        
+        await signIn(email, newPassword);
+      } else {
+        toast.error("Failed to create account");
       }
-      
-      // Try to sign in with the new credentials
-      await signIn(email, newPassword);
     } catch (error: any) {
-      toast.error(error.message || "Failed to setup account");
-      console.error("Setup error:", error);
+      if (error.message?.includes("User already registered")) {
+        toast.error("An account with this email already exists. Please use the login form.");
+      } else {
+        toast.error(error.message || "Failed to setup account");
+        console.error("Setup error:", error);
+      }
     } finally {
       setIsLoading(false);
       setIsFirstTimeLogin(false);
     }
   };
 
-  // Handle first time setup click
   const handleFirstTimeSetupClick = () => {
     setIsFirstTimeLogin(true);
   };
 
-  // Return to login form
   const handleBackToLogin = () => {
     setIsFirstTimeLogin(false);
     setPassword("");
@@ -187,7 +131,6 @@ const Login = () => {
     setLastName("");
   };
 
-  // Redirect if already authenticated
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
