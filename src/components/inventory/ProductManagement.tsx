@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useProducts } from "@/contexts/ProductContext";
 import { 
   Card, 
@@ -38,7 +37,6 @@ const ProductManagement = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showVariantsManager, setShowVariantsManager] = useState(false);
 
-  // Filter products based on search term
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -100,7 +98,6 @@ const ProductManagement = () => {
         </div>
       </div>
 
-      {/* Search bar */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
@@ -111,7 +108,6 @@ const ProductManagement = () => {
         />
       </div>
 
-      {/* Product table */}
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -220,16 +216,14 @@ const ProductManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Add/Edit Product Forms */}
       {showAddForm && (
-        <ProductForm onClose={handleFormClose} />
+        <ProductForm onClose={handleFormClose} onSave={refreshProducts} />
       )}
       
       {showEditForm && selectedProduct && (
-        <ProductForm product={selectedProduct} onClose={handleFormClose} />
+        <ProductForm product={selectedProduct} onClose={handleFormClose} onSave={refreshProducts} />
       )}
       
-      {/* Variants Manager */}
       {showVariantsManager && selectedProduct && (
         <ProductVariantsManager 
           product={selectedProduct}

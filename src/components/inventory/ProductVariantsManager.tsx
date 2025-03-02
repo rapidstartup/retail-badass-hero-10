@@ -23,7 +23,8 @@ import {
   RefreshCw 
 } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
-import { Product, ProductVariant, fetchVariantsByProductId, createVariant, updateVariant, deleteVariant } from "@/api/inventoryApi";
+import { Product, ProductVariant } from "@/types";
+import { fetchVariantsByProductId, createVariant, updateVariant, deleteVariant } from "@/api/inventoryApi";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -37,6 +38,7 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddVariant, setShowAddVariant] = useState(false);
+  
   const [newVariant, setNewVariant] = useState<ProductVariant>({
     id: '',
     product_id: product.id,
@@ -45,8 +47,11 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
     size: "",
     price: product.price,
     stock_count: 0,
-    variant_attributes: {}
+    variant_attributes: {},
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   });
+  
   const [creatingVariant, setCreatingVariant] = useState(false);
 
   const fetchVariants = async () => {
@@ -90,6 +95,7 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
       };
       
       await createVariant(variantData);
+      
       setNewVariant({
         id: '',
         product_id: product.id,
@@ -98,8 +104,11 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
         size: "",
         price: product.price,
         stock_count: 0,
-        variant_attributes: {}
+        variant_attributes: {},
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
+      
       fetchVariants();
     } catch (error) {
       console.error("Error creating variant:", error);
@@ -163,7 +172,6 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
             </div>
           </div>
 
-          {/* Variants Table */}
           <div className="border rounded-md">
             <Table>
               <TableHeader>
@@ -245,7 +253,6 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
                   ))
                 )}
 
-                {/* Add Variant Form Row */}
                 {showAddVariant && (
                   <TableRow>
                     <TableCell>

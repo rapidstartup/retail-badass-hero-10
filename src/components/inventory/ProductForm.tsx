@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { createProduct, updateProduct, fetchCategories } from '@/api/inventoryApi';
+import { Product } from '@/types';
 
 interface FormData {
   name: string;
@@ -12,22 +12,19 @@ interface FormData {
   sku: string;
   barcode: string;
   image_url: string;
-  category: string; // Added category field
+  category: string;
   category_id: string;
   has_variants: boolean;
 }
 
-interface Category {
-  id: string;
-  name: string;
-}
-
 interface ProductFormProps {
+  product?: Product;
   productId?: string;
-  onSave: () => void;
+  onClose: () => void;
+  onSave?: () => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, onSave }) => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -37,13 +34,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
     sku: '',
     barcode: '',
     image_url: '',
-    category: '', // Added empty value for category
+    category: '',
     category_id: '',
     has_variants: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string; }[]>([]);
 
   useEffect(() => {
     const fetchCategoriesData = async () => {
@@ -60,10 +57,23 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
   }, []);
 
   useEffect(() => {
-    if (productId) {
+    if (product) {
       setIsEditing(true);
-      // Fetch product details and populate the form
-      // This is a placeholder, replace with actual API call
+      setFormData({
+        name: product.name || '',
+        description: product.description || '',
+        price: product.price,
+        cost: product.cost || undefined,
+        stock: product.stock || undefined,
+        sku: product.sku || '',
+        barcode: product.barcode || '',
+        image_url: product.image_url || '',
+        category: product.category || '',
+        category_id: product.category_id || '',
+        has_variants: product.has_variants || false,
+      });
+    } else if (productId) {
+      setIsEditing(true);
       const fetchProductDetails = async () => {
         try {
           const response = await fetch(`/api/products/${productId}`);
@@ -80,7 +90,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
             sku: productData.sku,
             barcode: productData.barcode,
             image_url: productData.image_url,
-            category: productData.category || '',  // Ensure category has default
+            category: productData.category || '',
             category_id: productData.category_id,
             has_variants: productData.has_variants,
           });
@@ -92,12 +102,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
 
       fetchProductDetails();
     }
-  }, [productId]);
+  }, [product, productId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     
-    // Handle checkbox separately for type safety
     if (type === 'checkbox') {
       const target = e.target as HTMLInputElement;
       setFormData(prev => ({
@@ -127,11 +136,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
     setFormData(prev => ({
       ...prev,
       category_id: e.target.value,
-      category: categoryName, // Set the category name
+      category: categoryName,
     }));
   };
 
-  // Update the handleSubmit function to ensure required fields
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
@@ -158,17 +166,18 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
         barcode: formData.barcode,
         image_url: formData.image_url,
         category_id: formData.category_id,
-        category: formData.category, // Make sure to include the category field
+        category: formData.category,
         has_variants: Boolean(formData.has_variants)
       };
     
-      if (isEditing && productId) {
-        await updateProduct(productId, productData);
+      if (isEditing && (productId || (product && product.id))) {
+        await updateProduct(productId || (product?.id as string), productData);
       } else {
         await createProduct(productData);
       }
     
       if (onSave) onSave();
+      onClose();
     
     } catch (error) {
       console.error('Error saving product:', error);

@@ -33,6 +33,6 @@ export interface ProductVariant {
   color: string | null;
   size: string | null;
   variant_attributes: Record<string, any> | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
