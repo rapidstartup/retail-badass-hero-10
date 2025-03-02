@@ -12,9 +12,13 @@ import TaxSettings from "@/components/settings/TaxSettings";
 import TabSettings from "@/components/settings/TabSettings";
 import IntegrationSettings from "@/components/settings/IntegrationSettings";
 import DesignSettings from "@/components/settings/DesignSettings";
+import StaffSettings from "@/components/settings/StaffSettings";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 
 const Settings = () => {
   const { settings, updateSettings } = useSettings();
+  const { isAuthenticated, loading } = useAuth();
   
   // Local state for form values
   const [taxRate, setTaxRate] = useState<number>(settings.taxRate);
@@ -108,6 +112,15 @@ const Settings = () => {
     toast.success("Settings saved successfully!");
   };
 
+  // Redirect to login page if not authenticated
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <Layout>
       <div className="container mx-auto py-6 space-y-6">
@@ -117,12 +130,13 @@ const Settings = () => {
         </div>
         
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="tax">Tax Settings</TabsTrigger>
             <TabsTrigger value="tab">Tab System</TabsTrigger>
             <TabsTrigger value="integrations">Integrations</TabsTrigger>
             <TabsTrigger value="design">Design</TabsTrigger>
+            <TabsTrigger value="staff">Staff</TabsTrigger>
           </TabsList>
           
           {/* General Settings Tab */}
@@ -184,6 +198,11 @@ const Settings = () => {
               darkAccent={darkAccent}
               setDarkAccent={setDarkAccent}
             />
+          </TabsContent>
+          
+          {/* Staff Tab */}
+          <TabsContent value="staff">
+            <StaffSettings />
           </TabsContent>
         </Tabs>
       </div>
