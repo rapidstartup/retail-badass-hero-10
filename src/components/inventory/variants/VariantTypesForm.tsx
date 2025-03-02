@@ -7,7 +7,7 @@ import { VariantType } from "@/hooks/useProductVariants/types";
 
 interface VariantTypesFormProps {
   variantTypes: VariantType[];
-  setVariantTypes: (types: VariantType[]) => void;
+  setVariantTypes: React.Dispatch<React.SetStateAction<VariantType[]>>;
 }
 
 const VariantTypesForm = ({ variantTypes, setVariantTypes }: VariantTypesFormProps) => {
@@ -23,11 +23,15 @@ const VariantTypesForm = ({ variantTypes, setVariantTypes }: VariantTypesFormPro
     if (existingTypeIndex >= 0) {
       // Update existing type with new values
       const updatedTypes = [...variantTypes];
-      updatedTypes[existingTypeIndex] = {
-        ...updatedTypes[existingTypeIndex],
-        values: [...updatedTypes[existingTypeIndex].values, newTypeValue]
-      };
-      setVariantTypes(updatedTypes);
+      
+      // Add value if it doesn't already exist
+      if (!updatedTypes[existingTypeIndex].values.includes(newTypeValue)) {
+        updatedTypes[existingTypeIndex] = {
+          ...updatedTypes[existingTypeIndex],
+          values: [...updatedTypes[existingTypeIndex].values, newTypeValue]
+        };
+        setVariantTypes(updatedTypes);
+      }
     } else {
       // Add new type
       setVariantTypes([

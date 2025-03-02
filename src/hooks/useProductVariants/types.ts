@@ -1,4 +1,7 @@
 
+import { Dispatch, SetStateAction } from "react";
+import { ProductVariant } from "@/api/types/inventoryTypes";
+
 export interface VariantType {
   name: string;
   values: string[];
@@ -11,15 +14,32 @@ export interface VariantCombination {
   stock_count: number;
   color?: string;
   size?: string;
-  flavor?: string; // Make sure flavor is included
-  [key: string]: any;
+  flavor?: string; 
+  product_id: string;
+  attributes: Record<string, string>;
 }
 
 export interface ProductVariantState {
-  variants: any[];
+  variants: ProductVariant[];
   variantTypes: VariantType[];
   combinations: VariantCombination[];
   loading: boolean;
   saving: boolean;
   error: string | null;
+}
+
+export interface UseProductVariantsReturn {
+  variants: ProductVariant[];
+  variantTypes: VariantType[];
+  combinations: VariantCombination[];
+  loading: boolean;
+  saving: boolean;
+  error: string | null;
+  fetchVariants: () => Promise<void>;
+  setVariantTypes: Dispatch<SetStateAction<VariantType[]>>;
+  setCombinations: Dispatch<SetStateAction<VariantCombination[]>>;
+  updateCombination: (index: number, updates: Partial<VariantCombination>) => void;
+  deleteCombination: (index: number) => void;
+  saveVariants: () => Promise<boolean>;
+  generateCombinations: () => void;
 }

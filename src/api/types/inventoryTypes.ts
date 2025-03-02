@@ -42,3 +42,39 @@ export interface ProductVariant {
   created_at: string | null;
   updated_at: string | null;
 }
+
+// Variant type definition for UI components
+export interface VariantType {
+  name: string;
+  values: string[];
+}
+
+// Variant combination for UI
+export interface VariantCombination {
+  id?: string;
+  sku: string;
+  price: number;
+  stock_count: number;
+  color?: string;
+  size?: string;
+  flavor?: string;
+  product_id: string;
+  attributes: Record<string, string>;
+}
+
+// Hook return type
+export interface UseProductVariantsReturn {
+  variants: ProductVariant[];
+  variantTypes: VariantType[];
+  combinations: VariantCombination[];
+  loading: boolean;
+  saving: boolean;
+  error: string | null;
+  fetchVariants: () => Promise<void>;
+  setVariantTypes: React.Dispatch<React.SetStateAction<VariantType[]>>;
+  setCombinations: React.Dispatch<React.SetStateAction<VariantCombination[]>>;
+  updateCombination: (index: number, updates: Partial<VariantCombination>) => void;
+  deleteCombination: (index: number) => void;
+  saveVariants: () => Promise<boolean>;
+  generateCombinations: () => void;
+}

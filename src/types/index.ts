@@ -37,3 +37,21 @@ export interface ProductVariant {
   created_at: string | null;
   updated_at: string | null;
 }
+
+// Add variant type definitions for UI components
+export interface VariantType {
+  name: string;
+  values: string[];
+}
+
+export interface VariantCombination {
+  id?: string;
+  sku: string;
+  price: number;
+  stock_count: number;
+  color?: string;
+  size?: string;
+  flavor?: string;
+  product_id: string;
+  attributes: Record<string, string>;
+}

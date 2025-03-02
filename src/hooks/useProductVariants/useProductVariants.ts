@@ -4,13 +4,13 @@ import { Product, ProductVariant } from "@/types";
 import { useVariantFetching } from "./useVariantFetching";
 import { useCombinationGenerator } from "./useCombinationGenerator";
 import { useVariantOperations } from "./useVariantOperations";
-import { VariantCombination, UseProductVariantsReturn } from "./types";
+import { VariantCombination, VariantType, UseProductVariantsReturn } from "./types";
 
 export function useProductVariants(
   product: Product,
   onProductUpdated?: () => void
 ): UseProductVariantsReturn {
-  const [variantTypes, setVariantTypes] = useState<Map<string, string[]>>(new Map());
+  const [variantTypes, setVariantTypes] = useState<VariantType[]>([]);
   const [combinations, setCombinations] = useState<VariantCombination[]>([]);
   
   // Initialize the hooks
