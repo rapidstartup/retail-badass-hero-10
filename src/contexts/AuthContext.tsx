@@ -45,16 +45,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Listen for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event);
         setSession(session);
         setUser(session?.user || null);
         setLoading(false);
+        
+        // Handle password recovery event
+        if (event === 'PASSWORD_RECOVERY') {
+          // The user arrived from a password reset email
+          navigate('/login?firstTime=true');
+        }
       }
     );
 
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const signIn = async (email: string, password: string) => {
     try {
