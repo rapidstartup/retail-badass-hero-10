@@ -1,24 +1,24 @@
 
 import { Product } from "@/types";
-import { VariantCombination } from "./types";
+import { VariantType, VariantCombination } from "./types";
 
 export function useCombinationGenerator(
   product: Product,
-  variantTypes: Map<string, string[]>,
+  variantTypes: VariantType[],
   combinations: VariantCombination[],
   setCombinations: React.Dispatch<React.SetStateAction<VariantCombination[]>>
 ) {
   // Generate all possible combinations of variant types and values
   const generateCombinations = () => {
     // If no variant types, return empty array
-    if (variantTypes.size === 0) {
+    if (variantTypes.length === 0) {
       setCombinations([]);
       return;
     }
 
-    // Convert Map to array for easier processing
-    const typesArray = Array.from(variantTypes.entries()).filter(
-      ([_, values]) => values.length > 0
+    // Filter out any variant types with no values
+    const typesArray = variantTypes.filter(
+      (type) => type.values.length > 0
     );
     
     if (typesArray.length === 0) {
@@ -36,15 +36,15 @@ export function useCombinationGenerator(
         return [{ ...currentCombination }];
       }
 
-      const [type, values] = typesArray[index];
+      const type = typesArray[index];
       const result: Record<string, string>[] = [];
 
       // For each possible value of the current type
-      for (const value of values) {
+      for (const value of type.values) {
         // Add this value to the current combination
         const newCombination = {
           ...currentCombination,
-          [type]: value,
+          [type.name]: value,
         };
 
         // Recursively generate combinations for the remaining types

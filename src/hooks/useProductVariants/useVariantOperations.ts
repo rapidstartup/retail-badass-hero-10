@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Product, ProductVariant } from "@/types";
 import { VariantCombination } from "./types";
@@ -84,7 +85,10 @@ export function useVariantOperations(
             sku: combination.sku,
             price: combination.price,
             stock_count: combination.stock_count,
-            variant_attributes: combination.attributes
+            variant_attributes: combination.attributes,
+            color: combination.color || null,
+            size: combination.size || null,
+            flavor: combination.flavor || null
           });
           processedVariantIds.add(existingId);
         } else {
@@ -96,9 +100,9 @@ export function useVariantOperations(
             stock_count: combination.stock_count,
             variant_attributes: combination.attributes,
             // Extract color, size, and flavor from attributes if they exist
-            color: combination.attributes.Color || combination.attributes.color || null,
-            size: combination.attributes.Size || combination.attributes.size || null,
-            flavor: combination.attributes.Flavor || combination.attributes.flavor || null
+            color: combination.attributes.Color || combination.attributes.color || combination.color || null,
+            size: combination.attributes.Size || combination.attributes.size || combination.size || null,
+            flavor: combination.attributes.Flavor || combination.attributes.flavor || combination.flavor || null
           });
         }
       }

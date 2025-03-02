@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { 
   Dialog, 
@@ -119,7 +120,7 @@ const EnhancedProductVariantsManager = ({ product, onClose, onProductUpdated }: 
           </Button>
           <Button 
             type="button" 
-            variant="primary" 
+            variant="default" 
             onClick={saveVariants} 
             disabled={saving || loading}
           >
