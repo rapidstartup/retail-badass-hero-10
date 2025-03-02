@@ -1,12 +1,13 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, useLocation } from "react-router-dom";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
 import LoginForm from "@/components/auth/LoginForm";
 import PasswordSetupForm from "@/components/auth/PasswordSetupForm";
+import { useSignIn } from "@/hooks/useSignIn";
+import { usePasswordSetup } from "@/hooks/usePasswordSetup";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,7 +16,6 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
   const { signIn, isAuthenticated } = useAuth();
   const { settings } = useSettings();
@@ -28,94 +28,28 @@ const Login = () => {
     }
   }, [location]);
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const { isLoading: isSignInLoading, handleSignIn } = useSignIn(
+    signIn,
+    setIsFirstTimeLogin
+  );
+
+  const { isLoading: isPasswordSetupLoading, handleSetPassword } = usePasswordSetup(signIn);
+
+  const handlePasswordSetup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    try {
-      await signIn(email, password);
-    } catch (error: any) {
-      const errorMessage = error.message || "Failed to sign in";
-      
-      if (errorMessage.includes("Invalid login credentials")) {
-        const { data: staffData } = await supabase
-          .from('staff')
-          .select('email')
-          .eq('email', email)
-          .single();
-        
-        if (staffData) {
-          setIsFirstTimeLogin(true);
-          toast.info("First time login detected. Please set your password.");
-        } else {
-          toast.error("No staff account found with this email");
-        }
-      } else {
-        toast.error(errorMessage);
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    await handleSetPassword(
+      email,
+      firstName,
+      lastName,
+      newPassword,
+      confirmPassword,
+      () => setIsFirstTimeLogin(false)
+    );
   };
 
-  const handleSetPassword = async (e: React.FormEvent) => {
+  const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords don't match");
-      return;
-    }
-    
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-    
-    if (!firstName.trim() || !lastName.trim()) {
-      toast.error("Please enter your first and last name");
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password: newPassword,
-      });
-      
-      if (signUpError) {
-        throw signUpError;
-      }
-      
-      if (data?.user?.id) {
-        const { error: createStaffError } = await supabase
-          .from('staff')
-          .insert({
-            email,
-            first_name: firstName,
-            last_name: lastName,
-            auth_id: data.user.id,
-            role: 'staff'
-          });
-          
-        if (createStaffError) throw createStaffError;
-        
-        toast.success("Account created successfully! You can now login");
-        
-        await signIn(email, newPassword);
-      } else {
-        toast.error("Failed to create account");
-      }
-    } catch (error: any) {
-      if (error.message?.includes("User already registered")) {
-        toast.error("An account with this email already exists. Please use the login form.");
-      } else {
-        toast.error(error.message || "Failed to setup account");
-        console.error("Setup error:", error);
-      }
-    } finally {
-      setIsLoading(false);
-      setIsFirstTimeLogin(false);
-    }
+    await handleSignIn(email, password);
   };
 
   const handleFirstTimeSetupClick = () => {
@@ -161,9 +95,9 @@ const Login = () => {
             setNewPassword={setNewPassword}
             confirmPassword={confirmPassword}
             setConfirmPassword={setConfirmPassword}
-            handleSetPassword={handleSetPassword}
+            handleSetPassword={handlePasswordSetup}
             handleBackToLogin={handleBackToLogin}
-            isLoading={isLoading}
+            isLoading={isPasswordSetupLoading}
           />
         ) : (
           <LoginForm
@@ -171,8 +105,8 @@ const Login = () => {
             setEmail={setEmail}
             password={password}
             setPassword={setPassword}
-            handleSignIn={handleSignIn}
-            isLoading={isLoading}
+            handleSignIn={handleSignInSubmit}
+            isLoading={isSignInLoading}
             onFirstTimeLoginDetected={setIsFirstTimeLogin}
             onFirstTimeSetupClick={handleFirstTimeSetupClick}
           />
