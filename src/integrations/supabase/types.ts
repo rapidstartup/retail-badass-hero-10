@@ -60,6 +60,30 @@ export type Database = {
         }
         Relationships: []
       }
+      product_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       product_variants: {
         Row: {
           color: string | null
@@ -71,6 +95,7 @@ export type Database = {
           sku: string | null
           stock_count: number | null
           updated_at: string | null
+          variant_attributes: Json | null
         }
         Insert: {
           color?: string | null
@@ -82,6 +107,7 @@ export type Database = {
           sku?: string | null
           stock_count?: number | null
           updated_at?: string | null
+          variant_attributes?: Json | null
         }
         Update: {
           color?: string | null
@@ -93,6 +119,7 @@ export type Database = {
           sku?: string | null
           stock_count?: number | null
           updated_at?: string | null
+          variant_attributes?: Json | null
         }
         Relationships: [
           {
@@ -108,9 +135,11 @@ export type Database = {
         Row: {
           barcode: string | null
           category: string | null
+          category_id: string | null
           cost: number | null
           created_at: string | null
           description: string | null
+          has_variants: boolean | null
           id: string
           image_url: string | null
           name: string
@@ -122,9 +151,11 @@ export type Database = {
         Insert: {
           barcode?: string | null
           category?: string | null
+          category_id?: string | null
           cost?: number | null
           created_at?: string | null
           description?: string | null
+          has_variants?: boolean | null
           id?: string
           image_url?: string | null
           name: string
@@ -136,9 +167,11 @@ export type Database = {
         Update: {
           barcode?: string | null
           category?: string | null
+          category_id?: string | null
           cost?: number | null
           created_at?: string | null
           description?: string | null
+          has_variants?: boolean | null
           id?: string
           image_url?: string | null
           name?: string
@@ -147,7 +180,15 @@ export type Database = {
           stock?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       settings: {
         Row: {

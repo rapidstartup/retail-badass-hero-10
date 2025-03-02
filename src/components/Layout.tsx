@@ -10,7 +10,8 @@ import {
   Settings, 
   ShoppingCart,
   Menu,
-  X
+  X,
+  Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -30,6 +31,7 @@ const Layout = ({ children }: LayoutProps) => {
   const navItems = [
     { path: "/", label: "Dashboard", icon: <LayoutGrid className="w-5 h-5" /> },
     { path: "/pos", label: "POS", icon: <ShoppingCart className="w-5 h-5" /> },
+    { path: "/inventory", label: "Inventory", icon: <Package className="w-5 h-5" /> },
     { path: "/clients", label: "Clients", icon: <Users className="w-5 h-5" /> },
     { path: "/transactions", label: "Transactions", icon: <Receipt className="w-5 h-5" /> },
     { path: "/reports", label: "Reports", icon: <BarChart4 className="w-5 h-5" /> },

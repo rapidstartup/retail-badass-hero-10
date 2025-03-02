@@ -1,98 +1,83 @@
+import React, { useState, useEffect } from 'react';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate
+} from "react-router-dom";
+import { useAuth } from '@/contexts/AuthContext';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { Toaster } from "sonner";
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import POS from "./pages/POS";
-import Settings from "./pages/Settings";
-import Login from "./pages/Login";
-import { SettingsProvider } from "./contexts/SettingsContext";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import Dashboard from "@/pages/Dashboard";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import POS from "@/pages/POS";
+import Clients from "@/pages/Clients";
+import Transactions from "@/pages/Transactions";
+import Reports from "@/pages/Reports";
+import SettingsPage from "@/pages/SettingsPage";
+import Inventory from "@/pages/Inventory";
 
-// Create placeholder pages for future implementation
-const PlaceholderPage = ({ title }: { title: string }) => (
-  <div className="flex items-center justify-center h-screen">
-    <h1 className="text-2xl font-bold">{title} - Coming Soon</h1>
-  </div>
-);
+function App() {
+  const { isLoggedIn, loading } = useAuth();
+  const [queryClient] = useState(() => new QueryClient());
 
-const ClientsPage = () => <PlaceholderPage title="Clients" />;
-const TransactionsPage = () => <PlaceholderPage title="Transactions" />;
-const ReportsPage = () => <PlaceholderPage title="Reports" />;
-
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <SettingsProvider>
-          <AuthProvider>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              
-              <Route 
-                path="/" 
-                element={
-                  <ProtectedRoute>
-                    <Index />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/pos" 
-                element={
-                  <ProtectedRoute>
-                    <POS />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/clients" 
-                element={
-                  <ProtectedRoute>
-                    <ClientsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/transactions" 
-                element={
-                  <ProtectedRoute>
-                    <TransactionsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/reports" 
-                element={
-                  <ProtectedRoute>
-                    <ReportsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/settings" 
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                } 
-              />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </SettingsProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+  // Protected route component
+  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    if (loading) {
+      return <div>Loading...</div>; // Or a loading spinner
+    }
+    if (!isLoggedIn) {
+      return <Navigate to="/login" replace />;
+    }
+    return <>{children}</>;
+  };
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={
+        createBrowserRouter([
+          {
+            path: "/login",
+            element: isLoggedIn ? <Navigate to="/" replace /> : <Login />
+          },
+          {
+            path: "/register",
+            element: isLoggedIn ? <Navigate to="/" replace /> : <Register />
+          },
+          {
+            path: "/",
+            element: <ProtectedRoute><Dashboard /></ProtectedRoute>
+          },
+          {
+            path: "/pos",
+            element: <ProtectedRoute><POS /></ProtectedRoute>
+          },
+          {
+            path: "/clients",
+            element: <ProtectedRoute><Clients /></ProtectedRoute>
+          },
+          {
+            path: "/transactions",
+            element: <ProtectedRoute><Transactions /></ProtectedRoute>
+          },
+          {
+            path: "/reports",
+            element: <ProtectedRoute><Reports /></ProtectedRoute>
+          },
+          {
+            path: "/settings",
+            element: <ProtectedRoute><SettingsPage /></ProtectedRoute>
+          },
+          {
+            path: "/inventory",
+            element: <ProtectedRoute><Inventory /></ProtectedRoute>
+          },
+        ])
+      } />
+      <Toaster position="top-right" />
+    </QueryClientProvider>
+  );
+}
 
 export default App;
