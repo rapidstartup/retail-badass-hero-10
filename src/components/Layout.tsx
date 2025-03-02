@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [open, setOpen] = React.useState(false);
+  const { settings } = useSettings();
 
   const navItems = [
     { path: "/", label: "Dashboard", icon: <LayoutGrid className="w-5 h-5" /> },
@@ -37,7 +39,9 @@ const Layout = ({ children }: LayoutProps) => {
   const NavContent = () => (
     <>
       <div className="px-3 py-4">
-        <h1 className="font-extrabold text-2xl tracking-tight text-primary">NextPOS</h1>
+        <h1 className="font-extrabold text-2xl tracking-tight text-primary">
+          {settings.storeName || "NextPOS"}
+        </h1>
       </div>
       <div className="space-y-1 px-3">
         {navItems.map((item) => (

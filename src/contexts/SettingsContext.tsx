@@ -5,6 +5,10 @@ interface POSSettings {
   taxRate: number;
   tabEnabled: boolean;
   tabThreshold: number;
+  // Store Information
+  storeName?: string;
+  storeAddress?: string;
+  storePhone?: string;
   // Stripe Integration
   stripeLiveSecretKey?: string;
   stripeLivePublicKey?: string;
@@ -34,6 +38,7 @@ const defaultSettings: POSSettings = {
   taxRate: 8.0,
   tabEnabled: true,
   tabThreshold: 100,
+  storeName: "NextPOS",
   stripeMode: "test",
   theme: "light",
   lightModeColors: {
