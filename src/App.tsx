@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter,
   Routes,
@@ -9,15 +10,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 
-import { Login } from "@/pages/Login";
-import { PasswordSetup } from "@/pages/PasswordSetup";
-import { Index } from "@/pages/Index";
-import { POS } from "@/pages/POS";
-import { Settings } from "@/pages/Settings";
-import { NotFound } from "@/pages/NotFound";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Layout } from "@/components/Layout";
+import Login from "@/pages/Login";
 import Inventory from "@/pages/Inventory";
+import Index from "@/pages/Index";
+import POS from "@/pages/POS";
+import Settings from "@/pages/Settings";
+import NotFound from "@/pages/NotFound";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import Layout from "@/components/Layout";
 
 const queryClient = new QueryClient();
 
@@ -29,7 +29,6 @@ function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route path="/password-setup" element={<PasswordSetup />} />
               <Route
                 path="/"
                 element={
