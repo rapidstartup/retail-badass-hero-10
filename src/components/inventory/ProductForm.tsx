@@ -205,7 +205,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
           {isEditing ? 'Update product information in your inventory' : 'Add a new product to your inventory'}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-6 pt-6">
+      <CardContent className="p-4 pt-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className={`grid grid-cols-1 ${threeColumns ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6`}>
