@@ -1,9 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import {
   Product,
   ProductCategory,
-  ProductVariant,
   fetchProducts,
   fetchCategories
 } from "@/api/inventoryApi";

@@ -1,12 +1,16 @@
 
-export interface Category {
+// Shared types for inventory-related APIs
+
+// Category types
+export interface ProductCategory {
   id: string;
   name: string;
   description: string | null;
-  created_at: string | null; 
-  updated_at: string | null; 
+  created_at: string | null;
+  updated_at: string | null;
 }
 
+// Product types
 export interface Product {
   id: string;
   name: string;
@@ -24,11 +28,12 @@ export interface Product {
   updated_at: string | null;
 }
 
+// Variant types
 export interface ProductVariant {
   id: string;
   product_id: string;
   sku: string | null;
-  price: number;
+  price: number | null;
   stock_count: number | null;
   color: string | null;
   size: string | null;

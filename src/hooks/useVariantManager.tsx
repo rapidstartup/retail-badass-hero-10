@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { Product, ProductVariant, fetchVariantsByProductId, createVariant, updateVariant, deleteVariant } from "@/api/inventoryApi";
+import { Product } from "@/types";
+import { ProductVariant, fetchVariantsByProductId, createVariant, updateVariant, deleteVariant } from "@/api/inventoryApi";
 import { toast } from "sonner";
 
 export function useVariantManager(product: Product) {
