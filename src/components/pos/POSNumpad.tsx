@@ -6,14 +6,21 @@ import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/utils/formatters";
 
 interface POSNumpadProps {
-  addToCart: (product: any) => void;
+  addToCart?: (product: any) => void;
+  onKeyPress?: (value: string) => void;
 }
 
-const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart }) => {
+const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart, onKeyPress }) => {
   const [amount, setAmount] = useState("");
   const [customItemName, setCustomItemName] = useState("Custom Item");
   
   const appendDigit = (digit: string) => {
+    // If using external handler, delegate to it
+    if (onKeyPress) {
+      onKeyPress(digit);
+      return;
+    }
+    
     // If the amount already has a decimal point, ensure we don't add more than 2 decimal places
     if (amount.includes(".")) {
       const parts = amount.split(".");
@@ -32,15 +39,23 @@ const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart }) => {
   };
   
   const handleClear = () => {
+    if (onKeyPress) {
+      onKeyPress("clear");
+      return;
+    }
     setAmount("");
   };
   
   const handleBackspace = () => {
+    if (onKeyPress) {
+      onKeyPress("backspace");
+      return;
+    }
     setAmount(prev => prev.slice(0, -1));
   };
   
   const handleAddToCart = () => {
-    if (!amount || parseFloat(amount) <= 0) return;
+    if (!addToCart || !amount || parseFloat(amount) <= 0) return;
     
     const customProduct = {
       id: `custom-${Date.now()}`,
@@ -55,6 +70,68 @@ const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart }) => {
   };
   
   const displayAmount = amount ? formatCurrency(parseFloat(amount) || 0) : "$0.00";
+  
+  // If we're using this as an input for another component, don't show the custom item UI
+  if (onKeyPress) {
+    return (
+      <Card>
+        <CardContent className="p-4">
+          <div className="grid grid-cols-3 gap-2">
+            {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
+              <Button
+                key={num}
+                variant="outline"
+                className="h-16 text-xl"
+                onClick={() => appendDigit(num.toString())}
+              >
+                {num}
+              </Button>
+            ))}
+            <Button
+              variant="outline"
+              className="h-16 text-xl"
+              onClick={() => appendDigit("0")}
+            >
+              0
+            </Button>
+            <Button
+              variant="outline"
+              className="h-16 text-xl"
+              onClick={() => appendDigit(".")}
+            >
+              .
+            </Button>
+            <Button
+              variant="outline"
+              className="h-16 text-xl text-destructive"
+              onClick={handleBackspace}
+            >
+              ⌫
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <Button
+              variant="outline"
+              className="h-16"
+              onClick={handleClear}
+            >
+              Clear
+            </Button>
+            <Button
+              variant="outline"
+              className="h-16"
+              onClick={() => {
+                appendDigit("00");
+              }}
+            >
+              00
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   
   return (
     <div className="flex flex-col gap-4">

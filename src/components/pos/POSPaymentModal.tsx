@@ -187,7 +187,36 @@ export function POSPaymentModal({
                   </div>
                 </div>
                 
-                <POSNumpad onKeyPress={handleNumpadInput} />
+                <div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0, 'backspace'].map((key) => (
+                      <Button
+                        key={key}
+                        variant="outline"
+                        className="h-12 text-lg"
+                        onClick={() => handleNumpadInput(key.toString())}
+                      >
+                        {key === 'backspace' ? '⌫' : key}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <Button
+                      variant="outline"
+                      className="h-12"
+                      onClick={() => handleNumpadInput('clear')}
+                    >
+                      Clear
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-12"
+                      onClick={() => setAmountTendered(total.toFixed(2))}
+                    >
+                      Exact
+                    </Button>
+                  </div>
+                </div>
               </TabsContent>
               
               <TabsContent value="card" className="mt-4 space-y-4">
