@@ -3,8 +3,8 @@ export interface Category {
   id: string;
   name: string;
   description: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+  created_at: string | null; // Changed from optional to required to match api type
+  updated_at: string | null; // Changed from optional to required to match api type
 }
 
 export interface Product {
@@ -20,8 +20,8 @@ export interface Product {
   category: string | null;
   category_id: string | null;
   has_variants: boolean;
-  created_at?: string | null;
-  updated_at?: string | null;
+  created_at: string | null; // Changed from optional to required to match api type
+  updated_at: string | null; // Changed from optional to required to match api type
 }
 
 export interface ProductVariant {

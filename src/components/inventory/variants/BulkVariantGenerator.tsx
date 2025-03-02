@@ -3,7 +3,8 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Grid3X3, RefreshCw } from "lucide-react";
+import { X, Plus, RefreshCw } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface BulkVariantGeneratorProps {
   skuPrefix: string;
@@ -13,9 +14,7 @@ interface BulkVariantGeneratorProps {
   bulkBaseStock: number;
   setBulkBaseStock: (stock: number) => void;
   colorOptions: string[];
-  setColorOptions: (colors: string[]) => void;
   sizeOptions: string[];
-  setSizeOptions: (sizes: string[]) => void;
   newColorOption: string;
   setNewColorOption: (color: string) => void;
   newSizeOption: string;
@@ -36,9 +35,9 @@ const BulkVariantGenerator = ({
   bulkBaseStock,
   setBulkBaseStock,
   colorOptions,
+  sizeOptions,
   newColorOption,
   setNewColorOption,
-  sizeOptions,
   newSizeOption,
   setNewSizeOption,
   addColorOption,
@@ -48,121 +47,157 @@ const BulkVariantGenerator = ({
   generateBulkVariants,
   creatingVariant
 }: BulkVariantGeneratorProps) => {
+  const colorInputRef = React.useRef<HTMLInputElement>(null);
+  const sizeInputRef = React.useRef<HTMLInputElement>(null);
+  
+  const handleColorKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addColorOption();
+    }
+  };
+  
+  const handleSizeKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addSizeOption();
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">SKU Prefix</label>
-            <Input
-              placeholder="SKU Prefix"
-              value={skuPrefix}
-              onChange={(e) => setSkuPrefix(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">Used to generate SKUs like {skuPrefix}-RED-L</p>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Base Price</label>
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Base Price"
-              value={bulkBasePrice}
-              onChange={(e) => setBulkBasePrice(Number(e.target.value))}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Base Stock</label>
-            <Input
-              type="number"
-              min="0"
-              step="1"
-              placeholder="Base Stock"
-              value={bulkBaseStock}
-              onChange={(e) => setBulkBaseStock(Number(e.target.value))}
-            />
-          </div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">SKU Prefix</label>
+          <Input
+            placeholder="SKU Prefix"
+            value={skuPrefix}
+            onChange={(e) => setSkuPrefix(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">Used to generate SKUs for all variants</p>
         </div>
         
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Colors</label>
-            <div className="flex gap-2">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Base Price</label>
+          <Input
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="Base Price"
+            value={bulkBasePrice || ""}
+            onChange={(e) => setBulkBasePrice(Number(e.target.value))}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Base Stock</label>
+          <Input
+            type="number"
+            min="0"
+            step="1"
+            placeholder="Base Stock"
+            value={bulkBaseStock || ""}
+            onChange={(e) => setBulkBaseStock(Number(e.target.value))}
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Colors</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2 mb-3">
               <Input
-                placeholder="Add color (e.g. Red)"
+                ref={colorInputRef}
+                placeholder="Add a color"
                 value={newColorOption}
                 onChange={(e) => setNewColorOption(e.target.value)}
+                onKeyDown={handleColorKeyDown}
               />
-              <Button onClick={addColorOption} type="button" size="sm">Add</Button>
+              <Button 
+                size="sm" 
+                onClick={() => {
+                  addColorOption();
+                  colorInputRef.current?.focus();
+                }}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {colorOptions.map(color => (
+            
+            <div className="flex flex-wrap gap-2">
+              {colorOptions.map((color) => (
                 <Badge key={color} variant="secondary" className="flex items-center gap-1">
                   {color}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-4 w-4 p-0 ml-1"
+                  <button 
                     onClick={() => removeColorOption(color)}
+                    className="ml-1 text-muted-foreground hover:text-foreground"
                   >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                    <X className="h-3 w-3" />
+                  </button>
                 </Badge>
               ))}
               {colorOptions.length === 0 && (
                 <p className="text-xs text-muted-foreground">No colors added yet</p>
               )}
             </div>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Sizes</label>
-            <div className="flex gap-2">
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Sizes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2 mb-3">
               <Input
-                placeholder="Add size (e.g. L)"
+                ref={sizeInputRef}
+                placeholder="Add a size"
                 value={newSizeOption}
                 onChange={(e) => setNewSizeOption(e.target.value)}
+                onKeyDown={handleSizeKeyDown}
               />
-              <Button onClick={addSizeOption} type="button" size="sm">Add</Button>
+              <Button 
+                size="sm" 
+                onClick={() => {
+                  addSizeOption();
+                  sizeInputRef.current?.focus();
+                }}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {sizeOptions.map(size => (
+            
+            <div className="flex flex-wrap gap-2">
+              {sizeOptions.map((size) => (
                 <Badge key={size} variant="secondary" className="flex items-center gap-1">
                   {size}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-4 w-4 p-0 ml-1"
+                  <button 
                     onClick={() => removeSizeOption(size)}
+                    className="ml-1 text-muted-foreground hover:text-foreground"
                   >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                    <X className="h-3 w-3" />
+                  </button>
                 </Badge>
               ))}
               {sizeOptions.length === 0 && (
                 <p className="text-xs text-muted-foreground">No sizes added yet</p>
               )}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
       
-      <div className="pt-4">
-        <Button 
-          onClick={generateBulkVariants} 
-          className="w-full"
-          disabled={creatingVariant || (colorOptions.length === 0 && sizeOptions.length === 0)}
-        >
-          {creatingVariant ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Grid3X3 className="h-4 w-4 mr-2" />}
-          Generate {(colorOptions.length || 1) * (sizeOptions.length || 1)} Variants
-        </Button>
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          This will create a variant for each color/size combination
-        </p>
-      </div>
+      <Button 
+        onClick={generateBulkVariants} 
+        className="w-full mt-4"
+        disabled={creatingVariant || (colorOptions.length === 0 && sizeOptions.length === 0)}
+      >
+        {creatingVariant ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+        Generate Variants
+      </Button>
     </div>
   );
 };
