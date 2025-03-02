@@ -50,6 +50,7 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your staff email"
             required
+            disabled={isLoading}
           />
           <p className="text-sm text-muted-foreground">
             {isNewStaffSetup 
@@ -66,6 +67,7 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
             onChange={(e) => setFirstName(e.target.value)}
             placeholder="Your first name"
             required
+            disabled={isLoading}
           />
         </div>
         <div className="space-y-2">
@@ -77,6 +79,7 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
             onChange={(e) => setLastName(e.target.value)}
             placeholder="Your last name"
             required
+            disabled={isLoading}
           />
         </div>
         <div className="space-y-2">
@@ -87,6 +90,7 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
+            disabled={isLoading}
           />
         </div>
         <div className="space-y-2">
@@ -97,6 +101,7 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
+            disabled={isLoading}
           />
         </div>
       </CardContent>
@@ -105,6 +110,7 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
           type="button" 
           variant="outline"
           onClick={handleBackToLogin}
+          disabled={isLoading}
         >
           Back to Login
         </Button>
@@ -112,7 +118,9 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
           type="submit" 
           disabled={isLoading}
         >
-          {isLoading ? "Creating account..." : isNewStaffSetup ? "Create New Staff Account" : "Create Account & Login"}
+          {isLoading ? 
+            (isNewStaffSetup ? "Creating new account..." : "Creating account...") : 
+            (isNewStaffSetup ? "Create New Staff Account" : "Create Account & Login")}
         </Button>
       </CardFooter>
     </form>

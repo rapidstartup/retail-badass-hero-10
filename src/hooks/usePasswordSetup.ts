@@ -46,8 +46,9 @@ export function usePasswordSetup(
     setIsLoading(true);
     
     try {
+      // First, check if this is a new staff setup or updating an existing staff
       if (!isNewStaffSetup) {
-        // First, check if a staff record exists with this email
+        // For existing staff, check if the staff record exists
         const { data: staffData, error: staffCheckError } = await supabase
           .from('staff')
           .select('*')
@@ -89,8 +90,11 @@ export function usePasswordSetup(
       }
       
       if (data?.user?.id) {
-        // If this is a new staff creation, create the staff record
+        // Important: If this is a new staff creation, create the staff record
         if (isNewStaffSetup) {
+          // Wait a moment to ensure the auth user is fully created
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           const { error: createStaffError } = await supabase
             .from('staff')
             .insert({ 
@@ -101,11 +105,17 @@ export function usePasswordSetup(
               role: 'staff' // Default role
             });
             
-          if (createStaffError) throw createStaffError;
+          if (createStaffError) {
+            console.error("Staff creation error:", createStaffError);
+            throw createStaffError;
+          }
           
           toast.success("New staff account created successfully! You can now login");
         } else {
-          // Update the existing staff record with the auth_id
+          // For existing staff, update the auth_id
+          // Wait a moment to ensure the auth user is fully created
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           const { error: updateStaffError } = await supabase
             .from('staff')
             .update({ 
@@ -115,7 +125,10 @@ export function usePasswordSetup(
             })
             .eq('email', email);
             
-          if (updateStaffError) throw updateStaffError;
+          if (updateStaffError) {
+            console.error("Staff update error:", updateStaffError);
+            throw updateStaffError;
+          }
           
           toast.success("Account created successfully! You can now login");
         }
