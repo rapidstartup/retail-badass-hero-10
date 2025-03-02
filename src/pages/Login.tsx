@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useSettings } from "@/contexts/SettingsContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,6 +18,7 @@ const Login = () => {
   const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
   const [resetToken, setResetToken] = useState("");
   const { signIn, isAuthenticated } = useAuth();
+  const { settings } = useSettings();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,9 +28,7 @@ const Login = () => {
     } catch (error: any) {
       const errorMessage = error.message || "Failed to sign in";
       
-      // If the error is related to credentials, check if user exists but needs to set password
       if (errorMessage.includes("Invalid login credentials")) {
-        // Check if staff exists in the database with that email
         const { data: staffData } = await supabase
           .from('staff')
           .select('email')
@@ -37,7 +36,6 @@ const Login = () => {
           .single();
         
         if (staffData) {
-          // Send password reset email for first-time setup
           const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin + '/login?firstTime=true',
           });
@@ -73,7 +71,6 @@ const Login = () => {
     
     setIsLoading(true);
     try {
-      // Update the user's password
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
@@ -83,7 +80,6 @@ const Login = () => {
       toast.success("Password set successfully! You can now login");
       setIsFirstTimeLogin(false);
       
-      // After setting password, automatically try to sign in
       await signIn(email, newPassword);
     } catch (error: any) {
       toast.error(error.message || "Failed to set password");
@@ -92,7 +88,6 @@ const Login = () => {
     }
   };
 
-  // Check for password reset token in URL on component mount
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const firstTime = params.get('firstTime');
@@ -102,7 +97,6 @@ const Login = () => {
       setIsFirstTimeLogin(true);
       setResetToken(token);
       
-      // Try to extract email from hash fragment
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const extractedEmail = hashParams.get('email');
       if (extractedEmail) {
@@ -111,7 +105,6 @@ const Login = () => {
     }
   }, []);
 
-  // Redirect if already authenticated
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
@@ -121,7 +114,7 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            {isFirstTimeLogin ? "Set Your Password" : "NextPOS Staff Login"}
+            {isFirstTimeLogin ? `Set Your Password` : `${settings.storeName || "NextPOS"} Staff Login`}
           </CardTitle>
           <CardDescription className="text-center">
             {isFirstTimeLogin 
