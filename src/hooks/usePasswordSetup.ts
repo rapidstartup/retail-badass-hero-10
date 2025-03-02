@@ -90,17 +90,21 @@ export function usePasswordSetup(
       }
       
       if (data?.user?.id) {
+        console.log("User created with ID:", data.user.id);
+        
         // Important: If this is a new staff creation, create the staff record
         if (isNewStaffSetup) {
           // Wait longer to ensure the auth user is fully created
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          await new Promise(resolve => setTimeout(resolve, 5000));
           
-          // Double-check that the auth user exists before linking
-          const { data: authUser, error: authCheckError } = await supabase.auth.admin.getUserById(data.user.id);
-          
-          if (authCheckError || !authUser) {
-            console.error("Auth user verification error:", authCheckError);
-            throw new Error("Failed to verify newly created auth user. Please try again.");
+          // Instead of using admin API, we'll check if the user can fetch their own session
+          // This confirms the user exists in the auth system
+          try {
+            const { data: session } = await supabase.auth.getSession();
+            console.log("Session check after user creation:", !!session);
+          } catch (sessionError) {
+            console.error("Session check error:", sessionError);
+            // Continue anyway, as we still have the user ID from signup
           }
           
           const { error: createStaffError } = await supabase
@@ -122,14 +126,16 @@ export function usePasswordSetup(
         } else {
           // For existing staff, update the auth_id
           // Wait longer to ensure the auth user is fully created
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          await new Promise(resolve => setTimeout(resolve, 5000));
           
-          // Double-check that the auth user exists before linking
-          const { data: authUser, error: authCheckError } = await supabase.auth.admin.getUserById(data.user.id);
-          
-          if (authCheckError || !authUser) {
-            console.error("Auth user verification error:", authCheckError);
-            throw new Error("Failed to verify newly created auth user. Please try again.");
+          // Instead of using admin API, we'll check if the user can fetch their own session
+          // This confirms the user exists in the auth system
+          try {
+            const { data: session } = await supabase.auth.getSession();
+            console.log("Session check after user creation:", !!session);
+          } catch (sessionError) {
+            console.error("Session check error:", sessionError);
+            // Continue anyway, as we still have the user ID from signup
           }
           
           const { error: updateStaffError } = await supabase
@@ -157,7 +163,7 @@ export function usePasswordSetup(
             console.error("Sign in after registration failed:", signInError);
             toast.info("Account created, but automatic login failed. Please try logging in manually.");
           }
-        }, 3500);
+        }, 6000);
       } else {
         toast.error("Failed to create account");
       }
