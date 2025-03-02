@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { createProduct, updateProduct, getCategories } from '@/api/inventory';
+import { createProduct, updateProduct, fetchCategories } from '@/api/inventoryApi';
 
 interface FormData {
   name: string;
@@ -11,6 +12,7 @@ interface FormData {
   sku: string;
   barcode: string;
   image_url: string;
+  category: string; // Added category field
   category_id: string;
   has_variants: boolean;
 }
@@ -35,6 +37,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
     sku: '',
     barcode: '',
     image_url: '',
+    category: '', // Added empty value for category
     category_id: '',
     has_variants: false,
   });
@@ -45,7 +48,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
   useEffect(() => {
     const fetchCategoriesData = async () => {
       try {
-        const categoriesData = await getCategories();
+        const categoriesData = await fetchCategories();
         setCategories(categoriesData);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -77,6 +80,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
             sku: productData.sku,
             barcode: productData.barcode,
             image_url: productData.image_url,
+            category: productData.category || '',  // Ensure category has default
             category_id: productData.category_id,
             has_variants: productData.has_variants,
           });
@@ -90,12 +94,22 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
     }
   }, [productId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    
+    // Handle checkbox separately for type safety
+    if (type === 'checkbox') {
+      const target = e.target as HTMLInputElement;
+      setFormData(prev => ({
+        ...prev,
+        [name]: target.checked,
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,9 +121,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const categoryName = selectedOption.textContent || '';
+    
     setFormData(prev => ({
       ...prev,
       category_id: e.target.value,
+      category: categoryName, // Set the category name
     }));
   };
 
@@ -140,8 +158,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSave }) => {
         barcode: formData.barcode,
         image_url: formData.image_url,
         category_id: formData.category_id,
-        has_variants: Boolean(formData.has_variants),
-        category: '' // Adding required field with empty string as placeholder
+        category: formData.category, // Make sure to include the category field
+        has_variants: Boolean(formData.has_variants)
       };
     
       if (isEditing && productId) {

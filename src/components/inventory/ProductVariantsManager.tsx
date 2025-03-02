@@ -26,7 +26,7 @@ import { formatCurrency } from "@/utils/formatters";
 import { Product, ProductVariant, fetchVariantsByProductId, createVariant, updateVariant, deleteVariant } from "@/api/inventoryApi";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 interface ProductVariantsManagerProps {
   product: Product;
@@ -37,13 +37,15 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddVariant, setShowAddVariant] = useState(false);
-  const [newVariant, setNewVariant] = useState<Partial<ProductVariant>>({
+  const [newVariant, setNewVariant] = useState<ProductVariant>({
+    id: '',
     product_id: product.id,
     sku: "",
     color: "",
     size: "",
     price: product.price,
-    stock_count: 0
+    stock_count: 0,
+    variant_attributes: {}
   });
   const [creatingVariant, setCreatingVariant] = useState(false);
 
@@ -69,7 +71,7 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
       return;
     }
     
-    if (!newVariant.price || isNaN(Number(newVariant.price))) {
+    if (newVariant.price === undefined || isNaN(Number(newVariant.price))) {
       toast.error("Valid price is required for variant");
       return;
     }
@@ -79,8 +81,8 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
       
       const variantData = {
         product_id: product.id,
-        sku: newVariant.sku,
         price: Number(newVariant.price),
+        sku: newVariant.sku,
         stock_count: Number(newVariant.stock_count || 0),
         color: newVariant.color || '',
         size: newVariant.size || '',
@@ -89,12 +91,14 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
       
       await createVariant(variantData);
       setNewVariant({
+        id: '',
         product_id: product.id,
         sku: "",
         color: "",
         size: "",
         price: product.price,
-        stock_count: 0
+        stock_count: 0,
+        variant_attributes: {}
       });
       fetchVariants();
     } catch (error) {

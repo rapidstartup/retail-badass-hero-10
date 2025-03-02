@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getCategories as getCategoriesAPI,
   createCategory as createCategoryAPI,
+  Category
 } from '@/api/category';
-import { Category } from '@/types';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,22 +29,22 @@ const CategoryManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: categories, isLoading: isCategoriesLoading, error, refetch: fetchCategories } = useQuery<Category[]>({
+  const { data: categories, isLoading: isCategoriesLoading, error } = useQuery({
     queryKey: ['categories'],
     queryFn: getCategoriesAPI,
   });
 
-  const { mutate: createCategory } = useMutation(createCategoryAPI, {
+  const { mutate: createCategory } = useMutation({
+    mutationFn: createCategoryAPI,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast.success('Category created successfully!');
+      setIsLoading(false);
     },
     onError: (error: any) => {
       toast.error(`Failed to create category: ${error?.message || 'Unknown error'}`);
-    },
-    onSettled: () => {
       setIsLoading(false);
-    },
+    }
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -54,36 +55,34 @@ const CategoryManagement: React.FC = () => {
     }));
   };
 
-  // Modify the handleCreateCategory function to ensure name is provided
-const handleCreateCategory = async () => {
-  if (!newCategory.name) {
-    toast.error("Category name is required");
-    return;
-  }
-  
-  try {
-    setIsLoading(true);
-    await createCategory({
-      name: newCategory.name,
-      description: newCategory.description
-    });
+  const handleCreateCategory = async () => {
+    if (!newCategory.name) {
+      toast.error("Category name is required");
+      return;
+    }
     
-    // Reset form and refresh categories
-    setNewCategory({ name: '', description: '' });
-    fetchCategories();
-  } catch (error) {
-    console.error("Error creating category:", error);
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      setIsLoading(true);
+      // Ensure we're passing an object with a required name property
+      createCategory({
+        name: newCategory.name,
+        description: newCategory.description
+      });
+      
+      // Reset form (the actual refresh will happen via the onSuccess callback)
+      setNewCategory({ name: '', description: '' });
+    } catch (error) {
+      console.error("Error creating category:", error);
+      setIsLoading(false);
+    }
+  };
 
   if (isCategoriesLoading) {
     return <div>Loading categories...</div>;
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div>Error: {(error as Error).message}</div>;
   }
 
   return (
