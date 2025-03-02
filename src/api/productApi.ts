@@ -64,11 +64,17 @@ export const createProduct = async (product: Omit<Product, 'id' | 'created_at' |
       throw new Error("Product name and price are required");
     }
 
-    console.log("Creating product with data:", product);
+    // Remove empty category_id to prevent UUID format error
+    const productData = { ...product };
+    if (productData.category_id === "") {
+      delete productData.category_id;
+    }
+
+    console.log("Creating product with data:", productData);
 
     const { data, error } = await supabase
       .from("products")
-      .insert(product)
+      .insert(productData)
       .select()
       .single();
       
