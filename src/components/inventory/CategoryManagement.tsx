@@ -9,6 +9,7 @@ import {
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -18,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CategoryForm {
   name: string;
@@ -86,52 +88,73 @@ const CategoryManagement: React.FC = () => {
   }
 
   return (
-    <div>
-      <h2>Category Management</h2>
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold">Category Management</h2>
 
       {/* Category Creation Form */}
-      <div>
-        <h3>Create New Category</h3>
-        <Input
-          type="text"
-          name="name"
-          placeholder="Category Name"
-          value={newCategory.name}
-          onChange={handleInputChange}
-        />
-        <Input
-          type="text"
-          name="description"
-          placeholder="Description"
-          value={newCategory.description}
-          onChange={handleInputChange}
-        />
-        <Button disabled={isLoading} onClick={handleCreateCategory}>
-          {isLoading ? 'Creating...' : 'Create Category'}
-        </Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Create New Category</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium mb-1">Category Name</label>
+            <Input
+              id="name"
+              type="text"
+              name="name"
+              placeholder="Category Name"
+              value={newCategory.name}
+              onChange={handleInputChange}
+              className="w-full"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
+            <Textarea
+              id="description"
+              name="description"
+              placeholder="Description"
+              value={newCategory.description}
+              onChange={handleInputChange}
+              className="w-full min-h-[100px]"
+            />
+          </div>
+          
+          <div className="pt-2">
+            <Button disabled={isLoading} onClick={handleCreateCategory} className="w-full">
+              {isLoading ? 'Creating...' : 'Create Category'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Display Categories in a Table */}
-      <div>
-        <h3>Existing Categories</h3>
-        <Table>
-          <TableCaption>A list of your categories.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px]">Name</TableHead>
-              <TableHead>Description</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories?.map((category) => (
-              <TableRow key={category.id}>
-                <TableCell className="font-medium">{category.name}</TableCell>
-                <TableCell>{category.description}</TableCell>
+      <Card>
+        <CardHeader>
+          <CardTitle>Existing Categories</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableCaption>A list of your categories.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Name</TableHead>
+                <TableHead>Description</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {categories?.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell className="font-medium">{category.name}</TableCell>
+                  <TableCell>{category.description}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 };
