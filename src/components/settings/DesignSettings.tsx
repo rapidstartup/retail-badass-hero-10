@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -7,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
 import { ColorPicker } from "@/components/ui/color-picker";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface DesignSettingsProps {
   theme: "light" | "dark";
@@ -23,6 +23,10 @@ interface DesignSettingsProps {
   setDarkSidebar: (value: string) => void;
   darkAccent: string;
   setDarkAccent: (value: string) => void;
+  lightContainer: string;
+  setLightContainer: (value: string) => void;
+  darkContainer: string;
+  setDarkContainer: (value: string) => void;
 }
 
 const DesignSettings = ({
@@ -40,48 +44,30 @@ const DesignSettings = ({
   setDarkSidebar,
   darkAccent,
   setDarkAccent,
+  lightContainer,
+  setLightContainer,
+  darkContainer,
+  setDarkContainer,
 }: DesignSettingsProps) => {
   // Default text colors based on the background
   const lightText = "#1e293b";
   const lightAccentHover = "#0284c7";
   const lightSidebarHover = "#f1f5f9";
-  const lightContainer = "#f8fafc";  // Default light container color
   
   const darkText = "#f8fafc";
   const darkAccentHover = "#0ea5e9";
   const darkSidebarHover = "#1e293b";
-  const darkContainer = "#1e293b";  // Default dark container color
 
   // Get current settings context to update container colors
-  const { settings, updateSettings } = useSettings();
+  const { settings } = useSettings();
 
-  // Add state for container colors
-  const [lightContainerColor, setLightContainerColor] = React.useState(
-    settings.lightModeColors.container || lightContainer
-  );
-  const [darkContainerColor, setDarkContainerColor] = React.useState(
-    settings.darkModeColors.container || darkContainer
-  );
-
-  // Handle container color changes
+  // Handlers for container color changes
   const handleLightContainerChange = (color: string) => {
-    setLightContainerColor(color);
-    updateSettings({
-      lightModeColors: {
-        ...settings.lightModeColors,
-        container: color
-      }
-    });
+    setLightContainer(color);
   };
 
   const handleDarkContainerChange = (color: string) => {
-    setDarkContainerColor(color);
-    updateSettings({
-      darkModeColors: {
-        ...settings.darkModeColors,
-        container: color
-      }
-    });
+    setDarkContainer(color);
   };
 
   return (
@@ -132,10 +118,10 @@ const DesignSettings = ({
               value={lightAccent}
               onChange={setLightAccent}
             />
-            {/* New Container Color Picker */}
+            {/* Container Color Picker */}
             <ColorPicker 
               label="Container Color" 
-              value={lightContainerColor}
+              value={lightContainer}
               onChange={handleLightContainerChange}
             />
             
@@ -173,7 +159,7 @@ const DesignSettings = ({
                   {/* Container Preview */}
                   <div 
                     className="p-3 rounded border mt-2"
-                    style={{ backgroundColor: lightContainerColor }}
+                    style={{ backgroundColor: lightContainer }}
                   >
                     <span className="text-xs">Container Element</span>
                   </div>
@@ -200,10 +186,10 @@ const DesignSettings = ({
               value={darkAccent}
               onChange={setDarkAccent}
             />
-            {/* New Container Color Picker */}
+            {/* Container Color Picker */}
             <ColorPicker 
               label="Container Color" 
-              value={darkContainerColor}
+              value={darkContainer}
               onChange={handleDarkContainerChange}
             />
             
@@ -241,7 +227,7 @@ const DesignSettings = ({
                   {/* Container Preview */}
                   <div 
                     className="p-3 rounded border mt-2"
-                    style={{ backgroundColor: darkContainerColor }}
+                    style={{ backgroundColor: darkContainer }}
                   >
                     <span className="text-xs">Container Element</span>
                   </div>

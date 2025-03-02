@@ -23,6 +23,8 @@ interface SettingsContainerProps {
   darkBackground: string;
   darkSidebar: string;
   darkAccent: string;
+  lightContainer: string; // Add the missing container props
+  darkContainer: string;
 }
 
 const SettingsContainer: React.FC<SettingsContainerProps> = ({
@@ -43,6 +45,8 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
   darkBackground,
   darkSidebar,
   darkAccent,
+  lightContainer,
+  darkContainer,
 }) => {
   const { updateSettings } = useSettings();
   
@@ -74,7 +78,8 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
         accent: lightAccent,
         text: lightText,
         accentHover: lightAccentHover,
-        sidebarHover: lightSidebarHover
+        sidebarHover: lightSidebarHover,
+        container: lightContainer // Add container property
       },
       darkModeColors: {
         background: darkBackground,
@@ -82,7 +87,8 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
         accent: darkAccent,
         text: darkText,
         accentHover: darkAccentHover,
-        sidebarHover: darkSidebarHover
+        sidebarHover: darkSidebarHover,
+        container: darkContainer // Add container property
       }
     });
     
