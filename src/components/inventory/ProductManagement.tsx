@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useProducts } from "@/contexts/ProductContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -165,18 +164,12 @@ const ProductManagement = () => {
 
       <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
         <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add New Product</DialogTitle>
-          </DialogHeader>
           <ProductForm onClose={handleFormClose} onSave={refreshProducts} threeColumns={true} />
         </DialogContent>
       </Dialog>
       
       {showEditForm && selectedProduct && <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
           <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Product</DialogTitle>
-            </DialogHeader>
             <ProductForm product={selectedProduct} onClose={handleFormClose} onSave={refreshProducts} threeColumns={true} />
           </DialogContent>
         </Dialog>}
