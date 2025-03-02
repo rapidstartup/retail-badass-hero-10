@@ -68,6 +68,26 @@
   }
 }
 
+/* Custom scrollbar styling for the entire application */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--theme-accent-color) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--theme-accent-color);
+  border-radius: 20px;
+}
+
 .theme-bg {
   background-color: var(--theme-background-color);
   color: var(--theme-text-color);

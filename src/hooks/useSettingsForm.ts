@@ -38,6 +38,17 @@ export const useSettingsForm = () => {
   const [lightSectionSelected, setLightSectionSelected] = useState<string>(settings.lightModeColors.sectionSelected);
   const [darkSectionSelected, setDarkSectionSelected] = useState<string>(settings.darkModeColors.sectionSelected);
   
+  // Update CSS variables when accent color changes
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    if (theme === "light") {
+      root.style.setProperty('--theme-accent-color', lightAccent);
+    } else {
+      root.style.setProperty('--theme-accent-color', darkAccent);
+    }
+  }, [theme, lightAccent, darkAccent]);
+  
   // Sync local state with context when settings change
   useEffect(() => {
     setTaxRate(settings.taxRate);
