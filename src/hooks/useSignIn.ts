@@ -28,6 +28,28 @@ export function useSignIn(
 
     setIsLoading(true);
     try {
+      // First check if a staff record exists with this email
+      const { data: staffData, error: staffError } = await supabase
+        .from('staff')
+        .select('*')
+        .eq('email', email)
+        .single();
+      
+      if (staffError || !staffData) {
+        toast.error("No staff account found with this email");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Check if staff has an auth_id (has completed setup)
+      if (!staffData.auth_id) {
+        // This is a first-time login for a staff member without auth account
+        onFirstTimeLoginDetected(true);
+        toast.info("First time login detected. Please set your password.");
+        setIsLoading(false);
+        return;
+      }
+      
       // Try to sign in with provided credentials
       await signInMethod(email, password);
     } catch (error: any) {
@@ -35,26 +57,7 @@ export function useSignIn(
       const errorMessage = error.message || "Failed to sign in";
       
       if (errorMessage.includes("Invalid login credentials")) {
-        // Check if staff record exists with this email
-        const { data: staffData } = await supabase
-          .from('staff')
-          .select('*')
-          .eq('email', email)
-          .single();
-        
-        if (staffData) {
-          // Staff exists but no auth account or wrong password
-          if (!staffData.auth_id) {
-            // This is likely a first-time login for a staff member without auth account
-            onFirstTimeLoginDetected(true);
-            toast.info("First time login detected. Please set your password.");
-          } else {
-            // Auth account exists but password is wrong
-            toast.error("Invalid password. Please try again or reset your password.");
-          }
-        } else {
-          toast.error("No staff account found with this email");
-        }
+        toast.error("Invalid password. Please try again or reset your password.");
       } else {
         toast.error(errorMessage);
       }

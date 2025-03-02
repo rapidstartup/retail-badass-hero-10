@@ -65,13 +65,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
         throw error;
+      }
+      
+      if (data.user) {
+        // Check if this user is associated with a staff record
+        const { data: staffData, error: staffError } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('auth_id', data.user.id)
+          .single();
+          
+        if (staffError || !staffData) {
+          // This auth user is not linked to any staff record
+          await supabase.auth.signOut(); // Sign out the user
+          throw new Error("Your account is not linked to any staff record");
+        }
       }
       
       navigate("/");

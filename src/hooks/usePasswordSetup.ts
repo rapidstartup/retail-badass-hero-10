@@ -108,7 +108,7 @@ export function usePasswordSetup(
             console.error("Sign in after registration failed:", signInError);
             toast.info("Account created, but automatic login failed. Please try logging in manually.");
           }
-        }, 1500);
+        }, 2000);
       } else {
         toast.error("Failed to create account");
       }
