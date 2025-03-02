@@ -127,6 +127,7 @@ const CategoryManagement: React.FC = () => {
               disabled={isLoading} 
               onClick={handleCreateCategory} 
               className="inline-flex items-center justify-center w-full md:w-auto mr-4"
+              style={{ backgroundColor: "#9b87f5" }}
             >
               {isLoading ? 'Creating...' : 'Create Category'}
             </Button>
