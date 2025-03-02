@@ -6,6 +6,7 @@ import ProductManagement from "@/components/inventory/ProductManagement";
 import CategoryManagement from "@/components/inventory/CategoryManagement";
 import InventoryAdjustments from "@/components/inventory/InventoryAdjustments";
 import { ProductProvider } from "@/contexts/ProductContext";
+import { toast } from "sonner";
 
 const Inventory = () => {
   const [activeTab, setActiveTab] = useState<string>("products");
@@ -21,7 +22,16 @@ const Inventory = () => {
           <Tabs 
             defaultValue="products" 
             value={activeTab} 
-            onValueChange={setActiveTab}
+            onValueChange={(value) => {
+              setActiveTab(value);
+              // Display a helpful toast when switching to products tab
+              if (value === "products") {
+                toast.info(
+                  "Create products with variants by enabling the 'Has Variants' toggle during product creation",
+                  { duration: 4000 }
+                );
+              }
+            }}
             className="space-y-4"
           >
             <TabsList className="grid w-full grid-cols-3">

@@ -13,7 +13,7 @@ export const useVariantManager = (product: Product) => {
   const { handleCreateVariant, handleUpdateVariant, handleDeleteVariant, creatingVariant } = 
     useVariantCRUD(product.id, fetchVariants);
   
-  const { newVariant, setNewVariant, showAddVariant, setShowAddVariant, mode, setMode } = 
+  const { newVariant, setNewVariant, showAddVariant, setShowAddVariant, mode, setMode, resetForm } = 
     useVariantForm(product.id, product.price);
   
   const {
@@ -31,7 +31,8 @@ export const useVariantManager = (product: Product) => {
     addSizeOption,
     removeColorOption,
     removeSizeOption,
-    generateBulkVariants
+    generateBulkVariants,
+    initializeBulkGenerator
   } = useBulkVariantGenerator(product.id, handleCreateVariant);
   
   const { skuPrefix, setSkuPrefix, generateSku } = useSkuGenerator(product.sku || '');
@@ -68,6 +69,8 @@ export const useVariantManager = (product: Product) => {
     removeColorOption,
     removeSizeOption,
     generateBulkVariants,
-    generateSku
+    generateSku,
+    resetForm,
+    initializeBulkGenerator
   };
 };

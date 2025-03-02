@@ -21,7 +21,9 @@ export function useVariantFetching(productId: string) {
   };
 
   useEffect(() => {
-    fetchVariants();
+    if (productId) {
+      fetchVariants();
+    }
   }, [productId]);
 
   return {
