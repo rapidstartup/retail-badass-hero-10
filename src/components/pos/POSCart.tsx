@@ -1,11 +1,10 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { X, Minus, Plus, User, CreditCard, DollarSign, CheckCircle } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
-import POSPaymentModal from "./POSPaymentModal";
+import { POSPaymentModal } from "./POSPaymentModal";
 
 interface POSCartProps {
   items: any[];

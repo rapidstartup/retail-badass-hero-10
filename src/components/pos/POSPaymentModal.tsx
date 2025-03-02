@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { POSNumpad } from "./POSNumpad";
+import POSNumpad from "./POSNumpad";
 import { formatCurrency } from "@/utils/formatters";
 import { toast } from "sonner";
 
@@ -17,7 +17,7 @@ export interface POSPaymentModalProps {
   tax: number;
   total: number;
   customer: any;
-  taxRate: number; // Add taxRate prop
+  taxRate: number;
   storeName: string;
   onSuccess: () => void;
 }
@@ -61,13 +61,11 @@ export function POSPaymentModal({
       return;
     }
 
-    // If value is a preset amount, replace the current amount
     if ([10, 20, 50, 100].includes(Number(value))) {
       setAmountTendered(value);
       return;
     }
 
-    // Otherwise add digit
     setAmountTendered((prev) => {
       if (prev === "0" && value !== ".") {
         return value;
@@ -83,7 +81,6 @@ export function POSPaymentModal({
     setProcessing(true);
     
     try {
-      // Validation based on payment method
       if (paymentMethod === "cash") {
         const tendered = parseFloat(amountTendered) || 0;
         if (tendered < total) {
@@ -97,7 +94,6 @@ export function POSPaymentModal({
           setProcessing(false);
           return;
         }
-        // Simple card validation
         if (cardNumber.length < 13 || cardNumber.length > 19) {
           toast.error("Invalid card number");
           setProcessing(false);
@@ -111,10 +107,7 @@ export function POSPaymentModal({
         }
       }
       
-      // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Record transaction in database would go here
       
       let successMessage = "";
       switch (paymentMethod) {

@@ -2,13 +2,12 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle, Trash2, Edit, RefreshCw } from "lucide-react";
+import { PlusCircle, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSettings } from "@/contexts/SettingsContext";
+import StaffForm from "./staff/StaffForm";
+import StaffList from "./staff/StaffList";
 
 interface StaffMember {
   id: string;
@@ -218,164 +217,32 @@ const StaffSettings = () => {
       <CardContent>
         {/* Add/Edit Form */}
         {(isAdding || isEditing) && (
-          <form 
-            className="border rounded-md p-4 mb-6" 
-            onSubmit={isEditing ? handleEditStaff : handleAddStaff}
-          >
-            <h3 className="text-lg font-medium mb-4">
-              {isEditing ? "Edit Staff Member" : "Add New Staff Member"}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Select value={role} onValueChange={setRole}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                />
-              </div>
-              
-              {isAdding && (
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="password">Initial Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required={isAdding}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    The staff member will use this initial password to log in
-                  </p>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={resetForm}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {isEditing ? "Update Staff" : "Add Staff"}
-              </Button>
-            </div>
-          </form>
+          <StaffForm
+            isAdding={isAdding}
+            isEditing={isEditing}
+            email={email}
+            setEmail={setEmail}
+            firstName={firstName}
+            setFirstName={setFirstName}
+            lastName={lastName}
+            setLastName={setLastName}
+            role={role}
+            setRole={setRole}
+            password={password}
+            setPassword={setPassword}
+            resetForm={resetForm}
+            handleAddStaff={handleAddStaff}
+            handleEditStaff={handleEditStaff}
+          />
         )}
         
         {/* Staff List */}
-        <div className="rounded-md border">
-          <div className="relative w-full overflow-auto">
-            <table className="w-full caption-bottom text-sm">
-              <thead className="[&_tr]:border-b">
-                <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <th className="h-12 px-4 text-left align-middle font-medium">Name</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Email</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Role</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">GoHighLevel</th>
-                  <th className="h-12 px-4 text-right align-middle font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={5} className="h-12 px-4 text-center">Loading staff members...</td>
-                  </tr>
-                ) : staffMembers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="h-12 px-4 text-center">No staff members found</td>
-                  </tr>
-                ) : (
-                  staffMembers.map((staff) => (
-                    <tr 
-                      key={staff.id} 
-                      className="border-b transition-colors hover:bg-muted/50"
-                    >
-                      <td className="p-4">
-                        {staff.first_name} {staff.last_name}
-                      </td>
-                      <td className="p-4">{staff.email}</td>
-                      <td className="p-4">
-                        <span className={`capitalize inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          staff.role === 'admin' 
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-400' 
-                            : staff.role === 'manager'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-400'
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-800/30 dark:text-gray-400'
-                        }`}>
-                          {staff.role}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        {staff.gohighlevel_id ? (
-                          <span className="text-green-600 dark:text-green-400">Synced</span>
-                        ) : (
-                          <span className="text-gray-400">Not synced</span>
-                        )}
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => startEdit(staff)}
-                          >
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={() => handleDeleteStaff(staff.id, staff.auth_id || null)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <StaffList
+          staffMembers={staffMembers}
+          loading={loading}
+          startEdit={startEdit}
+          handleDeleteStaff={handleDeleteStaff}
+        />
       </CardContent>
     </Card>
   );
