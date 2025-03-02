@@ -1,16 +1,15 @@
 
 import { useState, useEffect } from "react";
-import { Product } from "@/types";
 import { ProductVariant, fetchVariantsByProductId } from "@/api/inventoryApi";
 
-export function useVariantFetching(product: Product) {
+export function useVariantFetching(productId: string) {
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [loading, setLoading] = useState(true);
   
   const fetchVariants = async () => {
     setLoading(true);
     try {
-      const data = await fetchVariantsByProductId(product.id);
+      const data = await fetchVariantsByProductId(productId);
       setVariants(data);
       return data;
     } catch (error) {
@@ -23,7 +22,7 @@ export function useVariantFetching(product: Product) {
 
   useEffect(() => {
     fetchVariants();
-  }, [product.id]);
+  }, [productId]);
 
   return {
     variants,

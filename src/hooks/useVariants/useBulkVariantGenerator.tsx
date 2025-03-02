@@ -1,12 +1,11 @@
 
 import { useState } from "react";
-import { createVariant } from "@/api/inventoryApi";
+import { ProductVariant, createVariant } from "@/api/inventoryApi";
 import { toast } from "sonner";
 
 export function useBulkVariantGenerator(
-  productId: string, 
-  generateSku: (color?: string, size?: string) => string,
-  fetchVariants: () => Promise<void>
+  productId: string,
+  handleCreateVariant: (variantData: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
 ) {
   const [colorOptions, setColorOptions] = useState<string[]>([]);
   const [sizeOptions, setSizeOptions] = useState<string[]>([]);
@@ -64,10 +63,10 @@ export function useBulkVariantGenerator(
       // If no colors but have sizes, create one variant per size
       if (colorOptions.length === 0 && sizeOptions.length > 0) {
         for (const size of sizeOptions) {
-          await createVariant({
+          await handleCreateVariant({
             product_id: productId,
             price: bulkBasePrice,
-            sku: generateSku("", size),
+            sku: "",
             stock_count: bulkBaseStock,
             color: "",
             size: size,
@@ -78,10 +77,10 @@ export function useBulkVariantGenerator(
       // If no sizes but have colors, create one variant per color
       else if (sizeOptions.length === 0 && colorOptions.length > 0) {
         for (const color of colorOptions) {
-          await createVariant({
+          await handleCreateVariant({
             product_id: productId,
             price: bulkBasePrice,
-            sku: generateSku(color, ""),
+            sku: "",
             stock_count: bulkBaseStock,
             color: color,
             size: "",
@@ -93,10 +92,10 @@ export function useBulkVariantGenerator(
       else {
         for (const color of colorOptions) {
           for (const size of sizeOptions) {
-            await createVariant({
+            await handleCreateVariant({
               product_id: productId,
               price: bulkBasePrice,
-              sku: generateSku(color, size),
+              sku: "",
               stock_count: bulkBaseStock,
               color: color,
               size: size,
@@ -107,7 +106,6 @@ export function useBulkVariantGenerator(
       }
       
       toast.success("Successfully generated variants");
-      fetchVariants();
     } catch (error) {
       console.error("Error generating variants:", error);
       toast.error("Failed to generate variants");

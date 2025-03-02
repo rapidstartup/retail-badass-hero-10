@@ -14,7 +14,7 @@ export const useVariantManager = (product: Product) => {
     useVariantCRUD(product.id, fetchVariants);
   
   const { newVariant, setNewVariant, showAddVariant, setShowAddVariant, mode, setMode } = 
-    useVariantForm();
+    useVariantForm(product.id, product.price);
   
   const {
     colorOptions,
@@ -34,7 +34,7 @@ export const useVariantManager = (product: Product) => {
     generateBulkVariants
   } = useBulkVariantGenerator(product.id, handleCreateVariant);
   
-  const { skuPrefix, setSkuPrefix } = useSkuGenerator(product.sku);
+  const { skuPrefix, setSkuPrefix, generateSku } = useSkuGenerator(product.sku || '');
 
   // Return all the props and methods from the combined hooks
   return {
@@ -67,6 +67,7 @@ export const useVariantManager = (product: Product) => {
     addSizeOption,
     removeColorOption,
     removeSizeOption,
-    generateBulkVariants
+    generateBulkVariants,
+    generateSku
   };
 };

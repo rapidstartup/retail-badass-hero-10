@@ -1,20 +1,19 @@
 
 import { useState } from "react";
-import { Product } from "@/types";
 import { ProductVariant } from "@/api/inventoryApi";
 
-export function useVariantForm(product: Product) {
+export function useVariantForm(productId: string, initialPrice: number = 0) {
   const [showAddVariant, setShowAddVariant] = useState(false);
   const [mode, setMode] = useState<"single" | "bulk">("single");
   
   // New variant state
   const [newVariant, setNewVariant] = useState<ProductVariant>({
     id: '',
-    product_id: product.id,
+    product_id: productId,
     sku: "",
     color: "",
     size: "",
-    price: product.price,
+    price: initialPrice,
     stock_count: 0,
     variant_attributes: {},
     created_at: new Date().toISOString(),
@@ -25,11 +24,11 @@ export function useVariantForm(product: Product) {
   const resetForm = () => {
     setNewVariant({
       id: '',
-      product_id: product.id,
+      product_id: productId,
       sku: "",
       color: "",
       size: "",
-      price: product.price,
+      price: initialPrice,
       stock_count: 0,
       variant_attributes: {},
       created_at: new Date().toISOString(),

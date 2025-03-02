@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ProductVariant, createVariant, updateVariant, deleteVariant } from "@/api/inventoryApi";
 import { toast } from "sonner";
 
-export function useVariantCRUD(productId: string, fetchVariants: () => Promise<void>) {
+export function useVariantCRUD(productId: string, fetchVariants: () => Promise<ProductVariant[]>) {
   const [creatingVariant, setCreatingVariant] = useState(false);
   
   const handleCreateVariant = async (variantData: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => {
@@ -15,9 +15,11 @@ export function useVariantCRUD(productId: string, fetchVariants: () => Promise<v
         product_id: productId
       });
       
-      fetchVariants();
+      await fetchVariants();
+      toast.success("Variant created successfully");
     } catch (error) {
       console.error("Error creating variant:", error);
+      toast.error("Failed to create variant");
     } finally {
       setCreatingVariant(false);
     }
@@ -26,18 +28,22 @@ export function useVariantCRUD(productId: string, fetchVariants: () => Promise<v
   const handleUpdateVariant = async (id: string, updates: Partial<ProductVariant>) => {
     try {
       await updateVariant(id, updates);
-      fetchVariants();
+      await fetchVariants();
+      toast.success("Variant updated successfully");
     } catch (error) {
       console.error("Error updating variant:", error);
+      toast.error("Failed to update variant");
     }
   };
 
   const handleDeleteVariant = async (id: string) => {
     try {
       await deleteVariant(id);
-      fetchVariants();
+      await fetchVariants();
+      toast.success("Variant deleted successfully");
     } catch (error) {
       console.error("Error deleting variant:", error);
+      toast.error("Failed to delete variant");
     }
   };
 
