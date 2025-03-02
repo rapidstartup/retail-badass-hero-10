@@ -62,8 +62,13 @@ export const fetchCategories = async (): Promise<ProductCategory[]> => {
   }
 };
 
-export const createCategory = async (category: Partial<ProductCategory>): Promise<ProductCategory | null> => {
+export const createCategory = async (category: Omit<ProductCategory, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<ProductCategory | null> => {
   try {
+    // Ensure name is provided
+    if (!category.name) {
+      throw new Error("Category name is required");
+    }
+
     const { data, error } = await supabase
       .from("product_categories")
       .insert(category)
@@ -171,8 +176,13 @@ export const fetchProductById = async (id: string): Promise<Product | null> => {
   }
 };
 
-export const createProduct = async (product: Partial<Product>): Promise<Product | null> => {
+export const createProduct = async (product: Omit<Product, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<Product | null> => {
   try {
+    // Ensure required fields are provided
+    if (!product.name || product.price === undefined) {
+      throw new Error("Product name and price are required");
+    }
+
     const { data, error } = await supabase
       .from("products")
       .insert(product)
@@ -258,7 +268,11 @@ export const fetchVariantsByProductId = async (productId: string): Promise<Produ
       throw error;
     }
     
-    return data || [];
+    // Convert variant_attributes from Json to Record<string, any>
+    return (data || []).map(variant => ({
+      ...variant,
+      variant_attributes: variant.variant_attributes as Record<string, any>
+    }));
   } catch (error) {
     console.error("Error fetching variants:", error);
     toast.error("Failed to load product variants");
@@ -266,8 +280,13 @@ export const fetchVariantsByProductId = async (productId: string): Promise<Produ
   }
 };
 
-export const createVariant = async (variant: Partial<ProductVariant>): Promise<ProductVariant | null> => {
+export const createVariant = async (variant: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<ProductVariant | null> => {
   try {
+    // Ensure product_id is provided
+    if (!variant.product_id) {
+      throw new Error("Product ID is required for variants");
+    }
+
     const { data, error } = await supabase
       .from("product_variants")
       .insert(variant)
@@ -279,7 +298,11 @@ export const createVariant = async (variant: Partial<ProductVariant>): Promise<P
     }
     
     toast.success("Variant created successfully");
-    return data;
+    // Convert variant_attributes from Json to Record<string, any>
+    return {
+      ...data,
+      variant_attributes: data.variant_attributes as Record<string, any>
+    };
   } catch (error) {
     console.error("Error creating variant:", error);
     toast.error("Failed to create variant");
@@ -301,7 +324,11 @@ export const updateVariant = async (id: string, variant: Partial<ProductVariant>
     }
     
     toast.success("Variant updated successfully");
-    return data;
+    // Convert variant_attributes from Json to Record<string, any>
+    return {
+      ...data,
+      variant_attributes: data.variant_attributes as Record<string, any>
+    };
   } catch (error) {
     console.error("Error updating variant:", error);
     toast.error("Failed to update variant");

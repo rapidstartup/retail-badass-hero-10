@@ -9,18 +9,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
 
-import Dashboard from "@/pages/Dashboard";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import POS from "@/pages/POS";
-import Clients from "@/pages/Clients";
-import Transactions from "@/pages/Transactions";
-import Reports from "@/pages/Reports";
-import SettingsPage from "@/pages/SettingsPage";
-import Inventory from "@/pages/Inventory";
+// Temporary placeholder pages until actual components are created
+const Dashboard = () => <div>Dashboard Page</div>;
+const Login = () => <div>Login Page</div>;
+const Register = () => <div>Register Page</div>;
+const POS = () => <div>POS Page</div>;
+const Clients = () => <div>Clients Page</div>;
+const Transactions = () => <div>Transactions Page</div>;
+const Reports = () => <div>Reports Page</div>;
+const SettingsPage = () => <div>Settings Page</div>;
+const Inventory = () => <div>Inventory Page</div>;
 
 function App() {
-  const { isLoggedIn, loading } = useAuth();
+  const { user, session, loading, isAuthenticated } = useAuth();
   const [queryClient] = useState(() => new QueryClient());
 
   // Protected route component
@@ -28,7 +29,7 @@ function App() {
     if (loading) {
       return <div>Loading...</div>; // Or a loading spinner
     }
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
     }
     return <>{children}</>;
@@ -40,11 +41,11 @@ function App() {
         createBrowserRouter([
           {
             path: "/login",
-            element: isLoggedIn ? <Navigate to="/" replace /> : <Login />
+            element: isAuthenticated ? <Navigate to="/" replace /> : <Login />
           },
           {
             path: "/register",
-            element: isLoggedIn ? <Navigate to="/" replace /> : <Register />
+            element: isAuthenticated ? <Navigate to="/" replace /> : <Register />
           },
           {
             path: "/",
