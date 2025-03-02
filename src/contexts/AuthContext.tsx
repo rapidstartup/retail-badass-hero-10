@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -68,20 +67,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const cleanEmail = email.trim().toLowerCase();
       console.log("Attempting to sign in with email:", cleanEmail);
       
-      // Check if a staff record exists with this email before attempting to sign in
-      const { data: staffList, error: staffError } = await supabase
-        .from('staff')
-        .select('*')
-        .ilike('email', cleanEmail);
-      
-      if (staffError) {
-        console.error("Staff verification error:", staffError);
-        throw new Error("Error verifying staff account");
-      }
-      
-      if (!staffList || staffList.length === 0) {
-        throw new Error("No staff account found with this email");
-      }
+      // TEMPORARY: Skip staff verification
+      console.log("Staff verification temporarily disabled");
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
@@ -95,25 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       console.log("Sign in successful, user data:", data.user);
       
-      if (data.user) {
-        const staffData = staffList[0];
-          
-        console.log("Staff verification after login:", { staffData });
-        
-        // Update the staff record with auth_id if not already set
-        if (!staffData.auth_id) {
-          const { error: updateError } = await supabase
-            .from('staff')
-            .update({ auth_id: data.user.id })
-            .eq('id', staffData.id);
-            
-          if (updateError) {
-            console.error("Failed to update staff auth_id:", updateError);
-          } else {
-            console.log("Updated staff record with auth_id");
-          }
-        }
-      }
+      // TEMPORARY: Skip staff record lookup and auth_id updates
       
       navigate("/");
       toast.success("Signed in successfully");

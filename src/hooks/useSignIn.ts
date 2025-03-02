@@ -29,40 +29,10 @@ export function useSignIn(
     setIsLoading(true);
     try {
       const cleanEmail = email.trim().toLowerCase();
-      console.log("Checking for staff with email:", cleanEmail);
+      console.log("Proceeding with email:", cleanEmail);
       
-      // Query staff table with case-insensitive email search
-      const { data: staffList, error: staffListError } = await supabase
-        .from('staff')
-        .select('*')
-        .ilike('email', cleanEmail);
-      
-      console.log("Staff check result:", { staffList, staffListError });
-      
-      if (staffListError) {
-        console.error("Staff lookup error:", staffListError);
-        toast.error("Error checking staff records. Please try again.");
-        setIsLoading(false);
-        return;
-      }
-      
-      // If no staff found or empty array
-      if (!staffList || staffList.length === 0) {
-        toast.error("No staff account found with this email");
-        setIsLoading(false);
-        return;
-      }
-      
-      const staffData = staffList[0];
-      
-      // Check if staff has an auth_id (has completed setup)
-      if (!staffData.auth_id) {
-        // This is a first-time login for a staff member without auth account
-        onFirstTimeLoginDetected(true);
-        toast.info("First time login detected. Please set your password.");
-        setIsLoading(false);
-        return;
-      }
+      // TEMPORARY: Bypassing staff check
+      console.log("Staff verification temporarily disabled");
       
       // Try to sign in with provided credentials
       await signInMethod(cleanEmail, password);
