@@ -1,89 +1,9 @@
+
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-interface POSSettings {
-  id?: string;
-  taxRate: number;
-  tabEnabled: boolean;
-  tabThreshold: number;
-  tabMaxDays: number;
-  // Store Information
-  storeName: string;
-  storeAddress?: string;
-  storePhone?: string;
-  // Stripe Integration
-  stripeLiveSecretKey?: string;
-  stripeLivePublicKey?: string;
-  stripeTestSecretKey?: string;
-  stripeTestPublicKey?: string;
-  stripeMode?: "live" | "test";
-  // GoHighLevel Integration
-  goHighLevelApiKey?: string;
-  // Theme Settings
-  theme: "light" | "dark";
-  lightModeColors: {
-    background: string;
-    sidebar: string;
-    accent: string;
-    text: string;
-    accentHover: string;
-    sidebarHover: string;
-    container: string;
-    section: string;
-    sectionSelected: string;
-  };
-  darkModeColors: {
-    background: string;
-    sidebar: string;
-    accent: string;
-    text: string;
-    accentHover: string;
-    sidebarHover: string;
-    container: string;
-    section: string;
-    sectionSelected: string;
-  };
-}
-
-interface SettingsContextType {
-  settings: POSSettings;
-  updateSettings: (newSettings: Partial<POSSettings>) => Promise<void>;
-  isLoading: boolean;
-  saveSettings: () => Promise<void>;
-}
-
-const defaultSettings: POSSettings = {
-  taxRate: 8.0,
-  tabEnabled: true,
-  tabThreshold: 100,
-  tabMaxDays: 7,
-  storeName: "NextPOS",
-  stripeMode: "test",
-  theme: "dark",
-  lightModeColors: {
-    background: "#ffffff",
-    sidebar: "#f0f4f8",
-    accent: "#3b82f6",
-    text: "#1e293b",
-    accentHover: "#2563eb",
-    sidebarHover: "#e0e7ff",
-    container: "#f9fafb",
-    section: "#f1f5f9",
-    sectionSelected: "#e2e8f0",
-  },
-  darkModeColors: {
-    background: "#0f172a",
-    sidebar: "#1e293b",
-    accent: "#60a5fa",
-    text: "#f8fafc",
-    accentHover: "#3b82f6",
-    sidebarHover: "#334155",
-    container: "#1e293b",
-    section: "#1e293b",
-    sectionSelected: "#0f172a",
-  },
-};
+import { POSSettings, SettingsContextType, defaultSettings } from "@/types/settings";
+import { useThemeManager } from "@/hooks/useThemeManager";
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
@@ -91,6 +11,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<POSSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Apply theme changes whenever settings are updated
+  useThemeManager(settings);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -140,40 +63,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     
     fetchSettings();
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("posSettings", JSON.stringify({
-      theme: settings.theme,
-      lightModeColors: settings.lightModeColors,
-      darkModeColors: settings.darkModeColors
-    }));
-    
-    document.documentElement.classList.toggle("dark", settings.theme === "dark");
-    
-    const root = document.documentElement;
-    
-    if (settings.theme === "light") {
-      root.style.setProperty("--theme-background-color", settings.lightModeColors.background);
-      root.style.setProperty("--theme-sidebar-color", settings.lightModeColors.sidebar);
-      root.style.setProperty("--theme-accent-color", settings.lightModeColors.accent);
-      root.style.setProperty("--theme-text-color", settings.lightModeColors.text);
-      root.style.setProperty("--theme-accent-hover-color", settings.lightModeColors.accentHover);
-      root.style.setProperty("--theme-sidebar-hover-color", settings.lightModeColors.sidebarHover);
-      root.style.setProperty("--theme-container-color", settings.lightModeColors.container);
-      root.style.setProperty("--theme-section-color", settings.lightModeColors.section);
-      root.style.setProperty("--theme-section-selected-color", settings.lightModeColors.sectionSelected);
-    } else {
-      root.style.setProperty("--theme-background-color", settings.darkModeColors.background);
-      root.style.setProperty("--theme-sidebar-color", settings.darkModeColors.sidebar);
-      root.style.setProperty("--theme-accent-color", settings.darkModeColors.accent);
-      root.style.setProperty("--theme-text-color", settings.darkModeColors.text);
-      root.style.setProperty("--theme-accent-hover-color", settings.darkModeColors.accentHover);
-      root.style.setProperty("--theme-sidebar-hover-color", settings.darkModeColors.sidebarHover);
-      root.style.setProperty("--theme-container-color", settings.darkModeColors.container);
-      root.style.setProperty("--theme-section-color", settings.darkModeColors.section);
-      root.style.setProperty("--theme-section-selected-color", settings.darkModeColors.sectionSelected);
-    }
-  }, [settings.theme, settings.lightModeColors, settings.darkModeColors]);
 
   const saveSettings = async () => {
     if (!settings.id) {
