@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -61,28 +60,28 @@ const defaultSettings: POSSettings = {
   tabMaxDays: 7,
   storeName: "NextPOS",
   stripeMode: "test",
-  theme: "dark",  // Changed from "light" to "dark" as default
+  theme: "dark",
   lightModeColors: {
     background: "#ffffff",
-    sidebar: "#f8f9fa",
-    accent: "#0ea5e9", // Default blue accent
+    sidebar: "#f0f4f8",
+    accent: "#3b82f6",
     text: "#1e293b",
-    accentHover: "#0284c7",
-    sidebarHover: "#f1f5f9",
-    container: "#f8fafc",
-    section: "#f1f5f9", // Light gray for sections
-    sectionSelected: "#e2e8f0", // Slightly darker for selected items
+    accentHover: "#2563eb",
+    sidebarHover: "#e0e7ff",
+    container: "#f9fafb",
+    section: "#f1f5f9",
+    sectionSelected: "#e2e8f0",
   },
   darkModeColors: {
-    background: "#1e293b",
-    sidebar: "#0f172a",
-    accent: "#38bdf8", // Slightly lighter blue for dark mode
+    background: "#0f172a",
+    sidebar: "#1e293b",
+    accent: "#60a5fa",
     text: "#f8fafc",
-    accentHover: "#0ea5e9",
-    sidebarHover: "#1e293b",
+    accentHover: "#3b82f6",
+    sidebarHover: "#334155",
     container: "#1e293b",
-    section: "#1e293b", // Dark blue-gray for sections
-    sectionSelected: "#0f172a", // Darker shade for selected items
+    section: "#1e293b",
+    sectionSelected: "#0f172a",
   },
 };
 
@@ -93,13 +92,11 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Load settings from Supabase on initial render
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         setIsLoading(true);
         
-        // Try to get settings from Supabase
         const { data, error } = await supabase
           .from('settings')
           .select('*')
@@ -107,13 +104,11 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
           
         if (error) {
           console.error("Error fetching settings:", error);
-          // Fallback to localStorage if database fetch fails
           const savedSettings = localStorage.getItem("posSettings");
           if (savedSettings) {
             setSettings({ ...defaultSettings, ...JSON.parse(savedSettings) });
           }
         } else if (data) {
-          // Map database settings to our settings object
           const dbSettings: POSSettings = {
             ...defaultSettings,
             id: data.id,
@@ -126,11 +121,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
             storePhone: data.store_phone,
           };
           
-          // Try to get theme settings from localStorage (these aren't stored in DB)
           const savedSettings = localStorage.getItem("posSettings");
           if (savedSettings) {
             const parsedSettings = JSON.parse(savedSettings);
-            // Merge theme settings from localStorage
             dbSettings.theme = parsedSettings.theme || defaultSettings.theme;
             dbSettings.lightModeColors = parsedSettings.lightModeColors || defaultSettings.lightModeColors;
             dbSettings.darkModeColors = parsedSettings.darkModeColors || defaultSettings.darkModeColors;
@@ -148,23 +141,18 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     fetchSettings();
   }, []);
 
-  // Effect to apply theme when settings change
   useEffect(() => {
-    // Save theme settings to localStorage whenever they change
     localStorage.setItem("posSettings", JSON.stringify({
       theme: settings.theme,
       lightModeColors: settings.lightModeColors,
       darkModeColors: settings.darkModeColors
     }));
     
-    // Apply theme
     document.documentElement.classList.toggle("dark", settings.theme === "dark");
     
-    // Apply CSS variables for theming
     const root = document.documentElement;
     
     if (settings.theme === "light") {
-      // Light mode colors
       root.style.setProperty("--theme-background-color", settings.lightModeColors.background);
       root.style.setProperty("--theme-sidebar-color", settings.lightModeColors.sidebar);
       root.style.setProperty("--theme-accent-color", settings.lightModeColors.accent);
@@ -175,7 +163,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       root.style.setProperty("--theme-section-color", settings.lightModeColors.section);
       root.style.setProperty("--theme-section-selected-color", settings.lightModeColors.sectionSelected);
     } else {
-      // Dark mode colors
       root.style.setProperty("--theme-background-color", settings.darkModeColors.background);
       root.style.setProperty("--theme-sidebar-color", settings.darkModeColors.sidebar);
       root.style.setProperty("--theme-accent-color", settings.darkModeColors.accent);
@@ -188,10 +175,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [settings.theme, settings.lightModeColors, settings.darkModeColors]);
 
-  // Save settings to Supabase
   const saveSettings = async () => {
     if (!settings.id) {
-      // If no settings ID exists yet, insert new settings
       const { data, error } = await supabase
         .from('settings')
         .insert({
@@ -212,11 +197,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       
-      // Update the ID in our state
       setSettings(prev => ({ ...prev, id: data.id }));
       toast.success("Settings saved");
     } else {
-      // Update existing settings
       const { error } = await supabase
         .from('settings')
         .update({
@@ -243,13 +226,10 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const updateSettings = async (newSettings: Partial<POSSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
     
-    // Clear any existing save timeout
     if (saveTimeout) {
       clearTimeout(saveTimeout);
     }
     
-    // Set a new timeout for auto-saving to database
-    // This debounces the save to prevent excessive database writes
     const timeout = setTimeout(saveSettings, 1000);
     setSaveTimeout(timeout);
   };
