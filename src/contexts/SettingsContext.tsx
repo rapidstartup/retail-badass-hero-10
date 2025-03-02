@@ -5,6 +5,14 @@ interface POSSettings {
   taxRate: number;
   tabEnabled: boolean;
   tabThreshold: number;
+  // Stripe Integration
+  stripeLiveSecretKey?: string;
+  stripeLivePublicKey?: string;
+  stripeTestSecretKey?: string;
+  stripeTestPublicKey?: string;
+  stripeMode?: "live" | "test";
+  // GoHighLevel Integration
+  goHighLevelApiKey?: string;
 }
 
 interface SettingsContextType {
@@ -16,6 +24,7 @@ const defaultSettings: POSSettings = {
   taxRate: 8.0,
   tabEnabled: true,
   tabThreshold: 100,
+  stripeMode: "test",
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
