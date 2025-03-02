@@ -92,8 +92,16 @@ export function usePasswordSetup(
       if (data?.user?.id) {
         // Important: If this is a new staff creation, create the staff record
         if (isNewStaffSetup) {
-          // Wait a moment to ensure the auth user is fully created
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Wait longer to ensure the auth user is fully created
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          // Double-check that the auth user exists before linking
+          const { data: authUser, error: authCheckError } = await supabase.auth.admin.getUserById(data.user.id);
+          
+          if (authCheckError || !authUser) {
+            console.error("Auth user verification error:", authCheckError);
+            throw new Error("Failed to verify newly created auth user. Please try again.");
+          }
           
           const { error: createStaffError } = await supabase
             .from('staff')
@@ -113,8 +121,16 @@ export function usePasswordSetup(
           toast.success("New staff account created successfully! You can now login");
         } else {
           // For existing staff, update the auth_id
-          // Wait a moment to ensure the auth user is fully created
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Wait longer to ensure the auth user is fully created
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          // Double-check that the auth user exists before linking
+          const { data: authUser, error: authCheckError } = await supabase.auth.admin.getUserById(data.user.id);
+          
+          if (authCheckError || !authUser) {
+            console.error("Auth user verification error:", authCheckError);
+            throw new Error("Failed to verify newly created auth user. Please try again.");
+          }
           
           const { error: updateStaffError } = await supabase
             .from('staff')
@@ -141,7 +157,7 @@ export function usePasswordSetup(
             console.error("Sign in after registration failed:", signInError);
             toast.info("Account created, but automatic login failed. Please try logging in manually.");
           }
-        }, 2500);
+        }, 3500);
       } else {
         toast.error("Failed to create account");
       }
