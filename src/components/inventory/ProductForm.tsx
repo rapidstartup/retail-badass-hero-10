@@ -62,9 +62,10 @@ interface ProductFormProps {
   productId?: string;
   onClose: () => void;
   onSave?: () => void;
+  threeColumns?: boolean; // New prop to determine layout
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, onSave }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, onSave, threeColumns = false }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string; }[]>([]);
@@ -194,7 +195,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
   };
 
   return (
-    <Card className="max-w-3xl mx-auto mt-6 shadow-lg border border-border/30 bg-card">
+    <Card className="w-full mx-auto shadow-lg border border-border/30 bg-card">
       <CardHeader className="bg-muted/30 rounded-t-lg border-b border-border/30">
         <div className="flex items-center gap-2">
           <Package className="h-5 w-5 text-primary" />
@@ -207,7 +208,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
       <CardContent className="p-6 pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className={`grid grid-cols-1 ${threeColumns ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6`}>
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -270,29 +271,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={form.control}
-                  name="stock"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Stock Quantity</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <ShoppingCart className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            className="pl-10"
-                            value={field.value === undefined ? '' : field.value}
-                            onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
 
               <div className="space-y-4">
@@ -327,6 +305,31 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="stock"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Stock Quantity</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <ShoppingCart className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="number"
+                            placeholder="0"
+                            className="pl-10"
+                            value={field.value === undefined ? '' : field.value}
+                            onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-4">
                 <FormField
                   control={form.control}
                   name="image_url"
@@ -375,6 +378,30 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="has_variants"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base flex items-center gap-2">
+                          <Layers className="h-4 w-4" />
+                          Has Variants
+                        </FormLabel>
+                        <FormDescription>
+                          Enable for products with multiple variants
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
 
@@ -392,30 +419,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
                     />
                   </FormControl>
                   <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="has_variants"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base flex items-center gap-2">
-                      <Layers className="h-4 w-4" />
-                      Has Variants
-                    </FormLabel>
-                    <FormDescription>
-                      Enable if this product has multiple variants (e.g., sizes, colors)
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
                 </FormItem>
               )}
             />
