@@ -20,7 +20,8 @@ export function usePasswordSetup(
     lastName: string,
     newPassword: string,
     confirmPassword: string,
-    onComplete: () => void
+    onComplete: () => void,
+    isNewStaffSetup: boolean = false
   ) => {
     if (!validateEmail(email)) {
       toast.error("Please enter a valid email address");
@@ -45,28 +46,30 @@ export function usePasswordSetup(
     setIsLoading(true);
     
     try {
-      // First, check if a staff record exists with this email
-      const { data: staffData, error: staffCheckError } = await supabase
-        .from('staff')
-        .select('*')
-        .eq('email', email)
-        .maybeSingle();
+      if (!isNewStaffSetup) {
+        // First, check if a staff record exists with this email
+        const { data: staffData, error: staffCheckError } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('email', email)
+          .maybeSingle();
+          
+        if (staffCheckError) throw staffCheckError;
         
-      if (staffCheckError) throw staffCheckError;
-      
-      if (!staffData) {
-        toast.error("No staff account found with this email. Please contact your administrator.");
-        setIsLoading(false);
-        return;
-      }
+        if (!staffData) {
+          toast.error("No staff account found with this email. Please contact your administrator or use the New Staff Setup option.");
+          setIsLoading(false);
+          return;
+        }
 
-      // Check if the staff record already has an auth_id
-      if (staffData.auth_id) {
-        // Staff already has an auth account, redirect to login
-        toast.info("An account already exists for this email. Please use the login form.");
-        setIsLoading(false);
-        onComplete();
-        return;
+        // Check if the staff record already has an auth_id
+        if (staffData.auth_id) {
+          // Staff already has an auth account, redirect to login
+          toast.info("An account already exists for this email. Please use the login form.");
+          setIsLoading(false);
+          onComplete();
+          return;
+        }
       }
       
       // Create the auth user
@@ -86,19 +89,36 @@ export function usePasswordSetup(
       }
       
       if (data?.user?.id) {
-        // Update the staff record with the auth_id
-        const { error: updateStaffError } = await supabase
-          .from('staff')
-          .update({ 
-            auth_id: data.user.id,
-            first_name: firstName,
-            last_name: lastName
-          })
-          .eq('email', email);
+        // If this is a new staff creation, create the staff record
+        if (isNewStaffSetup) {
+          const { error: createStaffError } = await supabase
+            .from('staff')
+            .insert({ 
+              email: email,
+              auth_id: data.user.id,
+              first_name: firstName,
+              last_name: lastName,
+              role: 'staff' // Default role
+            });
+            
+          if (createStaffError) throw createStaffError;
           
-        if (updateStaffError) throw updateStaffError;
-        
-        toast.success("Account created successfully! You can now login");
+          toast.success("New staff account created successfully! You can now login");
+        } else {
+          // Update the existing staff record with the auth_id
+          const { error: updateStaffError } = await supabase
+            .from('staff')
+            .update({ 
+              auth_id: data.user.id,
+              first_name: firstName,
+              last_name: lastName
+            })
+            .eq('email', email);
+            
+          if (updateStaffError) throw updateStaffError;
+          
+          toast.success("Account created successfully! You can now login");
+        }
         
         // Wait a moment before signing in to ensure data is properly saved
         setTimeout(async () => {
@@ -108,7 +128,7 @@ export function usePasswordSetup(
             console.error("Sign in after registration failed:", signInError);
             toast.info("Account created, but automatic login failed. Please try logging in manually.");
           }
-        }, 2000);
+        }, 2500);
       } else {
         toast.error("Failed to create account");
       }

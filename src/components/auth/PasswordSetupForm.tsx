@@ -19,6 +19,7 @@ interface PasswordSetupFormProps {
   handleSetPassword: (e: React.FormEvent) => Promise<void>;
   handleBackToLogin: () => void;
   isLoading: boolean;
+  isNewStaffSetup?: boolean;
 }
 
 const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
@@ -34,7 +35,8 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
   setConfirmPassword,
   handleSetPassword,
   handleBackToLogin,
-  isLoading
+  isLoading,
+  isNewStaffSetup = false
 }) => {
   return (
     <form onSubmit={handleSetPassword}>
@@ -50,7 +52,9 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
             required
           />
           <p className="text-sm text-muted-foreground">
-            Enter the email for your staff account
+            {isNewStaffSetup 
+              ? "Enter your email for your new staff account" 
+              : "Enter the email for your existing staff account"}
           </p>
         </div>
         <div className="space-y-2">
@@ -108,7 +112,7 @@ const PasswordSetupForm: React.FC<PasswordSetupFormProps> = ({
           type="submit" 
           disabled={isLoading}
         >
-          {isLoading ? "Creating account..." : "Create Account & Login"}
+          {isLoading ? "Creating account..." : isNewStaffSetup ? "Create New Staff Account" : "Create Account & Login"}
         </Button>
       </CardFooter>
     </form>

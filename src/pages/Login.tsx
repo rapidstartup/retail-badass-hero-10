@@ -17,6 +17,7 @@ const Login = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [isFirstTimeLogin, setIsFirstTimeLogin] = useState(false);
+  const [isNewStaffSetup, setIsNewStaffSetup] = useState(false);
   const { signIn, isAuthenticated } = useAuth();
   const { settings } = useSettings();
   const location = useLocation();
@@ -43,7 +44,11 @@ const Login = () => {
       lastName,
       newPassword,
       confirmPassword,
-      () => setIsFirstTimeLogin(false)
+      () => {
+        setIsFirstTimeLogin(false);
+        setIsNewStaffSetup(false);
+      },
+      isNewStaffSetup
     );
   };
 
@@ -54,10 +59,17 @@ const Login = () => {
 
   const handleFirstTimeSetupClick = () => {
     setIsFirstTimeLogin(true);
+    setIsNewStaffSetup(false);
+  };
+
+  const handleNewStaffSetupClick = () => {
+    setIsFirstTimeLogin(true);
+    setIsNewStaffSetup(true);
   };
 
   const handleBackToLogin = () => {
     setIsFirstTimeLogin(false);
+    setIsNewStaffSetup(false);
     setPassword("");
     setNewPassword("");
     setConfirmPassword("");
@@ -74,11 +86,17 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            {isFirstTimeLogin ? `Set Up Your Account` : `${settings.storeName || "NextPOS"} Staff Login`}
+            {isFirstTimeLogin 
+              ? isNewStaffSetup 
+                ? "New Staff Registration" 
+                : "Set Up Your Account" 
+              : `${settings.storeName || "NextPOS"} Staff Login`}
           </CardTitle>
           <CardDescription className="text-center">
             {isFirstTimeLogin 
-              ? "Welcome! Please set up your account to continue" 
+              ? isNewStaffSetup
+                ? "Create a new staff account to get started"
+                : "Welcome! Please set up your account to continue" 
               : "Enter your credentials to sign in to your account"}
           </CardDescription>
         </CardHeader>
@@ -98,6 +116,7 @@ const Login = () => {
             handleSetPassword={handlePasswordSetup}
             handleBackToLogin={handleBackToLogin}
             isLoading={isPasswordSetupLoading}
+            isNewStaffSetup={isNewStaffSetup}
           />
         ) : (
           <LoginForm
@@ -109,6 +128,7 @@ const Login = () => {
             isLoading={isSignInLoading}
             onFirstTimeLoginDetected={setIsFirstTimeLogin}
             onFirstTimeSetupClick={handleFirstTimeSetupClick}
+            onNewStaffSetupClick={handleNewStaffSetupClick}
           />
         )}
       </Card>
