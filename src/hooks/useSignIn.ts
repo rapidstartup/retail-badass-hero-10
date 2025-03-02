@@ -28,13 +28,14 @@ export function useSignIn(
 
     setIsLoading(true);
     try {
-      console.log("Checking for staff with email:", email);
+      const cleanEmail = email.trim().toLowerCase();
+      console.log("Checking for staff with email:", cleanEmail);
       
-      // Try a different approach to query the staff table
+      // Query staff table with case-insensitive email search
       const { data: staffList, error: staffListError } = await supabase
         .from('staff')
         .select('*')
-        .ilike('email', email.trim());
+        .ilike('email', cleanEmail);
       
       console.log("Staff check result:", { staffList, staffListError });
       
@@ -64,7 +65,7 @@ export function useSignIn(
       }
       
       // Try to sign in with provided credentials
-      await signInMethod(email, password);
+      await signInMethod(cleanEmail, password);
     } catch (error: any) {
       console.error("Sign in error:", error);
       const errorMessage = error.message || "Failed to sign in";

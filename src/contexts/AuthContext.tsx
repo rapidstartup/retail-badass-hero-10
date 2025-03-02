@@ -65,10 +65,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log("Attempting to sign in with email:", email);
+      const cleanEmail = email.trim().toLowerCase();
+      console.log("Attempting to sign in with email:", cleanEmail);
+      
+      // Check if a staff record exists with this email before attempting to sign in
+      const { data: staffList, error: staffError } = await supabase
+        .from('staff')
+        .select('*')
+        .ilike('email', cleanEmail);
+      
+      if (staffError) {
+        console.error("Staff verification error:", staffError);
+        throw new Error("Error verifying staff account");
+      }
+      
+      if (!staffList || staffList.length === 0) {
+        throw new Error("No staff account found with this email");
+      }
       
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: cleanEmail,
         password,
       });
 
@@ -80,20 +96,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("Sign in successful, user data:", data.user);
       
       if (data.user) {
-        // Check if this user is associated with a staff record
-        const { data: staffData, error: staffError } = await supabase
-          .from('staff')
-          .select('*')
-          .ilike('email', email.trim())
-          .maybeSingle();
+        const staffData = staffList[0];
           
-        console.log("Staff verification after login:", { staffData, staffError });
-          
-        if (staffError || !staffData) {
-          // This auth user is not linked to any staff record
-          await supabase.auth.signOut(); // Sign out the user
-          throw new Error("Your account is not linked to any staff record");
-        }
+        console.log("Staff verification after login:", { staffData });
         
         // Update the staff record with auth_id if not already set
         if (!staffData.auth_id) {
@@ -104,6 +109,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
           if (updateError) {
             console.error("Failed to update staff auth_id:", updateError);
+          } else {
+            console.log("Updated staff record with auth_id");
           }
         }
       }
