@@ -91,23 +91,23 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-4 space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-2">
-        <h1 className="text-2xl font-bold">System Settings</h1>
-        <Button onClick={handleSaveSettings}>Save All Settings</Button>
+    <div className="w-full max-w-4xl mx-auto px-3 py-2 space-y-3">
+      <div className="flex flex-row justify-between items-center gap-2">
+        <h1 className="text-xl font-bold">System Settings</h1>
+        <Button size="sm" onClick={handleSaveSettings}>Save All Settings</Button>
       </div>
       
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-1 mb-4">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="tax">Tax Settings</TabsTrigger>
-          <TabsTrigger value="tab">Tab System</TabsTrigger>
-          <TabsTrigger value="integrations">Integrations</TabsTrigger>
-          <TabsTrigger value="design">Design</TabsTrigger>
-          <TabsTrigger value="staff">Staff</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-1 mb-2">
+          <TabsTrigger value="general" className="text-sm py-1 px-2">General</TabsTrigger>
+          <TabsTrigger value="tax" className="text-sm py-1 px-2">Tax Settings</TabsTrigger>
+          <TabsTrigger value="tab" className="text-sm py-1 px-2">Tab System</TabsTrigger>
+          <TabsTrigger value="integrations" className="text-sm py-1 px-2">Integrations</TabsTrigger>
+          <TabsTrigger value="design" className="text-sm py-1 px-2">Design</TabsTrigger>
+          <TabsTrigger value="staff" className="text-sm py-1 px-2">Staff</TabsTrigger>
         </TabsList>
         
-        <div className="bg-card rounded-lg border border-border p-4 shadow-sm">
+        <div className="bg-card rounded-md border border-border p-3 shadow-sm">
           {children}
         </div>
       </Tabs>
