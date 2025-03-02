@@ -14,7 +14,7 @@ interface LoginFormProps {
   setPassword: (password: string) => void;
   handleSignIn: (e: React.FormEvent) => Promise<void>;
   isLoading: boolean;
-  onFirstTimeLoginDetected: (email: string) => void;
+  onFirstTimeLoginDetected: (isFirstTime: boolean) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({
