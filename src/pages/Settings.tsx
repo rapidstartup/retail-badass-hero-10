@@ -42,9 +42,14 @@ const Settings = () => {
   const [darkBackground, setDarkBackground] = useState<string>(settings.darkModeColors.background);
   const [darkSidebar, setDarkSidebar] = useState<string>(settings.darkModeColors.sidebar);
   const [darkAccent, setDarkAccent] = useState<string>(settings.darkModeColors.accent);
-  // Add container color states
+  // Container color states
   const [lightContainer, setLightContainer] = useState<string>(settings.lightModeColors.container || "#f8fafc");
   const [darkContainer, setDarkContainer] = useState<string>(settings.darkModeColors.container || "#1e293b");
+  // Section color states
+  const [lightSection, setLightSection] = useState<string>(settings.lightModeColors.section || "#f1f5f9");
+  const [darkSection, setDarkSection] = useState<string>(settings.darkModeColors.section || "#1e293b");
+  const [lightSectionSelected, setLightSectionSelected] = useState<string>(settings.lightModeColors.sectionSelected || "#e2e8f0");
+  const [darkSectionSelected, setDarkSectionSelected] = useState<string>(settings.darkModeColors.sectionSelected || "#0f172a");
   
   // Sync local state with context when settings change
   useEffect(() => {
@@ -71,6 +76,11 @@ const Settings = () => {
     // Update container color states
     setLightContainer(settings.lightModeColors.container || "#f8fafc");
     setDarkContainer(settings.darkModeColors.container || "#1e293b");
+    // Update section color states
+    setLightSection(settings.lightModeColors.section || "#f1f5f9");
+    setDarkSection(settings.darkModeColors.section || "#1e293b");
+    setLightSectionSelected(settings.lightModeColors.sectionSelected || "#e2e8f0");
+    setDarkSectionSelected(settings.darkModeColors.sectionSelected || "#0f172a");
   }, [settings]);
 
   // Redirect to login page if not authenticated
@@ -103,6 +113,10 @@ const Settings = () => {
         darkAccent={darkAccent}
         lightContainer={lightContainer}
         darkContainer={darkContainer}
+        lightSection={lightSection}
+        darkSection={darkSection}
+        lightSectionSelected={lightSectionSelected}
+        darkSectionSelected={darkSectionSelected}
       >
         {/* General Settings Tab */}
         <TabsContent value="general">
@@ -166,6 +180,14 @@ const Settings = () => {
             setLightContainer={setLightContainer}
             darkContainer={darkContainer}
             setDarkContainer={setDarkContainer}
+            lightSection={lightSection}
+            setLightSection={setLightSection}
+            darkSection={darkSection}
+            setDarkSection={setDarkSection}
+            lightSectionSelected={lightSectionSelected}
+            setLightSectionSelected={setLightSectionSelected}
+            darkSectionSelected={darkSectionSelected}
+            setDarkSectionSelected={setDarkSectionSelected}
           />
         </TabsContent>
         

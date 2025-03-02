@@ -32,6 +32,8 @@
     --theme-accent-hover-color: #0284c7;
     --theme-sidebar-hover-color: #f1f5f9;
     --theme-container-color: #f8fafc;
+    --theme-section-color: #f1f5f9;
+    --theme-section-selected-color: #e2e8f0;
   }
  
   .dark {
@@ -61,6 +63,8 @@
     --theme-accent-hover-color: #0ea5e9;
     --theme-sidebar-hover-color: #1e293b;
     --theme-container-color: #1e293b;
+    --theme-section-color: #1e293b;
+    --theme-section-selected-color: #0f172a;
   }
 }
 
@@ -83,6 +87,14 @@
 
 .theme-container-bg {
   background-color: var(--theme-container-color);
+}
+
+.theme-section-bg {
+  background-color: var(--theme-section-color);
+}
+
+.theme-section-selected-bg {
+  background-color: var(--theme-section-selected-color);
 }
  
 @layer base {

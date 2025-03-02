@@ -30,7 +30,9 @@ interface POSSettings {
     text: string;
     accentHover: string;
     sidebarHover: string;
-    container: string; // New container color property
+    container: string;
+    section: string;
+    sectionSelected: string;
   };
   darkModeColors: {
     background: string;
@@ -39,7 +41,9 @@ interface POSSettings {
     text: string;
     accentHover: string;
     sidebarHover: string;
-    container: string; // New container color property
+    container: string;
+    section: string;
+    sectionSelected: string;
   };
 }
 
@@ -65,7 +69,9 @@ const defaultSettings: POSSettings = {
     text: "#1e293b",
     accentHover: "#0284c7",
     sidebarHover: "#f1f5f9",
-    container: "#f8fafc", // New default light container color
+    container: "#f8fafc",
+    section: "#f1f5f9", // Light gray for sections
+    sectionSelected: "#e2e8f0", // Slightly darker for selected items
   },
   darkModeColors: {
     background: "#1e293b",
@@ -74,7 +80,9 @@ const defaultSettings: POSSettings = {
     text: "#f8fafc",
     accentHover: "#0ea5e9",
     sidebarHover: "#1e293b",
-    container: "#1e293b", // New default dark container color
+    container: "#1e293b",
+    section: "#1e293b", // Dark blue-gray for sections
+    sectionSelected: "#0f172a", // Darker shade for selected items
   },
 };
 
@@ -163,7 +171,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       root.style.setProperty("--theme-text-color", settings.lightModeColors.text);
       root.style.setProperty("--theme-accent-hover-color", settings.lightModeColors.accentHover);
       root.style.setProperty("--theme-sidebar-hover-color", settings.lightModeColors.sidebarHover);
-      root.style.setProperty("--theme-container-color", settings.lightModeColors.container); // New CSS variable
+      root.style.setProperty("--theme-container-color", settings.lightModeColors.container);
+      root.style.setProperty("--theme-section-color", settings.lightModeColors.section);
+      root.style.setProperty("--theme-section-selected-color", settings.lightModeColors.sectionSelected);
     } else {
       // Dark mode colors
       root.style.setProperty("--theme-background-color", settings.darkModeColors.background);
@@ -172,7 +182,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       root.style.setProperty("--theme-text-color", settings.darkModeColors.text);
       root.style.setProperty("--theme-accent-hover-color", settings.darkModeColors.accentHover);
       root.style.setProperty("--theme-sidebar-hover-color", settings.darkModeColors.sidebarHover);
-      root.style.setProperty("--theme-container-color", settings.darkModeColors.container); // New CSS variable
+      root.style.setProperty("--theme-container-color", settings.darkModeColors.container);
+      root.style.setProperty("--theme-section-color", settings.darkModeColors.section);
+      root.style.setProperty("--theme-section-selected-color", settings.darkModeColors.sectionSelected);
     }
   }, [settings.theme, settings.lightModeColors, settings.darkModeColors]);
 

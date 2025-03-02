@@ -23,8 +23,12 @@ interface SettingsContainerProps {
   darkBackground: string;
   darkSidebar: string;
   darkAccent: string;
-  lightContainer: string; // Add the missing container props
+  lightContainer: string;
   darkContainer: string;
+  lightSection: string;
+  darkSection: string;
+  lightSectionSelected: string;
+  darkSectionSelected: string;
 }
 
 const SettingsContainer: React.FC<SettingsContainerProps> = ({
@@ -47,6 +51,10 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
   darkAccent,
   lightContainer,
   darkContainer,
+  lightSection,
+  darkSection,
+  lightSectionSelected,
+  darkSectionSelected,
 }) => {
   const { updateSettings } = useSettings();
   
@@ -79,7 +87,9 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
         text: lightText,
         accentHover: lightAccentHover,
         sidebarHover: lightSidebarHover,
-        container: lightContainer // Add container property
+        container: lightContainer,
+        section: lightSection,
+        sectionSelected: lightSectionSelected
       },
       darkModeColors: {
         background: darkBackground,
@@ -88,7 +98,9 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
         text: darkText,
         accentHover: darkAccentHover,
         sidebarHover: darkSidebarHover,
-        container: darkContainer // Add container property
+        container: darkContainer,
+        section: darkSection,
+        sectionSelected: darkSectionSelected
       }
     });
     
@@ -104,13 +116,13 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
       </div>
       
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="tax">Tax Settings</TabsTrigger>
-          <TabsTrigger value="tab">Tab System</TabsTrigger>
-          <TabsTrigger value="integrations">Integrations</TabsTrigger>
-          <TabsTrigger value="design">Design</TabsTrigger>
-          <TabsTrigger value="staff">Staff</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-6 theme-section-bg">
+          <TabsTrigger value="general" className="data-[state=active]:theme-section-selected-bg">General</TabsTrigger>
+          <TabsTrigger value="tax" className="data-[state=active]:theme-section-selected-bg">Tax Settings</TabsTrigger>
+          <TabsTrigger value="tab" className="data-[state=active]:theme-section-selected-bg">Tab System</TabsTrigger>
+          <TabsTrigger value="integrations" className="data-[state=active]:theme-section-selected-bg">Integrations</TabsTrigger>
+          <TabsTrigger value="design" className="data-[state=active]:theme-section-selected-bg">Design</TabsTrigger>
+          <TabsTrigger value="staff" className="data-[state=active]:theme-section-selected-bg">Staff</TabsTrigger>
         </TabsList>
         
         {children}
