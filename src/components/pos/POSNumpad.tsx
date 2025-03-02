@@ -1,9 +1,8 @@
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { formatCurrency } from "@/utils/formatters";
+import NumpadDisplay from "./numpad/NumpadDisplay";
+import NumpadGrid from "./numpad/NumpadGrid";
 
 interface POSNumpadProps {
   addToCart?: (product: any) => void;
@@ -69,65 +68,16 @@ const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart, onKeyPress }) => {
     setAmount("");
   };
   
-  const displayAmount = amount ? formatCurrency(parseFloat(amount) || 0) : "$0.00";
-  
-  // If we're using this as an input for another component, don't show the custom item UI
+  // If we're using this as an input for another component, render simplified version
   if (onKeyPress) {
     return (
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-3 gap-2">
-            {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
-              <Button
-                key={num}
-                variant="outline"
-                className="h-16 text-xl"
-                onClick={() => appendDigit(num.toString())}
-              >
-                {num}
-              </Button>
-            ))}
-            <Button
-              variant="outline"
-              className="h-16 text-xl"
-              onClick={() => appendDigit("0")}
-            >
-              0
-            </Button>
-            <Button
-              variant="outline"
-              className="h-16 text-xl"
-              onClick={() => appendDigit(".")}
-            >
-              .
-            </Button>
-            <Button
-              variant="outline"
-              className="h-16 text-xl text-destructive"
-              onClick={handleBackspace}
-            >
-              ⌫
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <Button
-              variant="outline"
-              className="h-16"
-              onClick={handleClear}
-            >
-              Clear
-            </Button>
-            <Button
-              variant="outline"
-              className="h-16"
-              onClick={() => {
-                appendDigit("00");
-              }}
-            >
-              00
-            </Button>
-          </div>
+          <NumpadGrid
+            onDigitPress={appendDigit}
+            onBackspace={handleBackspace}
+            onClear={handleClear}
+          />
         </CardContent>
       </Card>
     );
@@ -135,70 +85,22 @@ const POSNumpad: React.FC<POSNumpadProps> = ({ addToCart, onKeyPress }) => {
   
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex gap-4">
-        <Input
-          value={customItemName}
-          onChange={(e) => setCustomItemName(e.target.value)}
-          placeholder="Item name"
-          className="flex-1"
-        />
-        <div className="w-[180px] text-right text-2xl font-medium p-2 bg-muted/30 rounded-md">
-          {displayAmount}
-        </div>
-      </div>
+      <NumpadDisplay
+        customItemName={customItemName}
+        setCustomItemName={setCustomItemName}
+        amount={amount}
+      />
       
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-3 gap-2">
-            {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
-              <Button
-                key={num}
-                variant="outline"
-                className="h-16 text-xl"
-                onClick={() => appendDigit(num.toString())}
-              >
-                {num}
-              </Button>
-            ))}
-            <Button
-              variant="outline"
-              className="h-16 text-xl"
-              onClick={() => appendDigit("0")}
-            >
-              0
-            </Button>
-            <Button
-              variant="outline"
-              className="h-16 text-xl"
-              onClick={() => appendDigit(".")}
-            >
-              .
-            </Button>
-            <Button
-              variant="outline"
-              className="h-16 text-xl text-destructive"
-              onClick={handleBackspace}
-            >
-              ⌫
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <Button
-              variant="outline"
-              className="h-16"
-              onClick={handleClear}
-            >
-              Clear
-            </Button>
-            <Button
-              className="h-16"
-              onClick={handleAddToCart}
-              disabled={!amount || parseFloat(amount) <= 0}
-            >
-              Add to Cart
-            </Button>
-          </div>
+          <NumpadGrid
+            onDigitPress={appendDigit}
+            onBackspace={handleBackspace}
+            onClear={handleClear}
+            showAddToCart={true}
+            onAddToCart={handleAddToCart}
+            disableAddToCart={!amount || parseFloat(amount) <= 0}
+          />
         </CardContent>
       </Card>
     </div>
