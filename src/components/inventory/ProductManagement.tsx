@@ -164,7 +164,7 @@ const ProductManagement = () => {
       </Card>
 
       <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-        <DialogContent className="max-w-7xl py-16 max-h-screen border-none bg-background">
+        <DialogContent className="max-w-7xl py-8 max-h-[90vh] bg-background">
           <DialogHeader>
             <DialogTitle>Add New Product</DialogTitle>
           </DialogHeader>
@@ -173,7 +173,7 @@ const ProductManagement = () => {
       </Dialog>
       
       {showEditForm && selectedProduct && <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
-          <DialogContent className="max-w-7xl py-16 max-h-screen border-none bg-background">
+          <DialogContent className="max-w-7xl py-8 max-h-[90vh] bg-background">
             <DialogHeader>
               <DialogTitle>Edit Product</DialogTitle>
             </DialogHeader>
