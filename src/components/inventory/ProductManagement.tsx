@@ -12,6 +12,7 @@ import ProductVariantsManager from "./ProductVariantsManager";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { deleteProduct } from "@/api/inventoryApi";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 const ProductManagement = () => {
   const {
     products,
@@ -24,36 +25,44 @@ const ProductManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showVariantsManager, setShowVariantsManager] = useState(false);
+
   const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchTerm.toLowerCase()) || product.sku && product.sku.toLowerCase().includes(searchTerm.toLowerCase()) || product.barcode && product.barcode.toLowerCase().includes(searchTerm.toLowerCase()) || product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()));
+
   const handleAddProduct = () => {
     setSelectedProduct(null);
     setShowAddForm(true);
   };
+
   const handleEditProduct = (product: any) => {
     setSelectedProduct(product);
     setShowEditForm(true);
   };
+
   const handleManageVariants = (product: any) => {
     setSelectedProduct(product);
     setShowVariantsManager(true);
   };
+
   const handleDeleteProduct = async (id: string) => {
     const success = await deleteProduct(id);
     if (success) {
       refreshProducts();
     }
   };
+
   const handleFormClose = () => {
     setShowAddForm(false);
     setShowEditForm(false);
     setSelectedProduct(null);
     refreshProducts();
   };
+
   const handleVariantsClose = () => {
     setShowVariantsManager(false);
     setSelectedProduct(null);
     refreshProducts();
   };
+
   return <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">
@@ -154,7 +163,7 @@ const ProductManagement = () => {
       </Card>
 
       <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-        <DialogContent className="max-w-4xl bg-transparent">
+        <DialogContent className="max-w-4xl bg-transparent border-none">
           <DialogHeader>
             <DialogTitle>Add New Product</DialogTitle>
           </DialogHeader>
@@ -174,4 +183,5 @@ const ProductManagement = () => {
       {showVariantsManager && selectedProduct && <ProductVariantsManager product={selectedProduct} onClose={handleVariantsClose} />}
     </div>;
 };
+
 export default ProductManagement;
