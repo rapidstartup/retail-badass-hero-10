@@ -43,10 +43,33 @@ export function usePasswordSetup(
     }
     
     setIsLoading(true);
+    
     try {
+      // First, check if a staff record exists with this email
+      const { data: staffData, error: staffCheckError } = await supabase
+        .from('staff')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+        
+      if (staffCheckError) throw staffCheckError;
+      
+      if (!staffData) {
+        toast.error("No staff account found with this email. Please contact your administrator.");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Create the auth user
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password: newPassword,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+          }
+        }
       });
       
       if (signUpError) {
@@ -54,21 +77,29 @@ export function usePasswordSetup(
       }
       
       if (data?.user?.id) {
-        const { error: createStaffError } = await supabase
+        // Update the staff record with the auth_id
+        const { error: updateStaffError } = await supabase
           .from('staff')
-          .insert({
-            email,
-            first_name: firstName,
-            last_name: lastName,
+          .update({ 
             auth_id: data.user.id,
-            role: 'staff'
-          });
+            first_name: firstName,
+            last_name: lastName
+          })
+          .eq('email', email);
           
-        if (createStaffError) throw createStaffError;
+        if (updateStaffError) throw updateStaffError;
         
         toast.success("Account created successfully! You can now login");
         
-        await signIn(email, newPassword);
+        // Wait a moment before signing in to ensure data is properly saved
+        setTimeout(async () => {
+          try {
+            await signIn(email, newPassword);
+          } catch (signInError) {
+            console.error("Sign in after registration failed:", signInError);
+            toast.info("Account created, but automatic login failed. Please try logging in manually.");
+          }
+        }, 1000);
       } else {
         toast.error("Failed to create account");
       }
