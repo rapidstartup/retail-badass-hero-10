@@ -27,7 +27,7 @@ export function TabManager({ tabEnabled, tabThreshold, onCheckoutTab }: TabManag
         .from("transactions")
         .select("*, customers(first_name, last_name, email)")
         .eq("status", "open")
-        .is("payment_method", "tab");
+        .eq("payment_method", "tab");
         
       if (error) throw error;
       setTabs(data || []);
