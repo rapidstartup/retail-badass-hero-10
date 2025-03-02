@@ -41,6 +41,8 @@ const recentTransactions = [
 ];
 
 const Dashboard = () => {
+  console.log("Dashboard rendering");
+  
   return (
     <Layout>
       <div className="flex justify-between items-center mb-6">

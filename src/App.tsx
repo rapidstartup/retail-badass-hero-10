@@ -3,7 +3,10 @@ import React, { useState } from 'react';
 import {
   createBrowserRouter,
   RouterProvider,
-  Navigate
+  Navigate,
+  Route,
+  createRoutesFromElements,
+  Outlet
 } from "react-router-dom";
 import { useAuth, AuthProvider } from '@/contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -18,18 +21,28 @@ import Inventory from "@/pages/Inventory";
 import Settings from "@/pages/Settings";
 
 // Temporary placeholder pages for components not yet implemented
-const Register = () => <div>Register Page</div>;
-const Clients = () => <div>Clients Page</div>;
-const Transactions = () => <div>Transactions Page</div>;
-const Reports = () => <div>Reports Page</div>;
+const Register = () => <div className="p-8 text-lg">Register Page</div>;
+const Clients = () => <div className="p-8 text-lg">Clients Page</div>;
+const Transactions = () => <div className="p-8 text-lg">Transactions Page</div>;
+const Reports = () => <div className="p-8 text-lg">Reports Page</div>;
+
+function Root() {
+  return (
+    <>
+      <Outlet />
+      <Toaster position="top-right" />
+    </>
+  );
+}
 
 function AppRoutes() {
   const { user, session, loading, isAuthenticated } = useAuth();
+  console.log("Auth state:", { isAuthenticated, loading, user });
 
   // Protected route component
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (loading) {
-      return <div>Loading...</div>; // Or a loading spinner
+      return <div className="flex h-screen items-center justify-center">Loading...</div>;
     }
     if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
@@ -37,57 +50,61 @@ function AppRoutes() {
     return <>{children}</>;
   };
   
-  const router = createBrowserRouter([
-    {
-      path: "/login",
-      element: isAuthenticated ? <Navigate to="/" replace /> : <Login />
-    },
-    {
-      path: "/register",
-      element: isAuthenticated ? <Navigate to="/" replace /> : <Register />
-    },
-    {
-      path: "/",
-      element: <ProtectedRoute><Dashboard /></ProtectedRoute>
-    },
-    {
-      path: "/pos",
-      element: <ProtectedRoute><POS /></ProtectedRoute>
-    },
-    {
-      path: "/clients",
-      element: <ProtectedRoute><Clients /></ProtectedRoute>
-    },
-    {
-      path: "/transactions",
-      element: <ProtectedRoute><Transactions /></ProtectedRoute>
-    },
-    {
-      path: "/reports",
-      element: <ProtectedRoute><Reports /></ProtectedRoute>
-    },
-    {
-      path: "/settings",
-      element: <ProtectedRoute><Settings /></ProtectedRoute>
-    },
-    {
-      path: "/inventory",
-      element: <ProtectedRoute><Inventory /></ProtectedRoute>
-    },
-  ]);
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <Route element={<Root />}>
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
+        />
+        <Route
+          path="/register"
+          element={isAuthenticated ? <Navigate to="/" replace /> : <Register />}
+        />
+        <Route
+          path="/"
+          element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
+        />
+        <Route
+          path="/pos"
+          element={<ProtectedRoute><POS /></ProtectedRoute>}
+        />
+        <Route
+          path="/clients"
+          element={<ProtectedRoute><Clients /></ProtectedRoute>}
+        />
+        <Route
+          path="/transactions"
+          element={<ProtectedRoute><Transactions /></ProtectedRoute>}
+        />
+        <Route
+          path="/reports"
+          element={<ProtectedRoute><Reports /></ProtectedRoute>}
+        />
+        <Route
+          path="/settings"
+          element={<ProtectedRoute><Settings /></ProtectedRoute>}
+        />
+        <Route
+          path="/inventory"
+          element={<ProtectedRoute><Inventory /></ProtectedRoute>}
+        />
+      </Route>
+    )
+  );
   
   return <RouterProvider router={router} />;
 }
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
+  console.log("App rendering");
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <SettingsProvider>
           <AppRoutes />
-          <Toaster position="top-right" />
         </SettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
