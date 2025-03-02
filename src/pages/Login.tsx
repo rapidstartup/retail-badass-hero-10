@@ -1,14 +1,13 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import React, { useState } from "react";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSettings } from "@/contexts/SettingsContext";
+import LoginForm from "@/components/auth/LoginForm";
+import PasswordSetupForm from "@/components/auth/PasswordSetupForm";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -129,116 +128,26 @@ const Login = () => {
         </CardHeader>
         
         {isFirstTimeLogin ? (
-          <form onSubmit={handleSetPassword}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={true}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
-                <Input 
-                  id="newPassword" 
-                  type="password" 
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input 
-                  id="confirmPassword" 
-                  type="password" 
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button 
-                type="button" 
-                variant="outline"
-                onClick={handleBackToLogin}
-              >
-                Back to Login
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading}
-              >
-                {isLoading ? "Setting password..." : "Set Password & Login"}
-              </Button>
-            </CardFooter>
-          </form>
+          <PasswordSetupForm
+            email={email}
+            newPassword={newPassword}
+            setNewPassword={setNewPassword}
+            confirmPassword={confirmPassword}
+            setConfirmPassword={setConfirmPassword}
+            handleSetPassword={handleSetPassword}
+            handleBackToLogin={handleBackToLogin}
+            isLoading={isLoading}
+          />
         ) : (
-          <form onSubmit={handleSignIn}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="your.email@example.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Button 
-                    variant="link" 
-                    className="p-0 h-auto text-sm"
-                    type="button"
-                    onClick={async () => {
-                      if (!email) {
-                        toast.error("Please enter your email first");
-                        return;
-                      }
-                      try {
-                        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                          redirectTo: window.location.origin + '/login?firstTime=true',
-                        });
-                        
-                        if (error) throw error;
-                        toast.success("Password reset email sent");
-                      } catch (error: any) {
-                        toast.error(error.message || "Failed to send reset email");
-                      }
-                    }}
-                  >
-                    Forgot password?
-                  </Button>
-                </div>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={isLoading}
-              >
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Button>
-            </CardFooter>
-          </form>
+          <LoginForm
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            handleSignIn={handleSignIn}
+            isLoading={isLoading}
+            onFirstTimeLoginDetected={setIsFirstTimeLogin}
+          />
         )}
       </Card>
     </div>
