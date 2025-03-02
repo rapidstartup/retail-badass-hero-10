@@ -1,6 +1,7 @@
 
 import React from "react";
 import { formatCurrency } from "@/utils/formatters";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Temporary mock data
 const mockProducts = [
@@ -40,33 +41,35 @@ const POSProductGrid: React.FC<POSProductGridProps> = ({
   });
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto h-full pb-4">
-      {filteredProducts.length === 0 ? (
-        <div className="col-span-full flex items-center justify-center h-40 text-muted-foreground">
-          No products found
-        </div>
-      ) : (
-        filteredProducts.map(product => (
-          <div 
-            key={product.id}
-            className="bg-card border rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => addToCart(product)}
-          >
-            <div className="aspect-square bg-muted relative overflow-hidden">
-              <img 
-                src={product.image} 
-                alt={product.name}
-                className="object-cover h-full w-full"
-              />
-            </div>
-            <div className="p-3">
-              <h3 className="font-medium truncate">{product.name}</h3>
-              <p className="text-muted-foreground">{formatCurrency(product.price)}</p>
-            </div>
+    <ScrollArea className="h-[calc(100vh-280px)]">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 pb-6 pr-4">
+        {filteredProducts.length === 0 ? (
+          <div className="col-span-full flex items-center justify-center h-40 text-muted-foreground">
+            No products found
           </div>
-        ))
-      )}
-    </div>
+        ) : (
+          filteredProducts.map(product => (
+            <div 
+              key={product.id}
+              className="bg-card border rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-all transform hover:-translate-y-1"
+              onClick={() => addToCart(product)}
+            >
+              <div className="aspect-square bg-muted relative overflow-hidden">
+                <img 
+                  src={product.image} 
+                  alt={product.name}
+                  className="object-cover h-full w-full"
+                />
+              </div>
+              <div className="p-3">
+                <h3 className="font-medium truncate">{product.name}</h3>
+                <p className="text-muted-foreground">{formatCurrency(product.price)}</p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </ScrollArea>
   );
 };
 

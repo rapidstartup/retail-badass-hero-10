@@ -116,15 +116,15 @@ const POS = () => {
             onValueChange={(value) => setActiveTab(value as "products" | "numpad" | "tabs" | "inventory")} 
             className="flex-1 flex flex-col"
           >
-            <TabsList className="mb-4">
+            <TabsList className="mb-4 w-full border-b sticky top-0 z-10 bg-background">
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="numpad">Numpad</TabsTrigger>
               <TabsTrigger value="tabs">Open Tabs</TabsTrigger>
               <TabsTrigger value="inventory">Inventory</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="products" className="flex-1 overflow-hidden flex flex-col">
-              <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            <TabsContent value="products" className="flex-1 overflow-hidden flex flex-col mt-0">
+              <div className="flex gap-2 mb-4 overflow-x-auto pb-2 sticky top-[48px] z-10 bg-background">
                 {categories.map((category) => (
                   <Button
                     key={category}
