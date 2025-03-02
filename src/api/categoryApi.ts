@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ProductCategory } from "./types/inventoryTypes";
 
+// Re-export the ProductCategory type
+export type { ProductCategory };
+
 // Categories API
 export const fetchCategories = async (): Promise<ProductCategory[]> => {
   try {
