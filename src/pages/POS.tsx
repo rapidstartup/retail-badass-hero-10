@@ -14,19 +14,66 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { TabManager } from "@/components/pos/TabManager";
 import { InventoryTracker } from "@/components/inventory/InventoryTracker";
 import { calculateTotalTax, formatTaxRulesFromSettings } from "@/utils/taxCalculator";
+import { supabase } from "@/integrations/supabase/client";
 
-// Temporary data until we connect to a database
-const categories = ["All", "Food", "Drinks", "Merchandise", "Services"];
+// Define product interface for type safety
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string | null;
+  image_url: string | null;
+  stock: number | null;
+  description: string | null;
+}
+
+// Define cart item interface
+interface CartItem extends Product {
+  quantity: number;
+}
 
 const POS = () => {
   const { settings } = useSettings();
+  const [categories, setCategories] = useState<string[]>(["All"]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"products" | "numpad" | "tabs" | "inventory">("products");
 
-  const addToCart = (product: any) => {
+  // Fetch distinct product categories from Supabase
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("category")
+          .not("category", "is", null)
+          .order("category");
+          
+        if (error) {
+          console.error("Error fetching categories:", error);
+          return;
+        }
+        
+        // Extract unique categories and add "All" at the beginning
+        const uniqueCategories = ["All"];
+        data.forEach(item => {
+          if (item.category && !uniqueCategories.includes(item.category)) {
+            uniqueCategories.push(item.category);
+          }
+        });
+        
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.error("Unexpected error fetching categories:", error);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
+
+  const addToCart = (product: Product) => {
     const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
     
     if (existingItemIndex >= 0) {
@@ -82,11 +129,40 @@ const POS = () => {
     return getSubtotal() + getTaxAmount();
   };
 
-  const handleCheckoutTab = (tabId: string) => {
-    // This would load the tab items into the cart
-    console.log("Loading tab for checkout:", tabId);
-    // In a real implementation, we'd fetch the tab details from Supabase
-    // and populate the cart with those items
+  const handleCheckoutTab = async (tabId: string) => {
+    try {
+      // Fetch the tab items from Supabase
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("items, customer_id")
+        .eq("id", tabId)
+        .single();
+        
+      if (error) {
+        console.error("Error fetching tab:", error);
+        return;
+      }
+      
+      // Fetch customer details if there's a customer_id
+      if (data.customer_id) {
+        const { data: customerData, error: customerError } = await supabase
+          .from("customers")
+          .select("*")
+          .eq("id", data.customer_id)
+          .single();
+          
+        if (!customerError && customerData) {
+          setSelectedCustomer(customerData);
+        }
+      }
+      
+      // Load tab items into cart
+      if (data.items && Array.isArray(data.items)) {
+        setCartItems(data.items as CartItem[]);
+      }
+    } catch (error) {
+      console.error("Unexpected error loading tab:", error);
+    }
   };
 
   return (
