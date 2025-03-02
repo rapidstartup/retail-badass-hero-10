@@ -34,7 +34,9 @@ function App() {
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <Layout />
+                    <Layout>
+                      <Outlet />
+                    </Layout>
                   </ProtectedRoute>
                 }
               >
