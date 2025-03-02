@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useProductVariants } from "@/hooks/useProductVariants";
 import VariantCombinationsTable from "./variants/VariantCombinationsTable";
 import VariantTypesForm from "./variants/VariantTypesForm";
-import { VariantType } from "@/hooks/useProductVariants/types";
+import { VariantType } from "@/api/types/inventoryTypes";
 
 interface EnhancedProductVariantsManagerProps {
   product: Product;

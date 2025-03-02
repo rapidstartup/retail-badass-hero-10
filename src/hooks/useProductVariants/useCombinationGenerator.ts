@@ -1,96 +1,74 @@
-import { Product } from "@/types";
-import { VariantType, VariantCombination } from "./types";
 
-export function useCombinationGenerator(
-  product: Product,
+import { useState, useCallback } from 'react';
+import { Product } from '@/api/types/inventoryTypes';
+import { VariantType, VariantCombination } from './types';
+
+export const useCombinationGenerator = (
   variantTypes: VariantType[],
-  combinations: VariantCombination[],
-  setCombinations: React.Dispatch<React.SetStateAction<VariantCombination[]>>
-) {
-  // Generate all possible combinations of variant types and values
-  const generateCombinations = () => {
-    // If no variant types, return empty array
+  setCombinations: React.Dispatch<React.SetStateAction<VariantCombination[]>>,
+  product: Product
+) => {
+  // Generate all combinations of variant values
+  const generateCombinations = useCallback(() => {
     if (variantTypes.length === 0) {
       setCombinations([]);
       return;
     }
 
-    // Filter out any variant types with no values
-    const typesArray = variantTypes.filter(
-      (type) => type.values.length > 0
-    );
-    
-    if (typesArray.length === 0) {
-      setCombinations([]);
-      return;
-    }
-
-    // Generate all possible combinations recursively
+    // Function to generate attribute combinations recursively
     const generateAttributeCombinations = (
-      index: number,
-      currentCombination: Record<string, string>
+      variantTypeIndex: number, 
+      currentAttributes: Record<string, string> = {}
     ): Record<string, string>[] => {
-      // Base case: we've processed all types
-      if (index === typesArray.length) {
-        return [{ ...currentCombination }];
+      // Base case: we've processed all variant types
+      if (variantTypeIndex >= variantTypes.length) {
+        return [currentAttributes];
       }
 
-      const type = typesArray[index];
-      const result: Record<string, string>[] = [];
-
-      // For each possible value of the current type
-      for (const value of type.values) {
-        // Add this value to the current combination
-        const newCombination = {
-          ...currentCombination,
-          [type.name]: value,
-        };
-
-        // Recursively generate combinations for the remaining types
-        const combinations = generateAttributeCombinations(
-          index + 1,
-          newCombination
-        );
-        result.push(...combinations);
+      const currentVariantType = variantTypes[variantTypeIndex];
+      const { name, values } = currentVariantType;
+      
+      // Generate combinations for each value of the current variant type
+      const allCombinations: Record<string, string>[] = [];
+      
+      for (const value of values) {
+        const newAttributes = { ...currentAttributes, [name]: value };
+        const nextCombinations = generateAttributeCombinations(variantTypeIndex + 1, newAttributes);
+        allCombinations.push(...nextCombinations);
       }
-
-      return result;
+      
+      return allCombinations;
     };
 
-    // Start the recursive combination generation
-    const attributeCombinations = generateAttributeCombinations(0, {});
-
-    // Convert attribute combinations to VariantCombination objects
-    const newCombinations: VariantCombination[] = attributeCombinations.map(
-      (attrs) => {
-        // Try to find an existing combination with these attributes
-        const existingCombination = combinations.find((c) => {
-          return Object.entries(attrs).every(
-            ([key, value]) => c.attributes[key] === value
-          );
-        });
-
-        // If we found an existing combination, use its values
-        if (existingCombination) {
-          return { ...existingCombination };
-        }
-
-        // Otherwise, create a new combination
-        return {
-          product_id: product.id,
-          sku: "", // This will be auto-generated later
-          price: product.price,
-          stock_count: 0,
-          color: attrs["Color"] || attrs["color"],
-          size: attrs["Size"] || attrs["size"],
-          flavor: attrs["Flavor"] || attrs["flavor"],
-          attributes: { ...attrs },
-        };
-      }
-    );
-
+    // Generate all attribute combinations
+    const attributeCombinations = generateAttributeCombinations(0);
+    
+    // Create variant combinations with default values
+    const skuPrefix = product.sku || 
+      product.name.split(' ')
+        .map(word => word.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 3);
+    
+    const newCombinations: VariantCombination[] = attributeCombinations.map((attributes, index) => {
+      // Generate a unique SKU
+      const variantSuffix = Object.values(attributes).join('-');
+      const sku = `${skuPrefix}-${variantSuffix}`;
+      
+      return {
+        product_id: product.id,
+        sku,
+        price: product.price,
+        stock_count: 0,
+        color: attributes.color,
+        size: attributes.size,
+        flavor: attributes.flavor,
+        attributes
+      };
+    });
+    
     setCombinations(newCombinations);
-  };
+  }, [variantTypes, setCombinations, product]);
 
   return { generateCombinations };
-}
+};
