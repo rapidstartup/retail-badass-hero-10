@@ -99,10 +99,10 @@ const Layout = ({ children }: LayoutProps) => {
         </>
       ) : (
         <>
-          <div className="w-[250px] h-screen overflow-auto border-r theme-sidebar-bg">
+          <div className="w-[250px] h-screen overflow-y-auto fixed left-0 top-0 theme-sidebar-bg">
             <NavContent />
           </div>
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 ml-[250px] overflow-auto h-screen">
             <main className="p-6">
               {children}
             </main>
