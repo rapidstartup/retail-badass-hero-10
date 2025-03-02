@@ -258,9 +258,10 @@ export function useProductVariants(
             price: combination.price,
             stock_count: combination.stock_count,
             variant_attributes: combination.attributes,
-            // Extract color and size from attributes if they exist
+            // Extract color, size, and flavor from attributes if they exist
             color: combination.attributes.Color || combination.attributes.color || null,
-            size: combination.attributes.Size || combination.attributes.size || null
+            size: combination.attributes.Size || combination.attributes.size || null,
+            flavor: combination.attributes.Flavor || combination.attributes.flavor || null
           });
         }
       }
