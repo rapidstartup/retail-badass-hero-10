@@ -8,7 +8,7 @@ import { ProductVariant } from "@/api/inventoryApi";
 interface SingleVariantFormProps {
   newVariant: ProductVariant;
   setNewVariant: (variant: ProductVariant) => void;
-  handleCreateVariant: () => Promise<void>;
+  handleCreateVariant: (variantData: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   creatingVariant: boolean;
 }
 
@@ -74,7 +74,18 @@ const SingleVariantForm = ({
       
       <div className="space-y-2 flex items-end">
         <Button 
-          onClick={handleCreateVariant} 
+          onClick={() => {
+            const variantData = {
+              product_id: newVariant.product_id,
+              sku: newVariant.sku,
+              color: newVariant.color,
+              size: newVariant.size,
+              price: newVariant.price,
+              stock_count: newVariant.stock_count,
+              variant_attributes: newVariant.variant_attributes || {}
+            };
+            handleCreateVariant(variantData);
+          }} 
           className="w-full"
           disabled={creatingVariant}
         >
