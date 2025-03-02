@@ -4,7 +4,7 @@ import { Product, ProductVariant } from '@/api/types/inventoryTypes';
 import { useVariantFetching } from './useVariantFetching';
 import { useVariantOperations } from './useVariantOperations';
 import { useCombinationGenerator } from './useCombinationGenerator';
-import { VariantType, VariantCombination, UseProductVariantsReturn } from '../useProductVariants/types';
+import { VariantType, VariantCombination, UseProductVariantsReturn } from './types';
 
 export const useProductVariants = (
   product: Product, 
@@ -21,8 +21,10 @@ export const useProductVariants = (
   // Generate combinations when variant types change
   const { generateCombinations: genCombinations } = useCombinationGenerator(
     variantTypes, 
+    combinations,
     setCombinations, 
-    product
+    product.id,
+    product.price
   );
 
   // Initialize variantTypes from existing variants
