@@ -33,15 +33,19 @@ interface CartItem extends Product {
   quantity: number;
 }
 
-// Helper function to type guard and convert Json to CartItem
-const isValidCartItem = (item: Json): item is CartItem => {
+// Helper function to check if a JSON object has the required properties to be a CartItem
+const isValidCartItem = (item: Json): boolean => {
   return (
     typeof item === 'object' && 
     item !== null && 
     'id' in item && 
+    typeof item.id === 'string' &&
     'name' in item && 
+    typeof item.name === 'string' &&
     'price' in item && 
-    'quantity' in item
+    typeof item.price === 'number' &&
+    'quantity' in item &&
+    typeof item.quantity === 'number'
   );
 };
 
@@ -171,10 +175,22 @@ const POS = () => {
       
       // Load tab items into cart with proper type checking
       if (data.items && Array.isArray(data.items)) {
-        // Filter and convert items to CartItem type
+        // Filter valid cart items
         const validCartItems = data.items
           .filter(isValidCartItem)
-          .map(item => item as CartItem);
+          .map(item => {
+            // Safe type conversion with all required properties
+            return {
+              id: String(item.id),
+              name: String(item.name),
+              price: Number(item.price),
+              quantity: Number(item.quantity),
+              category: typeof item === 'object' && item !== null && 'category' in item ? item.category as string | null : null,
+              image_url: typeof item === 'object' && item !== null && 'image_url' in item ? item.image_url as string | null : null,
+              stock: typeof item === 'object' && item !== null && 'stock' in item ? item.stock as number | null : null,
+              description: typeof item === 'object' && item !== null && 'description' in item ? item.description as string | null : null
+            } as CartItem;
+          });
           
         setCartItems(validCartItems);
       }
