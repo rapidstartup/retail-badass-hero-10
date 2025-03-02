@@ -1,8 +1,7 @@
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Layout from "@/components/Layout";
 import { TabsContent } from "@/components/ui/tabs";
-import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 
@@ -14,80 +13,12 @@ import IntegrationSettings from "@/components/settings/IntegrationSettings";
 import DesignSettings from "@/components/settings/DesignSettings";
 import StaffSettings from "@/components/settings/StaffSettings";
 import SettingsContainer from "@/components/settings/SettingsContainer";
-import { defaultLightColors, defaultDarkColors } from "@/types/settings";
+import { useSettingsForm } from "@/hooks/useSettingsForm";
 
 const Settings = () => {
-  const { settings } = useSettings();
   const { isAuthenticated, loading } = useAuth();
+  const settingsForm = useSettingsForm();
   
-  // Local state for form values
-  const [taxRate, setTaxRate] = useState<number>(settings.taxRate);
-  const [tabEnabled, setTabEnabled] = useState<boolean>(settings.tabEnabled);
-  const [tabThreshold, setTabThreshold] = useState<number>(settings.tabThreshold);
-  
-  // Stripe API integration fields
-  const [stripeLiveSecretKey, setStripeLiveSecretKey] = useState<string>("");
-  const [stripeLivePublicKey, setStripeLivePublicKey] = useState<string>("");
-  const [stripeTestSecretKey, setStripeTestSecretKey] = useState<string>("");
-  const [stripeTestPublicKey, setStripeTestPublicKey] = useState<string>("");
-  const [stripeMode, setStripeMode] = useState<"live" | "test">("test");
-  
-  // GoHighLevel integration field
-  const [goHighLevelApiKey, setGoHighLevelApiKey] = useState<string>("");
-  
-  // Theme settings
-  const [theme, setTheme] = useState<"light" | "dark">(settings.theme);
-  const [lightBackground, setLightBackground] = useState<string>(settings.lightModeColors.background);
-  const [lightSidebar, setLightSidebar] = useState<string>(settings.lightModeColors.sidebar);
-  const [lightAccent, setLightAccent] = useState<string>(settings.lightModeColors.accent);
-  const [darkBackground, setDarkBackground] = useState<string>(settings.darkModeColors.background);
-  const [darkSidebar, setDarkSidebar] = useState<string>(settings.darkModeColors.sidebar);
-  const [darkAccent, setDarkAccent] = useState<string>(settings.darkModeColors.accent);
-  // Container color states
-  const [lightContainer, setLightContainer] = useState<string>(settings.lightModeColors.container);
-  const [darkContainer, setDarkContainer] = useState<string>(settings.darkModeColors.container);
-  // Section color states
-  const [lightSection, setLightSection] = useState<string>(settings.lightModeColors.section);
-  const [darkSection, setDarkSection] = useState<string>(settings.darkModeColors.section);
-  const [lightSectionSelected, setLightSectionSelected] = useState<string>(settings.lightModeColors.sectionSelected);
-  const [darkSectionSelected, setDarkSectionSelected] = useState<string>(settings.darkModeColors.sectionSelected);
-  
-  // Sync local state with context when settings change
-  useEffect(() => {
-    setTaxRate(settings.taxRate);
-    setTabEnabled(settings.tabEnabled);
-    setTabThreshold(settings.tabThreshold);
-    
-    // If we have these settings stored, load them
-    if (settings.stripeLiveSecretKey) setStripeLiveSecretKey(settings.stripeLiveSecretKey);
-    if (settings.stripeLivePublicKey) setStripeLivePublicKey(settings.stripeLivePublicKey);
-    if (settings.stripeTestSecretKey) setStripeTestSecretKey(settings.stripeTestSecretKey);
-    if (settings.stripeTestPublicKey) setStripeTestPublicKey(settings.stripeTestPublicKey);
-    if (settings.stripeMode) setStripeMode(settings.stripeMode);
-    if (settings.goHighLevelApiKey) setGoHighLevelApiKey(settings.goHighLevelApiKey);
-    
-    // Theme settings
-    setTheme(settings.theme);
-    
-    // Light Mode Colors
-    const lightColors = settings.lightModeColors || defaultLightColors;
-    setLightBackground(lightColors.background);
-    setLightSidebar(lightColors.sidebar);
-    setLightAccent(lightColors.accent);
-    setLightContainer(lightColors.container);
-    setLightSection(lightColors.section);
-    setLightSectionSelected(lightColors.sectionSelected);
-    
-    // Dark Mode Colors
-    const darkColors = settings.darkModeColors || defaultDarkColors;
-    setDarkBackground(darkColors.background);
-    setDarkSidebar(darkColors.sidebar);
-    setDarkAccent(darkColors.accent);
-    setDarkContainer(darkColors.container);
-    setDarkSection(darkColors.section);
-    setDarkSectionSelected(darkColors.sectionSelected);
-  }, [settings]);
-
   // Redirect to login page if not authenticated
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
@@ -100,28 +31,28 @@ const Settings = () => {
   return (
     <Layout>
       <SettingsContainer
-        taxRate={taxRate}
-        tabEnabled={tabEnabled}
-        tabThreshold={tabThreshold}
-        stripeLiveSecretKey={stripeLiveSecretKey}
-        stripeLivePublicKey={stripeLivePublicKey}
-        stripeTestSecretKey={stripeTestSecretKey}
-        stripeTestPublicKey={stripeTestPublicKey}
-        stripeMode={stripeMode}
-        goHighLevelApiKey={goHighLevelApiKey}
-        theme={theme}
-        lightBackground={lightBackground}
-        lightSidebar={lightSidebar}
-        lightAccent={lightAccent}
-        darkBackground={darkBackground}
-        darkSidebar={darkSidebar}
-        darkAccent={darkAccent}
-        lightContainer={lightContainer}
-        darkContainer={darkContainer}
-        lightSection={lightSection}
-        darkSection={darkSection}
-        lightSectionSelected={lightSectionSelected}
-        darkSectionSelected={darkSectionSelected}
+        taxRate={settingsForm.taxRate}
+        tabEnabled={settingsForm.tabEnabled}
+        tabThreshold={settingsForm.tabThreshold}
+        stripeLiveSecretKey={settingsForm.stripeLiveSecretKey}
+        stripeLivePublicKey={settingsForm.stripeLivePublicKey}
+        stripeTestSecretKey={settingsForm.stripeTestSecretKey}
+        stripeTestPublicKey={settingsForm.stripeTestPublicKey}
+        stripeMode={settingsForm.stripeMode}
+        goHighLevelApiKey={settingsForm.goHighLevelApiKey}
+        theme={settingsForm.theme}
+        lightBackground={settingsForm.lightBackground}
+        lightSidebar={settingsForm.lightSidebar}
+        lightAccent={settingsForm.lightAccent}
+        darkBackground={settingsForm.darkBackground}
+        darkSidebar={settingsForm.darkSidebar}
+        darkAccent={settingsForm.darkAccent}
+        lightContainer={settingsForm.lightContainer}
+        darkContainer={settingsForm.darkContainer}
+        lightSection={settingsForm.lightSection}
+        darkSection={settingsForm.darkSection}
+        lightSectionSelected={settingsForm.lightSectionSelected}
+        darkSectionSelected={settingsForm.darkSectionSelected}
       >
         {/* General Settings Tab */}
         <TabsContent value="general">
@@ -131,68 +62,68 @@ const Settings = () => {
         {/* Tax Settings Tab */}
         <TabsContent value="tax">
           <TaxSettings 
-            taxRate={taxRate}
-            setTaxRate={setTaxRate}
+            taxRate={settingsForm.taxRate}
+            setTaxRate={settingsForm.setTaxRate}
           />
         </TabsContent>
         
         {/* Tab System Settings */}
         <TabsContent value="tab">
           <TabSettings 
-            tabEnabled={tabEnabled}
-            setTabEnabled={setTabEnabled}
-            tabThreshold={tabThreshold}
-            setTabThreshold={setTabThreshold}
+            tabEnabled={settingsForm.tabEnabled}
+            setTabEnabled={settingsForm.setTabEnabled}
+            tabThreshold={settingsForm.tabThreshold}
+            setTabThreshold={settingsForm.setTabThreshold}
           />
         </TabsContent>
         
         {/* Integrations Tab */}
         <TabsContent value="integrations">
           <IntegrationSettings 
-            stripeLiveSecretKey={stripeLiveSecretKey}
-            setStripeLiveSecretKey={setStripeLiveSecretKey}
-            stripeLivePublicKey={stripeLivePublicKey}
-            setStripeLivePublicKey={setStripeLivePublicKey}
-            stripeTestSecretKey={stripeTestSecretKey}
-            setStripeTestSecretKey={setStripeTestSecretKey}
-            stripeTestPublicKey={stripeTestPublicKey}
-            setStripeTestPublicKey={setStripeTestPublicKey}
-            stripeMode={stripeMode}
-            setStripeMode={setStripeMode}
-            goHighLevelApiKey={goHighLevelApiKey}
-            setGoHighLevelApiKey={setGoHighLevelApiKey}
+            stripeLiveSecretKey={settingsForm.stripeLiveSecretKey}
+            setStripeLiveSecretKey={settingsForm.setStripeLiveSecretKey}
+            stripeLivePublicKey={settingsForm.stripeLivePublicKey}
+            setStripeLivePublicKey={settingsForm.setStripeLivePublicKey}
+            stripeTestSecretKey={settingsForm.stripeTestSecretKey}
+            setStripeTestSecretKey={settingsForm.setStripeTestSecretKey}
+            stripeTestPublicKey={settingsForm.stripeTestPublicKey}
+            setStripeTestPublicKey={settingsForm.setStripeTestPublicKey}
+            stripeMode={settingsForm.stripeMode}
+            setStripeMode={settingsForm.setStripeMode}
+            goHighLevelApiKey={settingsForm.goHighLevelApiKey}
+            setGoHighLevelApiKey={settingsForm.setGoHighLevelApiKey}
           />
         </TabsContent>
         
         {/* Design Tab */}
         <TabsContent value="design">
           <DesignSettings 
-            theme={theme}
-            setTheme={setTheme}
-            lightBackground={lightBackground}
-            setLightBackground={setLightBackground}
-            lightSidebar={lightSidebar}
-            setLightSidebar={setLightSidebar}
-            lightAccent={lightAccent}
-            setLightAccent={setLightAccent}
-            darkBackground={darkBackground}
-            setDarkBackground={setDarkBackground}
-            darkSidebar={darkSidebar}
-            setDarkSidebar={setDarkSidebar}
-            darkAccent={darkAccent}
-            setDarkAccent={setDarkAccent}
-            lightContainer={lightContainer}
-            setLightContainer={setLightContainer}
-            darkContainer={darkContainer}
-            setDarkContainer={setDarkContainer}
-            lightSection={lightSection}
-            setLightSection={setLightSection}
-            darkSection={darkSection}
-            setDarkSection={setDarkSection}
-            lightSectionSelected={lightSectionSelected}
-            setLightSectionSelected={setLightSectionSelected}
-            darkSectionSelected={darkSectionSelected}
-            setDarkSectionSelected={setDarkSectionSelected}
+            theme={settingsForm.theme}
+            setTheme={settingsForm.setTheme}
+            lightBackground={settingsForm.lightBackground}
+            setLightBackground={settingsForm.setLightBackground}
+            lightSidebar={settingsForm.lightSidebar}
+            setLightSidebar={settingsForm.setLightSidebar}
+            lightAccent={settingsForm.lightAccent}
+            setLightAccent={settingsForm.setLightAccent}
+            darkBackground={settingsForm.darkBackground}
+            setDarkBackground={settingsForm.setDarkBackground}
+            darkSidebar={settingsForm.darkSidebar}
+            setDarkSidebar={settingsForm.setDarkSidebar}
+            darkAccent={settingsForm.darkAccent}
+            setDarkAccent={settingsForm.setDarkAccent}
+            lightContainer={settingsForm.lightContainer}
+            setLightContainer={settingsForm.setLightContainer}
+            darkContainer={settingsForm.darkContainer}
+            setDarkContainer={settingsForm.setDarkContainer}
+            lightSection={settingsForm.lightSection}
+            setLightSection={settingsForm.setLightSection}
+            darkSection={settingsForm.darkSection}
+            setDarkSection={settingsForm.setDarkSection}
+            lightSectionSelected={settingsForm.lightSectionSelected}
+            setLightSectionSelected={settingsForm.setLightSectionSelected}
+            darkSectionSelected={settingsForm.darkSectionSelected}
+            setDarkSectionSelected={settingsForm.setDarkSectionSelected}
           />
         </TabsContent>
         
