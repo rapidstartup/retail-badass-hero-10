@@ -32,6 +32,7 @@ export interface ProductVariant {
   stock_count: number | null;
   color: string | null;
   size: string | null;
+  flavor: string | null;
   variant_attributes: Record<string, any> | null;
   created_at: string | null;
   updated_at: string | null;

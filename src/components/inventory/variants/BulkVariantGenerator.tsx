@@ -15,14 +15,19 @@ interface BulkVariantGeneratorProps {
   setBulkBaseStock: (stock: number) => void;
   colorOptions: string[];
   sizeOptions: string[];
+  flavorOptions: string[];
   newColorOption: string;
   setNewColorOption: (color: string) => void;
   newSizeOption: string;
   setNewSizeOption: (size: string) => void;
+  newFlavorOption: string;
+  setNewFlavorOption: (flavor: string) => void;
   addColorOption: () => void;
   addSizeOption: () => void;
+  addFlavorOption: () => void;
   removeColorOption: (color: string) => void;
   removeSizeOption: (size: string) => void;
+  removeFlavorOption: (flavor: string) => void;
   generateBulkVariants: () => Promise<void>;
   creatingVariant: boolean;
 }
@@ -36,19 +41,25 @@ const BulkVariantGenerator = ({
   setBulkBaseStock,
   colorOptions,
   sizeOptions,
+  flavorOptions,
   newColorOption,
   setNewColorOption,
   newSizeOption,
   setNewSizeOption,
+  newFlavorOption,
+  setNewFlavorOption,
   addColorOption,
   addSizeOption,
+  addFlavorOption,
   removeColorOption,
   removeSizeOption,
+  removeFlavorOption,
   generateBulkVariants,
   creatingVariant
 }: BulkVariantGeneratorProps) => {
   const colorInputRef = React.useRef<HTMLInputElement>(null);
   const sizeInputRef = React.useRef<HTMLInputElement>(null);
+  const flavorInputRef = React.useRef<HTMLInputElement>(null);
   
   const handleColorKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -61,6 +72,13 @@ const BulkVariantGenerator = ({
     if (e.key === 'Enter') {
       e.preventDefault();
       addSizeOption();
+    }
+  };
+  
+  const handleFlavorKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addFlavorOption();
     }
   };
 
@@ -102,7 +120,7 @@ const BulkVariantGenerator = ({
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Colors</CardTitle>
@@ -188,12 +206,55 @@ const BulkVariantGenerator = ({
             </div>
           </CardContent>
         </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Flavors</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2 mb-3">
+              <Input
+                ref={flavorInputRef}
+                placeholder="Add a flavor"
+                value={newFlavorOption}
+                onChange={(e) => setNewFlavorOption(e.target.value)}
+                onKeyDown={handleFlavorKeyDown}
+              />
+              <Button 
+                size="sm" 
+                onClick={() => {
+                  addFlavorOption();
+                  flavorInputRef.current?.focus();
+                }}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              {flavorOptions.map((flavor) => (
+                <Badge key={flavor} variant="secondary" className="flex items-center gap-1">
+                  {flavor}
+                  <button 
+                    onClick={() => removeFlavorOption(flavor)}
+                    className="ml-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              {flavorOptions.length === 0 && (
+                <p className="text-xs text-muted-foreground">No flavors added yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
       <Button 
         onClick={generateBulkVariants} 
         className="w-full mt-4"
-        disabled={creatingVariant || (colorOptions.length === 0 && sizeOptions.length === 0)}
+        disabled={creatingVariant || (colorOptions.length === 0 && sizeOptions.length === 0 && flavorOptions.length === 0)}
       >
         {creatingVariant ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
         Generate Variants

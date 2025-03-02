@@ -34,10 +34,13 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
     setNewVariant,
     colorOptions,
     sizeOptions,
+    flavorOptions,
     newColorOption,
     setNewColorOption,
     newSizeOption,
     setNewSizeOption,
+    newFlavorOption,
+    setNewFlavorOption,
     bulkBasePrice,
     setBulkBasePrice,
     bulkBaseStock,
@@ -51,8 +54,10 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
     handleDeleteVariant,
     addColorOption,
     addSizeOption,
+    addFlavorOption,
     removeColorOption,
     removeSizeOption,
+    removeFlavorOption,
     generateBulkVariants
   } = useVariantManager(product);
 
@@ -71,7 +76,7 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
               <div>
                 <h3 className="text-lg font-medium">Product Variants</h3>
                 <p className="text-sm text-muted-foreground">
-                  Manage color, size, and other variants for this product
+                  Manage color, size, flavor, and other variants for this product
                 </p>
               </div>
               <div className="flex space-x-2">
@@ -126,14 +131,19 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
                     setBulkBaseStock={setBulkBaseStock}
                     colorOptions={colorOptions}
                     sizeOptions={sizeOptions}
+                    flavorOptions={flavorOptions}
                     newColorOption={newColorOption}
                     setNewColorOption={setNewColorOption}
                     newSizeOption={newSizeOption}
                     setNewSizeOption={setNewSizeOption}
+                    newFlavorOption={newFlavorOption}
+                    setNewFlavorOption={setNewFlavorOption}
                     addColorOption={addColorOption}
                     addSizeOption={addSizeOption}
+                    addFlavorOption={addFlavorOption}
                     removeColorOption={removeColorOption}
                     removeSizeOption={removeSizeOption}
+                    removeFlavorOption={removeFlavorOption}
                     generateBulkVariants={generateBulkVariants}
                     creatingVariant={creatingVariant}
                   />

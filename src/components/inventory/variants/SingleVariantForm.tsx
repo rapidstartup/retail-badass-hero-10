@@ -49,6 +49,15 @@ const SingleVariantForm = ({
       </div>
       
       <div className="space-y-2">
+        <label className="text-sm font-medium">Flavor</label>
+        <Input
+          placeholder="Flavor"
+          value={newVariant.flavor || ""}
+          onChange={(e) => setNewVariant({...newVariant, flavor: e.target.value})}
+        />
+      </div>
+      
+      <div className="space-y-2">
         <label className="text-sm font-medium">Price</label>
         <Input
           type="number"
@@ -72,7 +81,7 @@ const SingleVariantForm = ({
         />
       </div>
       
-      <div className="space-y-2 flex items-end">
+      <div className="space-y-2 md:col-span-3 flex items-end">
         <Button 
           onClick={() => {
             const variantData = {
@@ -80,6 +89,7 @@ const SingleVariantForm = ({
               sku: newVariant.sku,
               color: newVariant.color,
               size: newVariant.size,
+              flavor: newVariant.flavor,
               price: newVariant.price,
               stock_count: newVariant.stock_count,
               variant_attributes: newVariant.variant_attributes || {}

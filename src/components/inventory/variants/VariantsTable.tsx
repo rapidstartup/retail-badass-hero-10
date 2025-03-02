@@ -35,6 +35,7 @@ const VariantsTable = ({
             <TableHead>SKU</TableHead>
             <TableHead>Color</TableHead>
             <TableHead>Size</TableHead>
+            <TableHead>Flavor</TableHead>
             <TableHead>Price</TableHead>
             <TableHead>Stock</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -43,13 +44,13 @@ const VariantsTable = ({
         <TableBody>
           {loading ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
+              <TableCell colSpan={7} className="h-24 text-center">
                 <RefreshCw className="h-5 w-5 animate-spin mx-auto" />
               </TableCell>
             </TableRow>
           ) : variants.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
+              <TableCell colSpan={7} className="h-24 text-center">
                 No variants found. Add your first variant.
               </TableCell>
             </TableRow>
@@ -59,6 +60,7 @@ const VariantsTable = ({
                 <TableCell>{variant.sku || "-"}</TableCell>
                 <TableCell>{variant.color || "-"}</TableCell>
                 <TableCell>{variant.size || "-"}</TableCell>
+                <TableCell>{variant.flavor || "-"}</TableCell>
                 <TableCell>
                   <Input
                     type="number"
