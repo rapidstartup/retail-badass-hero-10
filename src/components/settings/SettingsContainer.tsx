@@ -91,14 +91,14 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-bold">System Settings</h1>
+    <div className="w-full max-w-5xl mx-auto px-4 py-4 space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-2">
+        <h1 className="text-2xl font-bold">System Settings</h1>
         <Button onClick={handleSaveSettings}>Save All Settings</Button>
       </div>
       
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-1">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-1 mb-4">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="tax">Tax Settings</TabsTrigger>
           <TabsTrigger value="tab">Tab System</TabsTrigger>
@@ -107,7 +107,9 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
           <TabsTrigger value="staff">Staff</TabsTrigger>
         </TabsList>
         
-        {children}
+        <div className="bg-card rounded-lg border border-border p-4 shadow-sm">
+          {children}
+        </div>
       </Tabs>
     </div>
   );
