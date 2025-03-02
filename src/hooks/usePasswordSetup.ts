@@ -8,6 +8,12 @@ export function usePasswordSetup(
 ) {
   const [isLoading, setIsLoading] = useState(false);
 
+  const validateEmail = (email: string) => {
+    // Basic email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSetPassword = async (
     email: string,
     firstName: string,
@@ -16,6 +22,11 @@ export function usePasswordSetup(
     confirmPassword: string,
     onComplete: () => void
   ) => {
+    if (!validateEmail(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    
     if (newPassword !== confirmPassword) {
       toast.error("Passwords don't match");
       return;

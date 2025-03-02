@@ -9,7 +9,23 @@ export function useSignIn(
 ) {
   const [isLoading, setIsLoading] = useState(false);
 
+  const validateEmail = (email: string) => {
+    // Basic email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSignIn = async (email: string, password: string) => {
+    if (!validateEmail(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    if (!password.trim()) {
+      toast.error("Please enter your password");
+      return;
+    }
+
     setIsLoading(true);
     try {
       await signInMethod(email, password);
