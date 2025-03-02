@@ -16,6 +16,7 @@ interface StaffMember {
   first_name: string;
   last_name: string;
   role: string;
+  auth_id?: string;
   gohighlevel_id?: string;
 }
 
@@ -133,9 +134,9 @@ const StaffSettings = () => {
       
       // If we have an auth_id, delete the auth user too
       if (authId) {
-        // Note: This would require admin privileges, so this may need to be
-        // handled through an Edge Function in production
+        // This would require admin privileges and should be handled through an Edge Function
         console.log("Would delete auth user with ID:", authId);
+        toast.info("Auth user deletion requires admin privileges. Contact your administrator.");
       }
       
       toast.success("Staff member deleted successfully");
@@ -174,7 +175,6 @@ const StaffSettings = () => {
     setSyncing(true);
     try {
       // This would be implemented in a Supabase Edge Function
-      // For now, we'll just show a toast
       toast.info("GoHighLevel sync functionality will be implemented via Edge Function");
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
     } catch (error: any) {
@@ -362,7 +362,7 @@ const StaffSettings = () => {
                           <Button 
                             variant="ghost" 
                             size="icon"
-                            onClick={() => handleDeleteStaff(staff.id, staff.id)}
+                            onClick={() => handleDeleteStaff(staff.id, staff.auth_id || null)}
                           >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Delete</span>

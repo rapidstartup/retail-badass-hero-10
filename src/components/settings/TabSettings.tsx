@@ -1,33 +1,36 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { useSettings } from "@/contexts/SettingsContext";
 import { toast } from "sonner";
+import { useSettings } from "@/contexts/SettingsContext";
 
-const TabSettings = () => {
-  const { settings, updateSettings, saveSettings } = useSettings();
-  const [tabEnabled, setTabEnabled] = useState(settings.tabEnabled);
-  const [tabThreshold, setTabThreshold] = useState(settings.tabThreshold);
-  const [tabMaxDays, setTabMaxDays] = useState(settings.tabMaxDays);
+interface TabSettingsProps {
+  tabEnabled: boolean;
+  setTabEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  tabThreshold: number;
+  setTabThreshold: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const TabSettings: React.FC<TabSettingsProps> = ({ 
+  tabEnabled, 
+  setTabEnabled, 
+  tabThreshold, 
+  setTabThreshold 
+}) => {
+  const { updateSettings } = useSettings();
   
-  // Update local state when settings change
-  useEffect(() => {
-    setTabEnabled(settings.tabEnabled);
-    setTabThreshold(settings.tabThreshold);
-    setTabMaxDays(settings.tabMaxDays);
-  }, [settings.tabEnabled, settings.tabThreshold, settings.tabMaxDays]);
+  const handleThresholdChange = (value: string) => {
+    const numValue = parseInt(value, 10);
+    setTabThreshold(isNaN(numValue) ? 0 : numValue);
+  };
   
   const handleSave = async () => {
     try {
-      await updateSettings({ 
-        tabEnabled, 
-        tabThreshold, 
-        tabMaxDays 
-      });
+      await updateSettings({ tabEnabled, tabThreshold });
       toast.success("Tab settings updated");
     } catch (error) {
       toast.error("Failed to update tab settings");
@@ -40,15 +43,15 @@ const TabSettings = () => {
       <CardHeader>
         <CardTitle>Tab System</CardTitle>
         <CardDescription>
-          Configure how customer tabs work in your POS.
+          Configure tab system settings for customer accounts
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="flex items-center justify-between">
-          <div>
+          <div className="space-y-0.5">
             <Label htmlFor="tab-enabled">Enable Tab System</Label>
             <p className="text-sm text-muted-foreground">
-              Allow customers to run a tab for their purchases.
+              Allow customers to create tabs for future payment
             </p>
           </div>
           <Switch
@@ -59,39 +62,23 @@ const TabSettings = () => {
         </div>
         
         <div className="space-y-1">
-          <Label htmlFor="tab-threshold">Tab Threshold ($)</Label>
+          <Label htmlFor="tab-threshold">Tab Threshold Limit ($)</Label>
           <Input
             id="tab-threshold"
             type="number"
             value={tabThreshold}
-            onChange={(e) => setTabThreshold(parseFloat(e.target.value) || 0)}
-            disabled={!tabEnabled}
+            onChange={(e) => handleThresholdChange(e.target.value)}
             min="0"
-            step="1"
-          />
-          <p className="text-sm text-muted-foreground mt-1">
-            Alert will appear when a customer's tab reaches this amount.
-          </p>
-        </div>
-        
-        <div className="space-y-1">
-          <Label htmlFor="tab-days">Maximum Tab Days</Label>
-          <Input
-            id="tab-days"
-            type="number"
-            value={tabMaxDays}
-            onChange={(e) => setTabMaxDays(parseInt(e.target.value) || 7)}
+            step="10"
             disabled={!tabEnabled}
-            min="1"
-            max="90"
           />
           <p className="text-sm text-muted-foreground mt-1">
-            Maximum number of days a tab can remain open.
+            Maximum amount allowed for a customer tab
           </p>
         </div>
       </CardContent>
       <CardFooter>
-        <Button onClick={handleSave} disabled={!tabEnabled}>
+        <Button onClick={handleSave}>
           Save Tab Settings
         </Button>
       </CardFooter>

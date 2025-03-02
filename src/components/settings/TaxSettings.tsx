@@ -8,14 +8,13 @@ import { Button } from "@/components/ui/button";
 import { useSettings } from "@/contexts/SettingsContext";
 import { toast } from "sonner";
 
-const TaxSettings = () => {
+interface TaxSettingsProps {
+  taxRate: number;
+  setTaxRate: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const TaxSettings: React.FC<TaxSettingsProps> = ({ taxRate, setTaxRate }) => {
   const { settings, updateSettings, saveSettings } = useSettings();
-  const [taxRate, setTaxRate] = useState(settings.taxRate);
-  
-  // Update local state when settings change
-  useEffect(() => {
-    setTaxRate(settings.taxRate);
-  }, [settings.taxRate]);
   
   const handleTaxRateChange = (value: string) => {
     const numValue = parseFloat(value);

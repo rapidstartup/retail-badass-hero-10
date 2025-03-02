@@ -1,32 +1,28 @@
-
 import React, { useState } from "react";
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { POSNumpad } from "./POSNumpad";
 import { formatCurrency } from "@/utils/formatters";
-import { Check, CreditCard, DollarSign, Receipt } from "lucide-react";
+import { toast } from "sonner";
 
-interface POSPaymentModalProps {
+export interface POSPaymentModalProps {
   open: boolean;
   onClose: () => void;
   cartItems: any[];
   subtotal: number;
   tax: number;
   total: number;
-  customer: any | null;
+  customer: any;
+  taxRate: number; // Add taxRate prop
+  storeName: string;
   onSuccess: () => void;
 }
 
-const POSPaymentModal: React.FC<POSPaymentModalProps> = ({
+export function POSPaymentModal({
   open,
   onClose,
   cartItems,
@@ -34,176 +30,345 @@ const POSPaymentModal: React.FC<POSPaymentModalProps> = ({
   tax,
   total,
   customer,
-  onSuccess
-}) => {
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("card");
-  const [amountTendered, setAmountTendered] = useState(total.toFixed(2));
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-  
-  const change = parseFloat(amountTendered) - total;
-  
-  const handlePayment = () => {
-    setIsProcessing(true);
-    
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsCompleted(true);
-      
-      // Reset state after showing success screen
-      setTimeout(() => {
-        onSuccess();
-        setIsCompleted(false);
-        setPaymentMethod("card");
-        setAmountTendered(total.toFixed(2));
-      }, 2000);
-    }, 1500);
+  taxRate,
+  storeName,
+  onSuccess,
+}: POSPaymentModalProps) {
+  const [paymentMethod, setPaymentMethod] = useState<string>("cash");
+  const [amountTendered, setAmountTendered] = useState<string>(total.toFixed(2));
+  const [cardNumber, setCardNumber] = useState<string>("");
+  const [cardExpiryMonth, setCardExpiryMonth] = useState<string>("");
+  const [cardExpiryYear, setCardExpiryYear] = useState<string>("");
+  const [cardCVC, setCardCVC] = useState<string>("");
+  const [checkNumber, setCheckNumber] = useState<string>("");
+  const [processing, setProcessing] = useState<boolean>(false);
+
+  const calculateChange = (): number => {
+    const tendered = parseFloat(amountTendered) || 0;
+    return Math.max(0, tendered - total);
   };
-  
+
+  const handleNumpadInput = (value: string) => {
+    if (value === "clear") {
+      setAmountTendered("0");
+      return;
+    }
+
+    if (value === "backspace") {
+      setAmountTendered((prev) => 
+        prev.length > 1 ? prev.slice(0, -1) : "0"
+      );
+      return;
+    }
+
+    // If value is a preset amount, replace the current amount
+    if ([10, 20, 50, 100].includes(Number(value))) {
+      setAmountTendered(value);
+      return;
+    }
+
+    // Otherwise add digit
+    setAmountTendered((prev) => {
+      if (prev === "0" && value !== ".") {
+        return value;
+      }
+      if (value === "." && prev.includes(".")) {
+        return prev;
+      }
+      return prev + value;
+    });
+  };
+
+  const processPayment = async () => {
+    setProcessing(true);
+    
+    try {
+      // Validation based on payment method
+      if (paymentMethod === "cash") {
+        const tendered = parseFloat(amountTendered) || 0;
+        if (tendered < total) {
+          toast.error("Amount tendered must be equal to or greater than the total");
+          setProcessing(false);
+          return;
+        }
+      } else if (paymentMethod === "card") {
+        if (!cardNumber || !cardExpiryMonth || !cardExpiryYear || !cardCVC) {
+          toast.error("Please enter all card details");
+          setProcessing(false);
+          return;
+        }
+        // Simple card validation
+        if (cardNumber.length < 13 || cardNumber.length > 19) {
+          toast.error("Invalid card number");
+          setProcessing(false);
+          return;
+        }
+      } else if (paymentMethod === "check") {
+        if (!checkNumber) {
+          toast.error("Please enter a check number");
+          setProcessing(false);
+          return;
+        }
+      }
+      
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Record transaction in database would go here
+      
+      let successMessage = "";
+      switch (paymentMethod) {
+        case "cash":
+          const change = calculateChange();
+          successMessage = `Payment complete. Change: ${formatCurrency(change)}`;
+          break;
+        case "card":
+          successMessage = "Card payment processed successfully";
+          break;
+        case "check":
+          successMessage = `Check #${checkNumber} accepted`;
+          break;
+        case "tab":
+          successMessage = "Transaction added to customer tab";
+          break;
+      }
+      
+      toast.success(successMessage);
+      onSuccess();
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast.error("Payment processing failed");
+    } finally {
+      setProcessing(false);
+      onClose();
+    }
+  };
+
+  const handleCancel = () => {
+    onClose();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        {isCompleted ? (
-          <div className="flex flex-col items-center justify-center py-8">
-            <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              <Check className="h-8 w-8 text-primary" />
-            </div>
-            <h2 className="text-2xl font-semibold mb-2">Payment Successful!</h2>
-            <p className="text-muted-foreground mb-6">Transaction complete</p>
-            <div className="flex gap-4">
-              <Button variant="outline" className="gap-2">
-                <Receipt size={16} />
-                <span>Print Receipt</span>
-              </Button>
-              <Button variant="outline" className="gap-2">
-                <Receipt size={16} />
-                <span>Email Receipt</span>
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle>Complete Payment</DialogTitle>
-              <DialogDescription>
-                Total amount: {formatCurrency(total)}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <Tabs defaultValue="card" onValueChange={(v) => setPaymentMethod(v as "cash" | "card")}>
-              <TabsList className="grid grid-cols-2 mb-4">
-                <TabsTrigger value="card" className="gap-2">
-                  <CreditCard size={16} />
-                  <span>Card</span>
-                </TabsTrigger>
-                <TabsTrigger value="cash" className="gap-2">
-                  <DollarSign size={16} />
-                  <span>Cash</span>
+      <DialogContent className="sm:max-w-[500px] lg:max-w-[900px]">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold">Payment</DialogTitle>
+        </DialogHeader>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <Tabs defaultValue="cash" className="w-full" onValueChange={setPaymentMethod}>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="cash">Cash</TabsTrigger>
+                <TabsTrigger value="card">Card</TabsTrigger>
+                <TabsTrigger value="check">Check</TabsTrigger>
+                <TabsTrigger 
+                  value="tab" 
+                  disabled={!customer}
+                >
+                  Tab
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="card">
-                <div className="space-y-4">
+              <TabsContent value="cash" className="mt-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="amount-tendered">Amount Tendered</Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      id="amount-tendered"
+                      value={amountTendered}
+                      onChange={(e) => setAmountTendered(e.target.value)}
+                      className="text-xl font-bold"
+                    />
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Card Information</label>
-                    <Input placeholder="Card number" disabled={isProcessing} />
+                    <div className="flex justify-between items-center">
+                      <span>Change:</span>
+                      <span className="text-xl font-bold">
+                        {formatCurrency(calculateChange())}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <POSNumpad onKeyPress={handleNumpadInput} />
+              </TabsContent>
+              
+              <TabsContent value="card" className="mt-4 space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="card-number">Card Number</Label>
+                    <Input
+                      id="card-number"
+                      placeholder="1234 5678 9012 3456"
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, ''))}
+                      maxLength={19}
+                    />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Expiration</label>
-                      <Input placeholder="MM/YY" disabled={isProcessing} />
+                      <Label htmlFor="card-month">Month</Label>
+                      <Input
+                        id="card-month"
+                        placeholder="MM"
+                        value={cardExpiryMonth}
+                        onChange={(e) => setCardExpiryMonth(e.target.value.replace(/\D/g, ''))}
+                        maxLength={2}
+                      />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">CVV</label>
-                      <Input placeholder="123" disabled={isProcessing} />
+                      <Label htmlFor="card-year">Year</Label>
+                      <Input
+                        id="card-year"
+                        placeholder="YY"
+                        value={cardExpiryYear}
+                        onChange={(e) => setCardExpiryYear(e.target.value.replace(/\D/g, ''))}
+                        maxLength={2}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="card-cvc">CVC</Label>
+                      <Input
+                        id="card-cvc"
+                        placeholder="123"
+                        value={cardCVC}
+                        onChange={(e) => setCardCVC(e.target.value.replace(/\D/g, ''))}
+                        maxLength={4}
+                      />
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground">
+                    This is a demo. No actual payment will be processed.
+                  </p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="check" className="mt-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="check-number">Check Number</Label>
+                  <Input
+                    id="check-number"
+                    placeholder="Check #"
+                    value={checkNumber}
+                    onChange={(e) => setCheckNumber(e.target.value.replace(/\D/g, ''))}
+                  />
+                </div>
+                
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
+                  <p className="text-sm mb-2">
+                    Please verify the check amount matches the total: {formatCurrency(total)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Make checks payable to: {storeName}
+                  </p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="tab" className="mt-4 space-y-4">
+                {customer ? (
+                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
+                    <p className="font-semibold mb-2">
+                      Add to tab for: {customer.first_name} {customer.last_name}
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      This will add the current transaction to the customer's tab for future payment.
+                    </p>
+                    <div className="p-3 bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 rounded border border-amber-200 dark:border-amber-800">
+                      <p className="text-sm">
+                        The customer will need to settle their tab in the future.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
+                    <p className="text-center text-sm text-muted-foreground">
+                      Please select a customer to use the tab feature.
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+          
+          <div>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center pb-2 border-b">
+                    <span className="font-semibold">Transaction Summary</span>
+                    <span className="text-sm text-muted-foreground">
+                      {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+                    </span>
+                  </div>
+                  
+                  <div className="max-h-[300px] overflow-y-auto space-y-2">
+                    {cartItems.map((item, index) => (
+                      <div key={index} className="flex justify-between items-center text-sm">
+                        <span>
+                          {item.quantity}x {item.name}
+                        </span>
+                        <span>{formatCurrency(item.price * item.quantity)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="pt-2 space-y-2 border-t">
+                    <div className="flex justify-between items-center text-sm">
+                      <span>Subtotal</span>
+                      <span>{formatCurrency(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span>Tax ({taxRate}%)</span>
+                      <span>{formatCurrency(tax)}</span>
+                    </div>
+                    <div className="flex justify-between items-center font-bold text-lg pt-2 border-t">
+                      <span>Total</span>
+                      <span>{formatCurrency(total)}</span>
                     </div>
                   </div>
                   
                   {customer && (
-                    <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-md">
-                      <CreditCard size={16} className="text-primary" />
-                      <span className="text-sm">
-                        Use saved card for {customer.name}
-                      </span>
+                    <div className="pt-2 border-t">
+                      <div className="text-sm">
+                        <span className="font-semibold">Customer: </span>
+                        <span>{customer.first_name} {customer.last_name}</span>
+                      </div>
+                      {customer.email && (
+                        <div className="text-sm">
+                          <span className="font-semibold">Email: </span>
+                          <span>{customer.email}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="cash">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Amount Tendered</label>
-                    <Input 
-                      type="number" 
-                      min={total}
-                      step="0.01"
-                      value={amountTendered}
-                      onChange={(e) => setAmountTendered(e.target.value)}
-                      disabled={isProcessing}
-                    />
-                  </div>
-                  
-                  <div className="p-4 bg-muted/20 rounded-md">
-                    <div className="flex justify-between py-1">
-                      <span className="text-muted-foreground">Total</span>
-                      <span>{formatCurrency(total)}</span>
-                    </div>
-                    <div className="flex justify-between py-1">
-                      <span className="text-muted-foreground">Tendered</span>
-                      <span>{formatCurrency(parseFloat(amountTendered) || 0)}</span>
-                    </div>
-                    <Separator className="my-2" />
-                    <div className="flex justify-between py-1 font-medium">
-                      <span>Change</span>
-                      <span>{formatCurrency(Math.max(0, change))}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-2">
-                    {[5, 10, 20, 50, 100].map(amount => (
-                      <Button
-                        key={amount}
-                        variant="outline"
-                        onClick={() => setAmountTendered(amount.toFixed(2))}
-                        disabled={isProcessing}
-                      >
-                        ${amount}
-                      </Button>
-                    ))}
-                    <Button
-                      variant="outline"
-                      onClick={() => setAmountTendered(total.toFixed(2))}
-                      disabled={isProcessing}
-                    >
-                      Exact
-                    </Button>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-            
-            <DialogFooter>
-              <Button variant="outline" onClick={onClose} disabled={isProcessing}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handlePayment}
-                disabled={
-                  isProcessing || 
-                  (paymentMethod === "cash" && parseFloat(amountTendered) < total)
-                }
-              >
-                {isProcessing ? "Processing..." : `Pay ${formatCurrency(total)}`}
-              </Button>
-            </DialogFooter>
-          </>
-        )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        
+        <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between sm:space-x-2">
+          <Button 
+            variant="outline" 
+            onClick={handleCancel}
+            disabled={processing}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={processPayment}
+            disabled={processing}
+          >
+            {processing ? "Processing..." : `Complete ${paymentMethod === 'tab' ? 'Tab' : 'Payment'}`}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
-};
-
-export default POSPaymentModal;
+}
