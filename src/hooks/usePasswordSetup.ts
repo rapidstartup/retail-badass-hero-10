@@ -48,7 +48,7 @@ export function usePasswordSetup(
       // First, check if a staff record exists with this email
       const { data: staffData, error: staffCheckError } = await supabase
         .from('staff')
-        .select('email')
+        .select('*')
         .eq('email', email)
         .maybeSingle();
         
@@ -57,6 +57,15 @@ export function usePasswordSetup(
       if (!staffData) {
         toast.error("No staff account found with this email. Please contact your administrator.");
         setIsLoading(false);
+        return;
+      }
+
+      // Check if the staff record already has an auth_id
+      if (staffData.auth_id) {
+        // Staff already has an auth account, redirect to login
+        toast.info("An account already exists for this email. Please use the login form.");
+        setIsLoading(false);
+        onComplete();
         return;
       }
       
@@ -99,7 +108,7 @@ export function usePasswordSetup(
             console.error("Sign in after registration failed:", signInError);
             toast.info("Account created, but automatic login failed. Please try logging in manually.");
           }
-        }, 1000);
+        }, 1500);
       } else {
         toast.error("Failed to create account");
       }
