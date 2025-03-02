@@ -34,8 +34,10 @@ const Settings = () => {
   // Theme settings
   const [theme, setTheme] = useState<"light" | "dark">(settings.theme);
   const [lightBackground, setLightBackground] = useState<string>(settings.lightModeColors.background);
+  const [lightSidebar, setLightSidebar] = useState<string>(settings.lightModeColors.sidebar);
   const [lightAccent, setLightAccent] = useState<string>(settings.lightModeColors.accent);
   const [darkBackground, setDarkBackground] = useState<string>(settings.darkModeColors.background);
+  const [darkSidebar, setDarkSidebar] = useState<string>(settings.darkModeColors.sidebar);
   const [darkAccent, setDarkAccent] = useState<string>(settings.darkModeColors.accent);
   
   // Sync local state with context when settings change
@@ -55,19 +57,19 @@ const Settings = () => {
     // Theme settings
     setTheme(settings.theme);
     setLightBackground(settings.lightModeColors.background);
+    setLightSidebar(settings.lightModeColors.sidebar);
     setLightAccent(settings.lightModeColors.accent);
     setDarkBackground(settings.darkModeColors.background);
+    setDarkSidebar(settings.darkModeColors.sidebar);
     setDarkAccent(settings.darkModeColors.accent);
   }, [settings]);
   
   const handleSaveSettings = () => {
-    // Define default sidebar and text colors based on backgrounds
-    const lightSidebar = "#f8f9fa";
+    // Define hover and text colors
     const lightText = "#1e293b";
     const lightAccentHover = "#0284c7";
     const lightSidebarHover = "#f1f5f9";
     
-    const darkSidebar = "#0f172a";
     const darkText = "#f8fafc";
     const darkAccentHover = "#0ea5e9";
     const darkSidebarHover = "#1e293b";
@@ -86,16 +88,16 @@ const Settings = () => {
       theme,
       lightModeColors: {
         background: lightBackground,
-        accent: lightAccent,
         sidebar: lightSidebar,
+        accent: lightAccent,
         text: lightText,
         accentHover: lightAccentHover,
         sidebarHover: lightSidebarHover
       },
       darkModeColors: {
         background: darkBackground,
-        accent: darkAccent,
         sidebar: darkSidebar,
+        accent: darkAccent,
         text: darkText,
         accentHover: darkAccentHover,
         sidebarHover: darkSidebarHover
@@ -171,10 +173,14 @@ const Settings = () => {
               setTheme={setTheme}
               lightBackground={lightBackground}
               setLightBackground={setLightBackground}
+              lightSidebar={lightSidebar}
+              setLightSidebar={setLightSidebar}
               lightAccent={lightAccent}
               setLightAccent={setLightAccent}
               darkBackground={darkBackground}
               setDarkBackground={setDarkBackground}
+              darkSidebar={darkSidebar}
+              setDarkSidebar={setDarkSidebar}
               darkAccent={darkAccent}
               setDarkAccent={setDarkAccent}
             />

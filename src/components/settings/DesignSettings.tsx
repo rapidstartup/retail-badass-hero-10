@@ -13,10 +13,14 @@ interface DesignSettingsProps {
   setTheme: (value: "light" | "dark") => void;
   lightBackground: string;
   setLightBackground: (value: string) => void;
+  lightSidebar: string;
+  setLightSidebar: (value: string) => void;
   lightAccent: string;
   setLightAccent: (value: string) => void;
   darkBackground: string;
   setDarkBackground: (value: string) => void;
+  darkSidebar: string;
+  setDarkSidebar: (value: string) => void;
   darkAccent: string;
   setDarkAccent: (value: string) => void;
 }
@@ -26,20 +30,22 @@ const DesignSettings = ({
   setTheme,
   lightBackground,
   setLightBackground,
+  lightSidebar,
+  setLightSidebar,
   lightAccent,
   setLightAccent,
   darkBackground,
   setDarkBackground,
+  darkSidebar,
+  setDarkSidebar,
   darkAccent,
   setDarkAccent,
 }: DesignSettingsProps) => {
-  // Default sidebar and text colors based on the background
-  const lightSidebar = "#f8f9fa";
+  // Default text colors based on the background
   const lightText = "#1e293b";
   const lightAccentHover = "#0284c7";
   const lightSidebarHover = "#f1f5f9";
   
-  const darkSidebar = "#0f172a";
   const darkText = "#f8fafc";
   const darkAccentHover = "#0ea5e9";
   const darkSidebarHover = "#1e293b";
@@ -81,6 +87,11 @@ const DesignSettings = ({
               label="Main Background Color" 
               value={lightBackground}
               onChange={setLightBackground}
+            />
+            <ColorPicker 
+              label="Sidebar Background" 
+              value={lightSidebar}
+              onChange={setLightSidebar}
             />
             <ColorPicker 
               label="Accent Color" 
@@ -133,6 +144,11 @@ const DesignSettings = ({
               onChange={setDarkBackground}
             />
             <ColorPicker 
+              label="Sidebar Background" 
+              value={darkSidebar}
+              onChange={setDarkSidebar}
+            />
+            <ColorPicker 
               label="Accent Color" 
               value={darkAccent}
               onChange={setDarkAccent}
@@ -182,7 +198,7 @@ const DesignSettings = ({
           </p>
           <ul className="text-sm text-muted-foreground list-disc pl-5 mt-2 space-y-1">
             <li><strong>Main Background:</strong> The primary color for content areas</li>
-            <li><strong>Sidebar Background:</strong> A slightly different shade for the sidebar</li>
+            <li><strong>Sidebar Background:</strong> Color for the navigation sidebar</li>
             <li><strong>Accent Color:</strong> Used for buttons, active items, and interactive elements</li>
           </ul>
           <p className="text-sm text-muted-foreground mt-2">
