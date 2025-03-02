@@ -179,16 +179,19 @@ const POS = () => {
         const validCartItems = data.items
           .filter(isValidCartItem)
           .map(item => {
+            // We've already validated this is an object with the right properties
+            const validItem = item as Record<string, Json>;
+            
             // Safe type conversion with all required properties
             return {
-              id: String(item.id),
-              name: String(item.name),
-              price: Number(item.price),
-              quantity: Number(item.quantity),
-              category: typeof item === 'object' && item !== null && 'category' in item ? item.category as string | null : null,
-              image_url: typeof item === 'object' && item !== null && 'image_url' in item ? item.image_url as string | null : null,
-              stock: typeof item === 'object' && item !== null && 'stock' in item ? item.stock as number | null : null,
-              description: typeof item === 'object' && item !== null && 'description' in item ? item.description as string | null : null
+              id: String(validItem.id),
+              name: String(validItem.name),
+              price: Number(validItem.price),
+              quantity: Number(validItem.quantity),
+              category: 'category' in validItem ? String(validItem.category) : null,
+              image_url: 'image_url' in validItem ? String(validItem.image_url) : null,
+              stock: 'stock' in validItem ? Number(validItem.stock) : null,
+              description: 'description' in validItem ? String(validItem.description) : null
             } as CartItem;
           });
           
