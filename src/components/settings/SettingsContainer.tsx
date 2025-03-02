@@ -91,23 +91,23 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-3 py-2 space-y-3">
+    <div className="w-full max-w-3xl mx-auto px-2 py-2 space-y-2">
       <div className="flex flex-row justify-between items-center gap-2">
-        <h1 className="text-xl font-bold">System Settings</h1>
-        <Button size="sm" onClick={handleSaveSettings}>Save All Settings</Button>
+        <h1 className="text-lg font-bold">System Settings</h1>
+        <Button size="sm" onClick={handleSaveSettings}>Save Settings</Button>
       </div>
       
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-1 mb-2">
-          <TabsTrigger value="general" className="text-sm py-1 px-2">General</TabsTrigger>
-          <TabsTrigger value="tax" className="text-sm py-1 px-2">Tax Settings</TabsTrigger>
-          <TabsTrigger value="tab" className="text-sm py-1 px-2">Tab System</TabsTrigger>
-          <TabsTrigger value="integrations" className="text-sm py-1 px-2">Integrations</TabsTrigger>
-          <TabsTrigger value="design" className="text-sm py-1 px-2">Design</TabsTrigger>
-          <TabsTrigger value="staff" className="text-sm py-1 px-2">Staff</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-0.5 mb-1">
+          <TabsTrigger value="general" className="text-xs py-0.5 px-1">General</TabsTrigger>
+          <TabsTrigger value="tax" className="text-xs py-0.5 px-1">Tax</TabsTrigger>
+          <TabsTrigger value="tab" className="text-xs py-0.5 px-1">Tab System</TabsTrigger>
+          <TabsTrigger value="integrations" className="text-xs py-0.5 px-1">Integrations</TabsTrigger>
+          <TabsTrigger value="design" className="text-xs py-0.5 px-1">Design</TabsTrigger>
+          <TabsTrigger value="staff" className="text-xs py-0.5 px-1">Staff</TabsTrigger>
         </TabsList>
         
-        <div className="bg-card rounded-md border border-border p-3 shadow-sm">
+        <div className="bg-card rounded-sm border border-border p-2 shadow-sm">
           {children}
         </div>
       </Tabs>
