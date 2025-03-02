@@ -96,7 +96,7 @@ const Login = () => {
               ? isNewStaffSetup 
                 ? "New Staff Registration" 
                 : "Set Up Your Account" 
-              : `${settings.storeName || "NextPOS"} Staff Login`}
+              : `${settings.storeName} Staff Login`}
           </CardTitle>
           <CardDescription className="text-center">
             {isFirstTimeLogin 

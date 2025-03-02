@@ -8,7 +8,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { toast } from "sonner";
 
 const GeneralSettings = () => {
-  const { settings, updateSettings, saveSettings } = useSettings();
+  const { settings, updateSettings } = useSettings();
   const [storeName, setStoreName] = useState(settings.storeName || "NextPOS");
   const [storeAddress, setStoreAddress] = useState(settings.storeAddress || "");
   const [storePhone, setStorePhone] = useState(settings.storePhone || "");
@@ -34,6 +34,13 @@ const GeneralSettings = () => {
     }
   };
 
+  // Update store name in real-time
+  const handleStoreNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setStoreName(value);
+    updateSettings({ storeName: value });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -49,7 +56,7 @@ const GeneralSettings = () => {
             id="store-name" 
             placeholder="Enter your store name" 
             value={storeName}
-            onChange={(e) => setStoreName(e.target.value)}
+            onChange={handleStoreNameChange}
           />
         </div>
         <div className="space-y-1">

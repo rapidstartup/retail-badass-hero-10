@@ -42,7 +42,7 @@ const Layout = ({ children }: LayoutProps) => {
     <>
       <div className="px-3 py-4">
         <h1 className="font-extrabold text-2xl tracking-tight text-primary">
-          {settings.storeName || "NextPOS"}
+          {settings.storeName}
         </h1>
       </div>
       <div className="space-y-1 px-3">
