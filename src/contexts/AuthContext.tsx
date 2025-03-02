@@ -65,27 +65,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log("Attempting to sign in with email:", email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (error) {
+        console.error("Sign in error:", error);
         throw error;
       }
+      
+      console.log("Sign in successful, user data:", data.user);
       
       if (data.user) {
         // Check if this user is associated with a staff record
         const { data: staffData, error: staffError } = await supabase
           .from('staff')
           .select('*')
-          .eq('auth_id', data.user.id)
-          .single();
+          .ilike('email', email.trim())
+          .maybeSingle();
+          
+        console.log("Staff verification after login:", { staffData, staffError });
           
         if (staffError || !staffData) {
           // This auth user is not linked to any staff record
           await supabase.auth.signOut(); // Sign out the user
           throw new Error("Your account is not linked to any staff record");
+        }
+        
+        // Update the staff record with auth_id if not already set
+        if (!staffData.auth_id) {
+          const { error: updateError } = await supabase
+            .from('staff')
+            .update({ auth_id: data.user.id })
+            .eq('id', staffData.id);
+            
+          if (updateError) {
+            console.error("Failed to update staff auth_id:", updateError);
+          }
         }
       }
       
