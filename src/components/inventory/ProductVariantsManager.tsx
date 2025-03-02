@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { 
   Dialog, 
@@ -27,6 +26,7 @@ import { formatCurrency } from "@/utils/formatters";
 import { Product, ProductVariant, fetchVariantsByProductId, createVariant, updateVariant, deleteVariant } from "@/api/inventoryApi";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "react-toastify";
 
 interface ProductVariantsManagerProps {
   product: Product;
@@ -45,6 +45,7 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
     price: product.price,
     stock_count: 0
   });
+  const [creatingVariant, setCreatingVariant] = useState(false);
 
   const fetchVariants = async () => {
     setLoading(true);
@@ -62,25 +63,44 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
     fetchVariants();
   }, [product.id]);
 
-  const handleAddVariant = async () => {
+  const handleCreateVariant = async () => {
+    if (!newVariant.sku) {
+      toast.error("SKU is required for variant");
+      return;
+    }
+    
+    if (!newVariant.price || isNaN(Number(newVariant.price))) {
+      toast.error("Valid price is required for variant");
+      return;
+    }
+    
     try {
-      // Create variant
-      const result = await createVariant(newVariant);
-      if (result) {
-        // Reset form and refresh list
-        setNewVariant({
-          product_id: product.id,
-          sku: "",
-          color: "",
-          size: "",
-          price: product.price,
-          stock_count: 0
-        });
-        setShowAddVariant(false);
-        fetchVariants();
-      }
+      setCreatingVariant(true);
+      
+      const variantData = {
+        product_id: product.id,
+        sku: newVariant.sku,
+        price: Number(newVariant.price),
+        stock_count: Number(newVariant.stock_count || 0),
+        color: newVariant.color || '',
+        size: newVariant.size || '',
+        variant_attributes: newVariant.variant_attributes || {}
+      };
+      
+      await createVariant(variantData);
+      setNewVariant({
+        product_id: product.id,
+        sku: "",
+        color: "",
+        size: "",
+        price: product.price,
+        stock_count: 0
+      });
+      fetchVariants();
     } catch (error) {
-      console.error("Error adding variant:", error);
+      console.error("Error creating variant:", error);
+    } finally {
+      setCreatingVariant(false);
     }
   };
 
@@ -268,7 +288,7 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button 
-                          onClick={handleAddVariant} 
+                          onClick={handleCreateVariant} 
                           size="icon" 
                           variant="default"
                         >
