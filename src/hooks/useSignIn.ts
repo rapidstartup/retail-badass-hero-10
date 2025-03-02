@@ -28,14 +28,26 @@ export function useSignIn(
 
     setIsLoading(true);
     try {
+      console.log("Checking for staff with email:", email);
+      
       // First check if a staff record exists with this email
       const { data: staffData, error: staffError } = await supabase
         .from('staff')
         .select('*')
-        .eq('email', email)
+        .eq('email', email.toLowerCase().trim())
         .single();
       
-      if (staffError || !staffData) {
+      console.log("Staff check result:", { staffData, staffError });
+      
+      if (staffError && staffError.code !== 'PGRST116') {
+        // This is a server error, not a "not found" error
+        console.error("Staff lookup error:", staffError);
+        toast.error("Error checking staff records. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!staffData) {
         toast.error("No staff account found with this email");
         setIsLoading(false);
         return;
@@ -53,7 +65,7 @@ export function useSignIn(
       // Try to sign in with provided credentials
       await signInMethod(email, password);
     } catch (error: any) {
-      console.log("Sign in error:", error.message);
+      console.error("Sign in error:", error);
       const errorMessage = error.message || "Failed to sign in";
       
       if (errorMessage.includes("Invalid login credentials")) {
