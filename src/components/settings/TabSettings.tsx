@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import POSNumpad from "@/components/pos/POSNumpad";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface TabSettingsProps {
   tabEnabled: boolean;
@@ -21,6 +22,10 @@ const TabSettings: React.FC<TabSettingsProps> = ({
   setTabThreshold,
 }) => {
   const [inputMode, setInputMode] = useState<"standard" | "numpad">("standard");
+  const [maxTabDays, setMaxTabDays] = useState<number>(7);
+  const [tabNotifications, setTabNotifications] = useState<boolean>(true);
+  const [autoClosePolicy, setAutoClosePolicy] = useState<string>("manual");
+  const [customerRestriction, setCustomerRestriction] = useState<string>("all");
   
   const handleThresholdChange = (value: string) => {
     if (value === "") {
@@ -57,52 +62,122 @@ const TabSettings: React.FC<TabSettingsProps> = ({
         </div>
         
         {tabEnabled && (
-          <Tabs defaultValue={inputMode} onValueChange={(value) => setInputMode(value as "standard" | "numpad")}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="standard">Standard Input</TabsTrigger>
-              <TabsTrigger value="numpad">Numpad Input</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="standard">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tabThreshold">Tab Threshold ($)</Label>
-                  <Input
-                    id="tabThreshold"
-                    type="number"
-                    value={tabThreshold}
-                    onChange={(e) => setTabThreshold(parseFloat(e.target.value) || 0)}
-                    min="0"
-                    step="5"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Alert staff when a tab exceeds this amount
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="numpad">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tabThresholdNumpad">Tab Threshold ($)</Label>
-                  <div className="flex items-center">
-                    <div className="text-2xl font-medium p-2 bg-muted/30 rounded-md w-full text-right">
-                      ${tabThreshold.toFixed(2)}
-                    </div>
+          <>
+            <Tabs defaultValue={inputMode} onValueChange={(value) => setInputMode(value as "standard" | "numpad")}>
+              <TabsList className="mb-4">
+                <TabsTrigger value="standard">Standard Input</TabsTrigger>
+                <TabsTrigger value="numpad">Numpad Input</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="standard">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="tabThreshold">Tab Threshold ($)</Label>
+                    <Input
+                      id="tabThreshold"
+                      type="number"
+                      value={tabThreshold}
+                      onChange={(e) => setTabThreshold(parseFloat(e.target.value) || 0)}
+                      min="0"
+                      step="5"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Alert staff when a tab exceeds this amount
+                    </p>
                   </div>
-                  <POSNumpad 
-                    initialValue={tabThreshold.toString()}
-                    onValueChange={handleThresholdChange}
-                    hideItemName={true}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Alert staff when a tab exceeds this amount
-                  </p>
                 </div>
+              </TabsContent>
+              
+              <TabsContent value="numpad">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="tabThresholdNumpad">Tab Threshold ($)</Label>
+                    <div className="flex items-center">
+                      <div className="text-2xl font-medium p-2 bg-muted/30 rounded-md w-full text-right">
+                        ${tabThreshold.toFixed(2)}
+                      </div>
+                    </div>
+                    <POSNumpad 
+                      initialValue={tabThreshold.toString()}
+                      onValueChange={handleThresholdChange}
+                      hideItemName={true}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Alert staff when a tab exceeds this amount
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <div className="space-y-4 pt-2 border-t">
+              <h3 className="text-lg font-medium">Additional Tab Settings</h3>
+              
+              <div className="space-y-2">
+                <Label htmlFor="maxTabDays">Maximum Tab Duration (Days)</Label>
+                <Input
+                  id="maxTabDays"
+                  type="number"
+                  value={maxTabDays}
+                  onChange={(e) => setMaxTabDays(parseInt(e.target.value) || 7)}
+                  min="1"
+                  max="30"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Maximum number of days a tab can remain open
+                </p>
               </div>
-            </TabsContent>
-          </Tabs>
+              
+              <div className="space-y-2">
+                <Label htmlFor="autoClosePolicy">Auto-Close Policy</Label>
+                <Select value={autoClosePolicy} onValueChange={setAutoClosePolicy}>
+                  <SelectTrigger id="autoClosePolicy">
+                    <SelectValue placeholder="Select policy" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manual">Manual Close Only</SelectItem>
+                    <SelectItem value="daily">Close at End of Day</SelectItem>
+                    <SelectItem value="weekly">Close at End of Week</SelectItem>
+                    <SelectItem value="threshold">Close When Exceeding Threshold</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  When tabs should be automatically closed
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="customerRestriction">Customer Eligibility</Label>
+                <Select value={customerRestriction} onValueChange={setCustomerRestriction}>
+                  <SelectTrigger id="customerRestriction">
+                    <SelectValue placeholder="Select eligibility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Customers</SelectItem>
+                    <SelectItem value="registered">Registered Customers Only</SelectItem>
+                    <SelectItem value="approved">Pre-Approved Customers Only</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Which customers are eligible to use the tab system
+                </p>
+              </div>
+              
+              <div className="flex items-center justify-between space-x-2 pt-2">
+                <Label htmlFor="tabNotifications" className="flex flex-col space-y-1">
+                  <span>Tab Notifications</span>
+                  <span className="font-normal text-sm text-muted-foreground">
+                    Send notifications for tabs approaching threshold
+                  </span>
+                </Label>
+                <Switch
+                  id="tabNotifications"
+                  checked={tabNotifications}
+                  onCheckedChange={setTabNotifications}
+                />
+              </div>
+            </div>
+          </>
         )}
         
         <div className="space-y-4">

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,9 @@ import POSProductGrid from "@/components/pos/POSProductGrid";
 import POSNumpad from "@/components/pos/POSNumpad";
 import POSCustomerSearch from "@/components/pos/POSCustomerSearch";
 import { useSettings } from "@/contexts/SettingsContext";
+import { TabManager } from "@/components/pos/TabManager";
+import { InventoryTracker } from "@/components/inventory/InventoryTracker";
+import { calculateTotalTax, formatTaxRulesFromSettings } from "@/utils/taxCalculator";
 
 // Temporary data until we connect to a database
 const categories = ["All", "Food", "Drinks", "Merchandise", "Services"];
@@ -21,6 +24,7 @@ const POS = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState<"products" | "numpad" | "tabs" | "inventory">("products");
 
   const addToCart = (product: any) => {
     const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
@@ -58,13 +62,31 @@ const POS = () => {
     return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
+  // Use the dynamic tax calculator
   const getTaxAmount = () => {
-    // Use the tax rate from settings
-    return getSubtotal() * (settings.taxRate / 100);
+    // For now we'll just use the default tax rate since we haven't stored
+    // the tax rules in the database yet
+    const taxRules = formatTaxRulesFromSettings([], settings.taxRate);
+    return calculateTotalTax(
+      cartItems.map(item => ({
+        price: item.price,
+        quantity: item.quantity,
+        category: item.category
+      })),
+      taxRules,
+      settings.taxRate
+    );
   };
 
   const getTotal = () => {
     return getSubtotal() + getTaxAmount();
+  };
+
+  const handleCheckoutTab = (tabId: string) => {
+    // This would load the tab items into the cart
+    console.log("Loading tab for checkout:", tabId);
+    // In a real implementation, we'd fetch the tab details from Supabase
+    // and populate the cart with those items
   };
 
   return (
@@ -89,10 +111,16 @@ const POS = () => {
             />
           </div>
           
-          <Tabs defaultValue="products" className="flex-1 flex flex-col">
+          <Tabs 
+            value={activeTab} 
+            onValueChange={(value) => setActiveTab(value as "products" | "numpad" | "tabs" | "inventory")} 
+            className="flex-1 flex flex-col"
+          >
             <TabsList className="mb-4">
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="numpad">Numpad</TabsTrigger>
+              <TabsTrigger value="tabs">Open Tabs</TabsTrigger>
+              <TabsTrigger value="inventory">Inventory</TabsTrigger>
             </TabsList>
             
             <TabsContent value="products" className="flex-1 overflow-hidden flex flex-col">
@@ -122,6 +150,18 @@ const POS = () => {
             
             <TabsContent value="numpad" className="flex-1">
               <POSNumpad addToCart={addToCart} />
+            </TabsContent>
+            
+            <TabsContent value="tabs" className="flex-1">
+              <TabManager 
+                tabEnabled={settings.tabEnabled} 
+                tabThreshold={settings.tabThreshold}
+                onCheckoutTab={handleCheckoutTab}
+              />
+            </TabsContent>
+            
+            <TabsContent value="inventory" className="flex-1">
+              <InventoryTracker lowStockThreshold={5} />
             </TabsContent>
           </Tabs>
         </div>
