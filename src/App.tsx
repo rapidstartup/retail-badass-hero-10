@@ -26,6 +26,7 @@ const Clients = () => <div className="p-8 text-lg">Clients Page</div>;
 const Transactions = () => <div className="p-8 text-lg">Transactions Page</div>;
 const Reports = () => <div className="p-8 text-lg">Reports Page</div>;
 
+// Root component for nested routes
 function Root() {
   return (
     <>
@@ -35,66 +36,51 @@ function Root() {
   );
 }
 
-function AppRoutes() {
-  const { user, session, loading, isAuthenticated } = useAuth();
-  console.log("Auth state:", { isAuthenticated, loading, user });
-
-  // Protected route component
-  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    if (loading) {
-      return <div className="flex h-screen items-center justify-center">Loading...</div>;
-    }
-    if (!isAuthenticated) {
-      return <Navigate to="/login" replace />;
-    }
-    return <>{children}</>;
-  };
-  
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <Route element={<Root />}>
-        <Route
-          path="/login"
-          element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
-        />
-        <Route
-          path="/register"
-          element={isAuthenticated ? <Navigate to="/" replace /> : <Register />}
-        />
-        <Route
-          path="/"
-          element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
-        />
-        <Route
-          path="/pos"
-          element={<ProtectedRoute><POS /></ProtectedRoute>}
-        />
-        <Route
-          path="/clients"
-          element={<ProtectedRoute><Clients /></ProtectedRoute>}
-        />
-        <Route
-          path="/transactions"
-          element={<ProtectedRoute><Transactions /></ProtectedRoute>}
-        />
-        <Route
-          path="/reports"
-          element={<ProtectedRoute><Reports /></ProtectedRoute>}
-        />
-        <Route
-          path="/settings"
-          element={<ProtectedRoute><Settings /></ProtectedRoute>}
-        />
-        <Route
-          path="/inventory"
-          element={<ProtectedRoute><Inventory /></ProtectedRoute>}
-        />
-      </Route>
-    )
-  );
-  
-  return <RouterProvider router={router} />;
-}
+// Create router instance outside of components to avoid recreation
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Root />,
+    children: [
+      {
+        path: "/login",
+        element: <Login />
+      },
+      {
+        path: "/register",
+        element: <Register />
+      },
+      {
+        path: "/",
+        element: <Dashboard />
+      },
+      {
+        path: "/pos",
+        element: <POS />
+      },
+      {
+        path: "/clients",
+        element: <Clients />
+      },
+      {
+        path: "/transactions",
+        element: <Transactions />
+      },
+      {
+        path: "/reports",
+        element: <Reports />
+      },
+      {
+        path: "/settings",
+        element: <Settings />
+      },
+      {
+        path: "/inventory",
+        element: <Inventory />
+      }
+    ]
+  }
+]);
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -102,11 +88,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SettingsProvider>
-          <AppRoutes />
-        </SettingsProvider>
-      </AuthProvider>
+      <RouterProvider router={router} />
     </QueryClientProvider>
   );
 }
