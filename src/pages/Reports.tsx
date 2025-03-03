@@ -9,16 +9,27 @@ import { DatePickerWithRange } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { formatCurrency, formatDate } from "@/utils/formatters";
+import { DateRange } from "react-day-picker";
 
 const Reports = () => {
   const [activeTab, setActiveTab] = useState("sales");
   const [dateRange, setDateRange] = useState<{
-    from: Date | undefined;
+    from: Date;
     to: Date | undefined;
   }>({
     from: new Date(new Date().setDate(new Date().getDate() - 30)),
     to: new Date(),
   });
+
+  // Handler for date range changes that correctly types the data
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    if (range?.from) {
+      setDateRange({
+        from: range.from,
+        to: range.to || range.from
+      });
+    }
+  };
 
   // Sample data for demonstration
   const topProducts = [
@@ -60,8 +71,11 @@ const Reports = () => {
         
         <div className="flex flex-col md:flex-row items-center gap-4">
           <DatePickerWithRange
-            dateRange={dateRange}
-            setDateRange={setDateRange}
+            dateRange={{
+              from: dateRange.from,
+              to: dateRange.to as Date
+            }}
+            setDateRange={handleDateRangeChange}
           />
           <Button>
             Export Report
