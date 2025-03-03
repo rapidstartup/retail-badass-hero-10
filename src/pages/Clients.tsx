@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,15 +68,38 @@ const Clients = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6 theme-bg">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Clients</h1>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <Button 
-          onClick={handleCreateNewCustomer} 
-          className="gap-2 bg-theme-accent hover:bg-theme-accent-hover text-white"
+          onClick={() => navigate('/pos')} 
+          variant="outline" 
+          className="gap-2 border-theme-accent text-theme-accent hover:bg-theme-accent hover:text-white"
         >
-          <Plus size={16} />
-          <span>New Client</span>
+          <ArrowLeft size={16} />
+          <span>Back to POS</span>
         </Button>
+        
+        <div className="flex w-full sm:w-auto justify-between sm:justify-end">
+          <h1 className="text-3xl font-bold">Clients</h1>
+          <div className="sm:hidden">
+            <Button 
+              onClick={handleCreateNewCustomer} 
+              className="gap-2 bg-theme-accent hover:bg-theme-accent-hover text-white"
+            >
+              <Plus size={16} />
+              <span>New</span>
+            </Button>
+          </div>
+        </div>
+        
+        <div className="hidden sm:block">
+          <Button 
+            onClick={handleCreateNewCustomer} 
+            className="gap-2 bg-theme-accent hover:bg-theme-accent-hover text-white"
+          >
+            <Plus size={16} />
+            <span>New Client</span>
+          </Button>
+        </div>
       </div>
 
       <ClientStats 
