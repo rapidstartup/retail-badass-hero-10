@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
@@ -25,7 +24,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 
-// Form schema for customer editing
 const customerFormSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().min(1, "Last name is required"),
@@ -55,7 +53,6 @@ const ClientProfile = () => {
     currentTabBalance: 0
   });
 
-  // Initialize form
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
     defaultValues: {
@@ -83,7 +80,6 @@ const ClientProfile = () => {
         if (error) throw error;
         setCustomer(data);
         
-        // Set form values when customer data is loaded
         form.reset({
           first_name: data.first_name,
           last_name: data.last_name,
@@ -111,7 +107,6 @@ const ClientProfile = () => {
         if (error) throw error;
         setTransactions(data || []);
         
-        // Calculate metrics
         if (data && data.length > 0) {
           const totalSpent = data.reduce((sum, tx) => sum + (tx.total || 0), 0);
           const avgTransaction = totalSpent / data.length;
@@ -122,7 +117,7 @@ const ClientProfile = () => {
             avgTransaction,
             numTransactions: data.length,
             totalSpent,
-            mostPurchased: "Coffee", // Would need item-level analysis
+            mostPurchased: "Coffee",
             currentTabBalance: tabBalance
           });
         }
@@ -146,7 +141,6 @@ const ClientProfile = () => {
   };
 
   const handleCancelEdit = () => {
-    // Reset form to original values and exit edit mode
     if (customer) {
       form.reset({
         first_name: customer.first_name,
@@ -182,7 +176,6 @@ const ClientProfile = () => {
       
       if (error) throw error;
       
-      // Update local state
       setCustomer(prev => {
         if (!prev) return null;
         return { ...prev, ...values, updated_at: new Date().toISOString() };
@@ -200,7 +193,7 @@ const ClientProfile = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4 text-center theme-bg">
+      <div className="container mx-auto p-4 text-center">
         <div className="animate-pulse">Loading client profile...</div>
       </div>
     );
@@ -208,7 +201,7 @@ const ClientProfile = () => {
 
   if (!customer) {
     return (
-      <div className="container mx-auto p-4 theme-bg">
+      <div className="container mx-auto p-4">
         <Alert>
           <AlertDescription>Client not found. The client may have been deleted or the URL is incorrect.</AlertDescription>
         </Alert>
@@ -225,7 +218,7 @@ const ClientProfile = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-6 theme-bg">
+    <div className="container mx-auto p-4 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button 
@@ -297,7 +290,6 @@ const ClientProfile = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Left column - Customer info */}
         <div className="md:col-span-4 space-y-6">
           {isEditing ? (
             <Card className="theme-container-bg border">
@@ -555,9 +547,7 @@ const ClientProfile = () => {
           )}
         </div>
 
-        {/* Right column - Metrics and transactions */}
         <div className="md:col-span-8 space-y-6">
-          {/* Overview Section */}
           <Card className="theme-container-bg border">
             <CardHeader>
               <CardTitle>Client Overview</CardTitle>
@@ -609,7 +599,6 @@ const ClientProfile = () => {
             </CardContent>
           </Card>
 
-          {/* Transactions Section */}
           <Tabs defaultValue="history">
             <TabsList className="mb-4 theme-container-bg">
               <TabsTrigger value="history">Transaction History</TabsTrigger>
