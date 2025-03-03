@@ -100,7 +100,7 @@ const ClientProfile = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4 text-center">
+      <div className="container mx-auto p-4 text-center theme-bg">
         <div className="animate-pulse">Loading client profile...</div>
       </div>
     );
@@ -108,11 +108,15 @@ const ClientProfile = () => {
 
   if (!customer) {
     return (
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto p-4 theme-bg">
         <Alert>
           <AlertDescription>Client not found. The client may have been deleted or the URL is incorrect.</AlertDescription>
         </Alert>
-        <Button className="mt-4" onClick={handleGoBack}>
+        <Button 
+          className="mt-4 border-theme-accent text-theme-accent hover:bg-theme-accent hover:text-white" 
+          variant="outline" 
+          onClick={handleGoBack}
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Clients
         </Button>
@@ -121,10 +125,15 @@ const ClientProfile = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="container mx-auto p-4 space-y-6 theme-bg">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handleGoBack}>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={handleGoBack}
+            className="border-theme-accent text-theme-accent hover:bg-theme-accent hover:text-white"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-3xl font-bold">
@@ -137,7 +146,11 @@ const ClientProfile = () => {
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleEditCustomer}>
+          <Button 
+            variant="outline" 
+            onClick={handleEditCustomer}
+            className="border-theme-accent text-theme-accent hover:bg-theme-accent hover:text-white"
+          >
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Button>
@@ -147,7 +160,7 @@ const ClientProfile = () => {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Left column - Customer info */}
         <div className="md:col-span-4 space-y-6">
-          <Card>
+          <Card className="theme-container-bg border">
             <CardHeader>
               <CardTitle>Client Information</CardTitle>
             </CardHeader>
@@ -157,11 +170,11 @@ const ClientProfile = () => {
                   <img 
                     src={customer.photo_url} 
                     alt={`${customer.first_name} ${customer.last_name}`} 
-                    className="rounded-full w-32 h-32 object-cover border-4 border-primary/20" 
+                    className="rounded-full w-32 h-32 object-cover border-4 border-theme-accent/20" 
                   />
                 ) : (
-                  <div className="rounded-full w-32 h-32 bg-primary/10 flex items-center justify-center">
-                    <UserRound className="h-16 w-16 text-primary/40" />
+                  <div className="rounded-full w-32 h-32 bg-theme-accent/10 flex items-center justify-center">
+                    <UserRound className="h-16 w-16 text-theme-accent/40" />
                   </div>
                 )}
               </div>
@@ -221,7 +234,7 @@ const ClientProfile = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="theme-container-bg border">
             <CardHeader>
               <CardTitle>Loyalty Program</CardTitle>
               <CardDescription>Points and rewards status</CardDescription>
@@ -233,7 +246,7 @@ const ClientProfile = () => {
               </div>
               <div className="h-2.5 bg-secondary/20 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-primary rounded-full" 
+                  className="h-full bg-theme-accent rounded-full" 
                   style={{ width: `${Math.min(((customer.loyalty_points || 0) / 100) * 100, 100)}%` }}
                 ></div>
               </div>
@@ -250,7 +263,7 @@ const ClientProfile = () => {
           </Card>
 
           {customer.notes && (
-            <Card>
+            <Card className="theme-container-bg border">
               <CardHeader>
                 <CardTitle>Notes</CardTitle>
               </CardHeader>
@@ -264,17 +277,32 @@ const ClientProfile = () => {
         {/* Right column - Metrics and transactions */}
         <div className="md:col-span-8 space-y-6">
           {/* Overview Section */}
-          <Card>
+          <Card className="theme-container-bg border">
             <CardHeader>
               <CardTitle>Client Overview</CardTitle>
               <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" className={timeframe === "30days" ? "bg-secondary/20" : ""} onClick={() => setTimeframe("30days")}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={`${timeframe === "30days" ? "bg-theme-section-selected" : ""} border-theme-accent text-theme-accent hover:bg-theme-accent hover:text-white`}
+                  onClick={() => setTimeframe("30days")}
+                >
                   Last 30 Days
                 </Button>
-                <Button variant="outline" size="sm" className={timeframe === "90days" ? "bg-secondary/20" : ""} onClick={() => setTimeframe("90days")}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={`${timeframe === "90days" ? "bg-theme-section-selected" : ""} border-theme-accent text-theme-accent hover:bg-theme-accent hover:text-white`}
+                  onClick={() => setTimeframe("90days")}
+                >
                   Last 90 Days
                 </Button>
-                <Button variant="outline" size="sm" className={timeframe === "alltime" ? "bg-secondary/20" : ""} onClick={() => setTimeframe("alltime")}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={`${timeframe === "alltime" ? "bg-theme-section-selected" : ""} border-theme-accent text-theme-accent hover:bg-theme-accent hover:text-white`}
+                  onClick={() => setTimeframe("alltime")}
+                >
                   All Time
                 </Button>
               </div>
@@ -302,13 +330,13 @@ const ClientProfile = () => {
 
           {/* Transactions Section */}
           <Tabs defaultValue="history">
-            <TabsList className="mb-4">
+            <TabsList className="mb-4 theme-container-bg">
               <TabsTrigger value="history">Transaction History</TabsTrigger>
               <TabsTrigger value="payment">Payment Methods</TabsTrigger>
             </TabsList>
             
             <TabsContent value="history">
-              <Card>
+              <Card className="theme-container-bg border">
                 <CardHeader>
                   <CardTitle>Transaction History</CardTitle>
                   <CardDescription>Recent purchases and payments</CardDescription>
@@ -322,7 +350,7 @@ const ClientProfile = () => {
                     <Accordion type="single" collapsible className="w-full">
                       {transactions.map((transaction) => (
                         <AccordionItem key={transaction.id} value={transaction.id}>
-                          <AccordionTrigger className="px-4 py-3 bg-card hover:bg-muted/50 rounded-md my-1">
+                          <AccordionTrigger className="px-4 py-3 theme-section-bg hover:bg-theme-section-selected rounded-md my-1">
                             <div className="flex justify-between w-full items-center pr-4">
                               <div className="flex items-center gap-3">
                                 <div className="flex flex-col items-start">
@@ -344,9 +372,9 @@ const ClientProfile = () => {
                           </AccordionTrigger>
                           <AccordionContent className="px-4 pb-3">
                             <div className="space-y-4">
-                              <div className="border rounded-md overflow-hidden">
+                              <div className="border rounded-md overflow-hidden theme-section-bg">
                                 <Table>
-                                  <TableHeader>
+                                  <TableHeader className="bg-theme-section-bg">
                                     <TableRow>
                                       <TableHead>Item</TableHead>
                                       <TableHead className="text-right">Quantity</TableHead>
@@ -357,7 +385,7 @@ const ClientProfile = () => {
                                   <TableBody>
                                     {transaction.items && typeof transaction.items === 'object' ? 
                                       Object.values(transaction.items).map((item: any, index) => (
-                                        <TableRow key={index}>
+                                        <TableRow key={index} className="hover:bg-theme-section-selected">
                                           <TableCell>{item.name}</TableCell>
                                           <TableCell className="text-right">{item.quantity}</TableCell>
                                           <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
@@ -397,7 +425,7 @@ const ClientProfile = () => {
             </TabsContent>
             
             <TabsContent value="payment">
-              <Card>
+              <Card className="theme-container-bg border">
                 <CardHeader>
                   <CardTitle>Payment Methods</CardTitle>
                   <CardDescription>Saved payment methods from Stripe</CardDescription>
@@ -405,10 +433,10 @@ const ClientProfile = () => {
                 <CardContent>
                   {customer.stripe_customer_id ? (
                     <div className="space-y-4">
-                      <Card className="border border-muted">
+                      <Card className="border theme-section-bg">
                         <CardContent className="p-4 flex justify-between items-center">
                           <div className="flex items-center gap-3">
-                            <CreditCard className="h-8 w-8 text-primary" />
+                            <CreditCard className="h-8 w-8 text-theme-accent" />
                             <div>
                               <div className="font-medium">•••• •••• •••• 4242</div>
                               <div className="text-xs text-muted-foreground">Expires 12/25</div>
@@ -418,7 +446,7 @@ const ClientProfile = () => {
                         </CardContent>
                       </Card>
                       
-                      <Button className="w-full">
+                      <Button className="w-full bg-theme-accent hover:bg-theme-accent-hover text-white">
                         <CreditCard className="mr-2 h-4 w-4" />
                         Add Payment Method
                       </Button>
@@ -426,7 +454,7 @@ const ClientProfile = () => {
                   ) : (
                     <div className="text-center py-6">
                       <div className="text-muted-foreground mb-4">No payment methods added yet</div>
-                      <Button>
+                      <Button className="bg-theme-accent hover:bg-theme-accent-hover text-white">
                         <CreditCard className="mr-2 h-4 w-4" />
                         Add Payment Method
                       </Button>
