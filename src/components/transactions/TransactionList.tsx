@@ -14,9 +14,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface TransactionListProps {
   status?: string;
   filters: TransactionFilters;
+  onSelectTransaction?: (transactionId: string) => void;
 }
 
-const TransactionList: React.FC<TransactionListProps> = ({ status, filters }) => {
+const TransactionList: React.FC<TransactionListProps> = ({ 
+  status, 
+  filters,
+  onSelectTransaction
+}) => {
   const { settings } = useSettings();
   const [selectedTransaction, setSelectedTransaction] = useState<string | null>(null);
 
@@ -99,6 +104,13 @@ const TransactionList: React.FC<TransactionListProps> = ({ status, filters }) =>
     }
   };
 
+  const handleRowClick = (transactionId: string) => {
+    setSelectedTransaction(transactionId);
+    if (onSelectTransaction) {
+      onSelectTransaction(transactionId);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-4">
@@ -152,7 +164,7 @@ const TransactionList: React.FC<TransactionListProps> = ({ status, filters }) =>
             <TableRow 
               key={transaction.id} 
               className={selectedTransaction === transaction.id ? 'bg-muted' : undefined}
-              onClick={() => setSelectedTransaction(transaction.id)}
+              onClick={() => handleRowClick(transaction.id)}
             >
               <TableCell className="font-medium">{transaction.id.slice(0, 8)}</TableCell>
               <TableCell>{formatDateTime(transaction.created_at)}</TableCell>
@@ -176,10 +188,25 @@ const TransactionList: React.FC<TransactionListProps> = ({ status, filters }) =>
                   : "—"}
               </TableCell>
               <TableCell className="text-right space-x-2">
-                <Button variant="ghost" size="icon">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRowClick(transaction.id);
+                  }}
+                >
                   <Eye className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // Printing functionality would go here
+                    console.log("Print transaction:", transaction.id);
+                  }}
+                >
                   <Printer className="h-4 w-4" />
                 </Button>
               </TableCell>
