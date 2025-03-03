@@ -12,6 +12,11 @@ export type {
   VariantCombination
 } from '@/types';
 
+// Re-export types from types/inventoryTypes.ts
+export type {
+  ProductCategory
+} from './types/inventoryTypes';
+
 // Re-export category APIs
 export {
   fetchCategories,

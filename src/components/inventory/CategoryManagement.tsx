@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw, Edit, Trash2 } from 'lucide-react';
+import { RefreshCw, Edit, Trash2, Plus, X } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from "@/components/ui/dialog";
 
 interface CategoryForm {
   name: string;
@@ -44,6 +54,7 @@ const CategoryManagement: React.FC = () => {
   const [newCategory, setNewCategory] = useState<CategoryForm>({ name: '', description: '' });
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: categories, isLoading: isCategoriesLoading, error, refetch } = useQuery({
@@ -64,6 +75,7 @@ const CategoryManagement: React.FC = () => {
       toast.success('Category created successfully!');
       setNewCategory({ name: '', description: '' });
       setIsLoading(false);
+      setIsModalOpen(false);
     },
     onError: (error: any) => {
       console.error("Error in create category mutation:", error);
@@ -176,6 +188,11 @@ const CategoryManagement: React.FC = () => {
   const handleRefresh = () => {
     refetch();
   };
+  
+  const openCreateModal = () => {
+    setNewCategory({ name: '', description: '' });
+    setIsModalOpen(true);
+  };
 
   if (error) {
     return (
@@ -191,70 +208,116 @@ const CategoryManagement: React.FC = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Category Management</h2>
-        <Button variant="outline" onClick={handleRefresh} disabled={isCategoriesLoading} className="flex items-center gap-1">
-          <RefreshCw className={`h-4 w-4 ${isCategoriesLoading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleRefresh} disabled={isCategoriesLoading} className="flex items-center gap-1">
+            <RefreshCw className={`h-4 w-4 ${isCategoriesLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={openCreateModal} className="flex items-center gap-1">
+                <Plus className="h-4 w-4" />
+                Add Category
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Category</DialogTitle>
+                <DialogDescription>
+                  Add a new product category to organize your inventory.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label htmlFor="name" className="text-sm font-medium">Category Name</label>
+                  <Input
+                    id="name"
+                    name="name"
+                    placeholder="Category Name"
+                    value={newCategory.name}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="description" className="text-sm font-medium">Description</label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    placeholder="Description"
+                    value={newCategory.description}
+                    onChange={handleInputChange}
+                    className="min-h-[100px]"
+                  />
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button 
+                  onClick={handleCreateCategory}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Creating...' : 'Create Category'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      {/* Category Creation/Edit Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{editingCategory ? 'Edit Category' : 'Create New Category'}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-1">Category Name</label>
-            <Input
-              id="name"
-              type="text"
-              name="name"
-              placeholder="Category Name"
-              value={editingCategory ? editingCategory.name : newCategory.name}
-              onChange={handleInputChange}
-              className="w-full"
-            />
-          </div>
-          
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
-            <Textarea
-              id="description"
-              name="description"
-              placeholder="Description"
-              value={editingCategory ? editingCategory.description || '' : newCategory.description}
-              onChange={handleInputChange}
-              className="w-full min-h-[100px]"
-            />
-          </div>
-          
-          <div className="pt-2 flex justify-end gap-2">
-            {editingCategory ? (
-              <>
-                <Button 
-                  variant="outline" 
-                  onClick={cancelEditing}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  disabled={isLoading} 
-                  onClick={handleUpdateCategory}
-                >
-                  {isLoading ? 'Updating...' : 'Update Category'}
-                </Button>
-              </>
-            ) : (
+      {/* Edit Form - Only shown when editing */}
+      {editingCategory && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit Category</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label htmlFor="edit-name" className="block text-sm font-medium mb-1">Category Name</label>
+              <Input
+                id="edit-name"
+                type="text"
+                name="name"
+                placeholder="Category Name"
+                value={editingCategory.name}
+                onChange={handleInputChange}
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="edit-description" className="block text-sm font-medium mb-1">Description</label>
+              <Textarea
+                id="edit-description"
+                name="description"
+                placeholder="Description"
+                value={editingCategory.description || ''}
+                onChange={handleInputChange}
+                className="w-full min-h-[100px]"
+              />
+            </div>
+            
+            <div className="pt-2 flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={cancelEditing}
+              >
+                Cancel
+              </Button>
               <Button 
                 disabled={isLoading} 
-                onClick={handleCreateCategory}
+                onClick={handleUpdateCategory}
               >
-                {isLoading ? 'Creating...' : 'Create Category'}
+                {isLoading ? 'Updating...' : 'Update Category'}
               </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Display Categories in a Table */}
       <Card>
@@ -319,7 +382,7 @@ const CategoryManagement: React.FC = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
-                      No categories found. Create your first category above.
+                      No categories found. Create your first category using the 'Add Category' button above.
                     </TableCell>
                   </TableRow>
                 )}
