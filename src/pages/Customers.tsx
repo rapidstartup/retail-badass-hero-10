@@ -7,10 +7,18 @@ import { NewCustomerForm } from "@/components/customers/NewCustomerForm";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { CustomerProvider } from "@/contexts/CustomerContext";
+import { updateCustomer } from "@/api/customerApi";
 
 const Customers = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [isAddingCustomer, setIsAddingCustomer] = useState<boolean>(false);
+
+  const handleCustomerUpdate = async () => {
+    // This function will be called after a customer is updated
+    // You might want to refresh the customer list or perform other actions
+    console.log("Customer updated successfully");
+    return Promise.resolve();
+  };
 
   return (
     <CustomerProvider>
@@ -67,6 +75,7 @@ const Customers = () => {
                     created_at: null,
                     updated_at: null
                   }}
+                  onUpdate={handleCustomerUpdate}
                 />
               ) : (
                 <div className="flex items-center justify-center h-64 border rounded-lg bg-muted/40">

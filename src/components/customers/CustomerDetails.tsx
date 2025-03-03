@@ -3,14 +3,15 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import CustomerTransactionList from './CustomerTransactionList';
+import { CustomerTransactionList } from './CustomerTransactionList';
 import CustomerGiftCards from './CustomerGiftCards';
-import CustomerLoyalty from './CustomerLoyalty';
+import { CustomerLoyalty } from './CustomerLoyalty';
 import { CustomerEditForm } from './CustomerEditForm';
 import { Mail, Phone, Edit, FileText, CreditCard, Gift, ShoppingBag } from "lucide-react";
+import type { Customer } from '@/types/database.types';
 
-interface CustomerDetailsProps {
-  customer: any;
+export interface CustomerDetailsProps {
+  customer: Customer;
   onUpdate: () => Promise<void>;
 }
 
