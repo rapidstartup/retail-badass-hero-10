@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,6 +21,7 @@ import { formatCurrency } from "@/utils/formatters";
 import type { TransactionFilters as TransactionFiltersType } from "@/types/transaction";
 import TransactionTimeline from "@/components/transactions/TransactionTimeline";
 import TransactionDetailPanel from "@/components/transactions/TransactionDetailPanel";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const fetchTransactionStats = async () => {
   const { data: transactions, error } = await supabase
@@ -106,6 +108,7 @@ const Transactions = () => {
     },
     searchQuery: ''
   });
+  const isMobile = useIsMobile();
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["transaction-stats"],
@@ -147,7 +150,7 @@ const Transactions = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2">
+        <div className={isMobile ? "col-span-1" : "lg:col-span-2"}>
           <Card>
             <CardHeader>
               <CardTitle>Transaction List</CardTitle>
@@ -199,8 +202,8 @@ const Transactions = () => {
           </Card>
         </div>
         
-        <div>
-          <Card>
+        <div className="col-span-1">
+          <Card className="h-full">
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
