@@ -80,12 +80,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({ customer, onUpdate })
                   <span>{currentCustomer.phone}</span>
                 </div>
               )}
-              {currentCustomer.address && (
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-muted-foreground">Address</span>
-                  <span>{currentCustomer.address}</span>
-                </div>
-              )}
+              {/* Removed the address field which doesn't exist in the Customer type */}
             </div>
           </CardContent>
         </Card>
@@ -103,7 +98,15 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({ customer, onUpdate })
         </TabsContent>
         
         <TabsContent value="loyalty" className="mt-4">
-          <CustomerLoyalty customer={currentCustomer} />
+          <CustomerLoyalty 
+            customer={currentCustomer} 
+            onUpdate={async () => {
+              // Provide an implementation for onUpdate
+              if (onUpdate) {
+                await onUpdate(currentCustomer);
+              }
+            }} 
+          />
         </TabsContent>
         
         <TabsContent value="giftcards" className="mt-4">

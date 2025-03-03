@@ -14,6 +14,8 @@ export interface Customer {
   total_spend: number | null;
   created_at: string | null;
   updated_at: string | null;
+  // We don't want to add the address field to the database type
+  // since it doesn't exist in the database schema
 }
 
 export interface GiftCard {
