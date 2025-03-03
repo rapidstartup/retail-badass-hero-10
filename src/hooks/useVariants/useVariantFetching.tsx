@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { ProductVariant } from "@/api/types/inventoryTypes";
+import { ProductVariant } from "@/api/types/variantTypes";
 import { fetchVariantsByProductId } from "@/api/variantApi";
 
 export function useVariantFetching(productId: string) {

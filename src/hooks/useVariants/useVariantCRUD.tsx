@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ProductVariant } from "@/api/types/inventoryTypes";
+import { ProductVariant } from "@/api/types/variantTypes";
 import { createVariant, updateVariant, deleteVariant } from "@/api/variantApi";
 import { toast } from "sonner";
 
