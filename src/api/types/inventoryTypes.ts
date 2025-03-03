@@ -1,5 +1,5 @@
 
-// Shared types for inventory-related APIs
+// Shared types for inventory-related APIs - aligns with src/types/index.ts
 
 // Category types
 export interface ProductCategory {
@@ -33,7 +33,7 @@ export interface ProductVariant {
   id: string;
   product_id: string;
   sku: string | null;
-  price: number | null;
+  price: number;
   stock_count: number | null;
   color: string | null;
   size: string | null;

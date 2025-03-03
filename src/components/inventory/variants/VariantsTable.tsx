@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2, RefreshCw } from "lucide-react";
-import { ProductVariant } from "@/api/types/inventoryTypes";
+import { ProductVariant } from "@/types";
 
 interface VariantsTableProps {
   variants: ProductVariant[];

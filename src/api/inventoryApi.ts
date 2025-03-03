@@ -3,12 +3,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-// Re-export types
+// Re-export types from types/index.ts
 export type {
-  ProductCategory,
+  Category,
   Product,
-  ProductVariant
-} from './types/inventoryTypes';
+  ProductVariant,
+  VariantType,
+  VariantCombination
+} from '@/types';
 
 // Re-export category APIs
 export {

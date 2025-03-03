@@ -4,8 +4,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   fetchCategories as getCategoriesAPI,
   createCategory as createCategoryAPI,
-  ProductCategory
+  updateCategory as updateCategoryAPI,
+  deleteCategory as deleteCategoryAPI
 } from '@/api/categoryApi';
+import { Category } from '@/types';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +22,18 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Edit, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface CategoryForm {
   name: string;
@@ -29,6 +42,7 @@ interface CategoryForm {
 
 const CategoryManagement: React.FC = () => {
   const [newCategory, setNewCategory] = useState<CategoryForm>({ name: '', description: '' });
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
 
@@ -58,12 +72,52 @@ const CategoryManagement: React.FC = () => {
     }
   });
 
+  const { mutate: updateCategory } = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Category> }) => {
+      console.log("Updating category:", id, data);
+      return updateCategoryAPI(id, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast.success('Category updated successfully!');
+      setEditingCategory(null);
+      setIsLoading(false);
+    },
+    onError: (error: any) => {
+      console.error("Error in update category mutation:", error);
+      toast.error(`Failed to update category: ${error?.message || 'Unknown error'}`);
+      setIsLoading(false);
+    }
+  });
+
+  const { mutate: deleteCategory } = useMutation({
+    mutationFn: (id: string) => {
+      console.log("Deleting category:", id);
+      return deleteCategoryAPI(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      toast.success('Category deleted successfully!');
+    },
+    onError: (error: any) => {
+      console.error("Error in delete category mutation:", error);
+      toast.error(`Failed to delete category: ${error?.message || 'Unknown error'}`);
+    }
+  });
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setNewCategory(prevCategory => ({
-      ...prevCategory,
-      [name]: value,
-    }));
+    if (editingCategory) {
+      setEditingCategory({
+        ...editingCategory,
+        [name]: value,
+      });
+    } else {
+      setNewCategory(prevCategory => ({
+        ...prevCategory,
+        [name]: value,
+      }));
+    }
   };
 
   const handleCreateCategory = async () => {
@@ -83,6 +137,40 @@ const CategoryManagement: React.FC = () => {
       toast.error(`Failed to create category: ${error instanceof Error ? error.message : "Unknown error"}`);
       setIsLoading(false);
     }
+  };
+
+  const handleUpdateCategory = async () => {
+    if (!editingCategory || !editingCategory.name) {
+      toast.error("Category name is required");
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      updateCategory({
+        id: editingCategory.id,
+        data: {
+          name: editingCategory.name,
+          description: editingCategory.description
+        }
+      });
+    } catch (error) {
+      console.error("Error updating category:", error);
+      toast.error(`Failed to update category: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteCategory = (id: string) => {
+    deleteCategory(id);
+  };
+
+  const startEditing = (category: Category) => {
+    setEditingCategory(category);
+  };
+
+  const cancelEditing = () => {
+    setEditingCategory(null);
   };
 
   const handleRefresh = () => {
@@ -109,10 +197,10 @@ const CategoryManagement: React.FC = () => {
         </Button>
       </div>
 
-      {/* Category Creation Form */}
+      {/* Category Creation/Edit Form */}
       <Card>
         <CardHeader>
-          <CardTitle>Create New Category</CardTitle>
+          <CardTitle>{editingCategory ? 'Edit Category' : 'Create New Category'}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -122,7 +210,7 @@ const CategoryManagement: React.FC = () => {
               type="text"
               name="name"
               placeholder="Category Name"
-              value={newCategory.name}
+              value={editingCategory ? editingCategory.name : newCategory.name}
               onChange={handleInputChange}
               className="w-full"
             />
@@ -134,20 +222,36 @@ const CategoryManagement: React.FC = () => {
               id="description"
               name="description"
               placeholder="Description"
-              value={newCategory.description}
+              value={editingCategory ? editingCategory.description || '' : newCategory.description}
               onChange={handleInputChange}
               className="w-full min-h-[100px]"
             />
           </div>
           
-          <div className="pt-2">
-            <Button 
-              disabled={isLoading} 
-              onClick={handleCreateCategory} 
-              className="inline-flex items-center justify-center w-full md:w-auto mr-4 theme-accent-bg hover:opacity-90"
-            >
-              {isLoading ? 'Creating...' : 'Create Category'}
-            </Button>
+          <div className="pt-2 flex justify-end gap-2">
+            {editingCategory ? (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={cancelEditing}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  disabled={isLoading} 
+                  onClick={handleUpdateCategory}
+                >
+                  {isLoading ? 'Updating...' : 'Update Category'}
+                </Button>
+              </>
+            ) : (
+              <Button 
+                disabled={isLoading} 
+                onClick={handleCreateCategory}
+              >
+                {isLoading ? 'Creating...' : 'Create Category'}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -164,11 +268,12 @@ const CategoryManagement: React.FC = () => {
             </div>
           ) : (
             <Table>
-              <TableCaption>A list of your categories.</TableCaption>
+              <TableCaption>A list of your product categories.</TableCaption>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px]">Name</TableHead>
+                  <TableHead className="w-[200px]">Name</TableHead>
                   <TableHead>Description</TableHead>
+                  <TableHead className="text-right w-[150px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -177,11 +282,43 @@ const CategoryManagement: React.FC = () => {
                     <TableRow key={category.id}>
                       <TableCell className="font-medium">{category.name}</TableCell>
                       <TableCell>{category.description}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button size="icon" variant="outline" onClick={() => startEditing(category)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="icon" variant="outline">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete the category "{category.name}"? 
+                                  This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteCategory(category.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center py-6 text-muted-foreground">
+                    <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
                       No categories found. Create your first category above.
                     </TableCell>
                   </TableRow>

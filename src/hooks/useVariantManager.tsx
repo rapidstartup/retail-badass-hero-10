@@ -4,7 +4,7 @@ import { useVariantCRUD } from "./useVariants/useVariantCRUD";
 import { useVariantForm } from "./useVariants/useVariantForm";
 import { useBulkVariantGenerator } from "./useVariants/useBulkVariantGenerator";
 import { useSkuGenerator } from "./useVariants/useSkuGenerator";
-import { Product } from "@/api/types/inventoryTypes";
+import { Product, ProductVariant } from "@/types";
 
 export const useVariantManager = (product: Product) => {
   // Ensure we have a valid product ID

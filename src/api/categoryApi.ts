@@ -1,13 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ProductCategory } from "./types/inventoryTypes";
-
-// Re-export the ProductCategory type
-export type { ProductCategory };
+import { Category } from "@/types";
 
 // Categories API
-export const fetchCategories = async (): Promise<ProductCategory[]> => {
+export const fetchCategories = async (): Promise<Category[]> => {
   try {
     console.log("Fetching all categories");
     
@@ -30,7 +27,7 @@ export const fetchCategories = async (): Promise<ProductCategory[]> => {
   }
 };
 
-export const createCategory = async (category: Omit<ProductCategory, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<ProductCategory | null> => {
+export const createCategory = async (category: Omit<Category, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<Category | null> => {
   try {
     // Ensure name is provided
     if (!category.name) {
@@ -60,7 +57,7 @@ export const createCategory = async (category: Omit<ProductCategory, 'id' | 'cre
   }
 };
 
-export const updateCategory = async (id: string, category: Partial<ProductCategory>): Promise<ProductCategory | null> => {
+export const updateCategory = async (id: string, category: Partial<Category>): Promise<Category | null> => {
   try {
     console.log("Updating category ID:", id, "with data:", category);
     
