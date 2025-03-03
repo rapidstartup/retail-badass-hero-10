@@ -10,15 +10,7 @@ import TransactionFilters from "@/components/transactions/TransactionFilters";
 import StatCard from "@/components/StatCard";
 import { BanknoteIcon, ReceiptIcon, ShoppingBag, Users } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
-
-interface TransactionFiltersProps {
-  filters: any;
-  setFilters: (filters: any) => void;
-}
-
-interface TransactionListProps {
-  status: string;
-}
+import type { TransactionFilters as TransactionFiltersType } from "@/types/transaction";
 
 const fetchTransactionStats = async () => {
   const { data: transactions, error } = await supabase
@@ -60,7 +52,13 @@ const Transactions = () => {
     from: new Date(new Date().setDate(new Date().getDate() - 30)),
     to: new Date()
   });
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState<TransactionFiltersType>({
+    dateRange: {
+      from: new Date(new Date().setDate(new Date().getDate() - 30)),
+      to: new Date()
+    },
+    searchQuery: ''
+  });
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["transaction-stats"],
@@ -112,19 +110,19 @@ const Transactions = () => {
             </TabsList>
             
             <TabsContent value="all">
-              <TransactionList status="all" />
+              <TransactionList status="all" filters={filters} />
             </TabsContent>
             
             <TabsContent value="completed">
-              <TransactionList status="completed" />
+              <TransactionList status="completed" filters={filters} />
             </TabsContent>
             
             <TabsContent value="open">
-              <TransactionList status="open" />
+              <TransactionList status="open" filters={filters} />
             </TabsContent>
             
             <TabsContent value="refunded">
-              <TransactionList status="refunded" />
+              <TransactionList status="refunded" filters={filters} />
             </TabsContent>
           </Tabs>
         </CardContent>

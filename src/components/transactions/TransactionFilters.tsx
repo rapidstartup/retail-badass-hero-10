@@ -1,16 +1,12 @@
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Search, X } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Search, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import type { TransactionFilters as TransactionFiltersType } from "@/types/transaction";
+import { DatePickerWithRange } from "@/components/ui/date-picker";
 
 interface TransactionFiltersProps {
   filters: TransactionFiltersType;
@@ -20,7 +16,10 @@ interface TransactionFiltersProps {
 const TransactionFilters: React.FC<TransactionFiltersProps> = ({ filters, setFilters }) => {
   const resetFilters = () => {
     setFilters({
-      dateRange: { from: undefined, to: undefined },
+      dateRange: { 
+        from: new Date(new Date().setDate(new Date().getDate() - 30)),
+        to: new Date()
+      },
       paymentMethod: undefined,
       status: undefined,
       minimumAmount: undefined,
@@ -58,39 +57,12 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({ filters, setFil
         </div>
 
         {/* Date range */}
-        <div>
+        <div className="sm:col-span-3 lg:col-span-2">
           <Label>Date Range</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {filters.dateRange.from ? (
-                  filters.dateRange.to ? (
-                    <>
-                      {format(filters.dateRange.from, "LLL dd")} - {format(filters.dateRange.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(filters.dateRange.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={filters.dateRange.from}
-                selected={{
-                  from: filters.dateRange.from,
-                  to: filters.dateRange.to,
-                }}
-                onSelect={(range) => setFilters({ ...filters, dateRange: range || { from: undefined, to: undefined } })}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
+          <DatePickerWithRange 
+            dateRange={filters.dateRange as {from: Date, to: Date}}
+            setDateRange={(range) => setFilters({ ...filters, dateRange: range })}
+          />
         </div>
 
         {/* Payment method */}

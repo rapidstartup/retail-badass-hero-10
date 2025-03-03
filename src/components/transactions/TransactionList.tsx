@@ -39,18 +39,18 @@ const TransactionList: React.FC<TransactionListProps> = ({ status, filters }) =>
         .order('created_at', { ascending: false });
 
       // Apply status filter
-      if (status) {
+      if (status && status !== 'all') {
         query = query.eq('status', status);
       }
 
       // Apply date range filter
-      if (filters.dateRange.from) {
+      if (filters.dateRange?.from) {
         const fromDate = new Date(filters.dateRange.from);
         fromDate.setHours(0, 0, 0, 0);
         query = query.gte('created_at', fromDate.toISOString());
       }
       
-      if (filters.dateRange.to) {
+      if (filters.dateRange?.to) {
         const toDate = new Date(filters.dateRange.to);
         toDate.setHours(23, 59, 59, 999);
         query = query.lte('created_at', toDate.toISOString());
