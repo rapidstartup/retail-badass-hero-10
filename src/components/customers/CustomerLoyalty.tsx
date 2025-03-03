@@ -1,113 +1,111 @@
 
-import React, { useState } from "react";
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "sonner";
-import { Gift, Award } from "lucide-react";
+import { formatCurrency } from "@/utils/formatters";
+import { Gift, Award, TrendingUp } from "lucide-react";
+import type { Customer } from "@/types/index";
 
-interface Customer {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string | null;
-  phone: string | null;
-  loyalty_points: number | null;
-  tier: string | null;
-  total_spend: number | null;
-}
-
-interface CustomerLoyaltyProps {
+export interface CustomerLoyaltyProps {
   customer: Customer;
   onUpdate: () => Promise<void>;
 }
 
 export const CustomerLoyalty: React.FC<CustomerLoyaltyProps> = ({ customer, onUpdate }) => {
-  const [isUpdating, setIsUpdating] = useState(false);
+  const tierThresholds = {
+    Bronze: 0,
+    Silver: 500,
+    Gold: 1000,
+    Platinum: 2500
+  };
   
-  const getTierInfo = (tier: string | null) => {
-    switch (tier?.toLowerCase()) {
-      case "silver":
-        return { next: "Gold", threshold: 1000, color: "bg-gray-400" };
-      case "gold":
-        return { next: "Platinum", threshold: 2000, color: "bg-yellow-400" };
-      case "platinum":
-        return { next: "Diamond", threshold: 5000, color: "bg-blue-400" };
-      case "diamond":
-        return { next: "Diamond", threshold: 10000, color: "bg-purple-400" };
-      default:
-        return { next: "Silver", threshold: 500, color: "bg-brown-400" };
+  const pointsToNextTier = () => {
+    if (customer.tier === 'Platinum') return 0;
+    
+    const nextTier = customer.tier === 'Bronze' ? 'Silver' : 
+                     customer.tier === 'Silver' ? 'Gold' : 'Platinum';
+    
+    return Math.max(0, tierThresholds[nextTier] - customer.total_spend);
+  };
+  
+  const getNextTier = () => {
+    if (customer.tier === 'Platinum') return 'Platinum';
+    return customer.tier === 'Bronze' ? 'Silver' : 
+           customer.tier === 'Silver' ? 'Gold' : 'Platinum';
+  };
+  
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case 'Bronze': return 'text-amber-600';
+      case 'Silver': return 'text-gray-400';
+      case 'Gold': return 'text-yellow-500';
+      case 'Platinum': return 'text-emerald-600';
+      default: return '';
     }
   };
   
-  const tierInfo = getTierInfo(customer.tier);
-  const loyaltyPoints = customer.loyalty_points || 0;
-  const totalSpend = customer.total_spend || 0;
-  const progress = Math.min(100, Math.round((totalSpend / tierInfo.threshold) * 100));
-  
-  const handleAddPoints = async () => {
-    setIsUpdating(true);
-    try {
-      // Mock implementation - in real app, would call an API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("Added 100 loyalty points");
-      await onUpdate();
-    } catch (error) {
-      toast.error("Failed to add points");
-    } finally {
-      setIsUpdating(false);
-    }
+  const calculateProgress = () => {
+    if (customer.tier === 'Platinum') return 100;
+    
+    const currentTierThreshold = tierThresholds[customer.tier];
+    const nextTierThreshold = tierThresholds[getNextTier()];
+    
+    const range = nextTierThreshold - currentTierThreshold;
+    const progress = customer.total_spend - currentTierThreshold;
+    
+    return Math.min(100, Math.max(0, (progress / range) * 100));
   };
   
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium">Loyalty Program</CardTitle>
+        <CardTitle className="text-lg flex items-center justify-between">
+          <span className="flex items-center">
+            <Award className="mr-2 h-5 w-5 text-primary" />
+            Loyalty Program
+          </span>
+          <Badge variant="outline" className={getTierColor(customer.tier)}>
+            {customer.tier} Member
+          </Badge>
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-primary" />
-            <div>
-              <div className="font-medium">{customer.tier || "Bronze"} Member</div>
-              <div className="text-sm text-muted-foreground">{loyaltyPoints} points</div>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">Loyalty Points</div>
+            <div className="text-2xl font-semibold">{customer.loyalty_points}</div>
+            <div className="text-xs text-muted-foreground">
+              Worth {formatCurrency(customer.loyalty_points * 0.10)}
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={handleAddPoints} disabled={isUpdating}>
-            {isUpdating ? "Adding..." : "Add Points"}
-          </Button>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm mb-1">
-            <span>Progress to {tierInfo.next}</span>
-            <span>${totalSpend.toFixed(2)} / ${tierInfo.threshold}</span>
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">Total Spend</div>
+            <div className="text-2xl font-semibold">{formatCurrency(customer.total_spend)}</div>
+            <div className="text-xs text-muted-foreground">Lifetime value</div>
           </div>
-          <Progress value={progress} className="h-2" />
         </div>
         
-        <div className="mt-4 border-t pt-4">
-          <div className="text-sm font-medium mb-2">Available Rewards</div>
+        {customer.tier !== 'Platinum' && (
           <div className="space-y-2">
-            <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
-              <div className="flex items-center gap-2">
-                <Gift className="h-4 w-4 text-primary" />
-                <span>10% Off Next Purchase</span>
-              </div>
-              <Button variant="outline" size="sm" disabled={loyaltyPoints < 100}>
-                Redeem (100pts)
-              </Button>
+            <div className="flex justify-between text-sm">
+              <span>Progress to {getNextTier()}</span>
+              <span>{formatCurrency(pointsToNextTier())} more needed</span>
             </div>
-            <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
-              <div className="flex items-center gap-2">
-                <Gift className="h-4 w-4 text-primary" />
-                <span>Free Item Under $20</span>
-              </div>
-              <Button variant="outline" size="sm" disabled={loyaltyPoints < 200}>
-                Redeem (200pts)
-              </Button>
-            </div>
+            <Progress value={calculateProgress()} className="h-2" />
           </div>
+        )}
+        
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => {}}>
+            <Gift className="mr-2 h-4 w-4" />
+            Add Gift Card
+          </Button>
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => {}}>
+            <TrendingUp className="mr-2 h-4 w-4" />
+            View Activity
+          </Button>
         </div>
       </CardContent>
     </Card>

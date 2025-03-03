@@ -1,182 +1,133 @@
 
-import React, { useState, useEffect } from "react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from 'react';
+import { fetchTransactionsByCustomer } from "@/api/transactionApi";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Filter, Download, Eye } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatters";
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
-
-interface Transaction {
-  id: string;
-  items: any[];
-  status: string;
-  total: number;
-  tax: number;
-  subtotal: number;
-  payment_method: string | null;
-  created_at: string | null;
-}
+import { Check, Clock, RefreshCw, CreditCard, DollarSign, FileText } from "lucide-react";
 
 export interface CustomerTransactionListProps {
   customerId: string;
 }
 
 export const CustomerTransactionList: React.FC<CustomerTransactionListProps> = ({ customerId }) => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [date, setDate] = useState<Date | undefined>(undefined);
-
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
   useEffect(() => {
-    // Mock data - would normally fetch from API
-    setTimeout(() => {
-      setTransactions([
-        {
-          id: "tr_1",
-          items: [{ name: "Product 1", quantity: 2, price: 25 }, { name: "Product 2", quantity: 1, price: 15 }],
-          status: "completed",
-          total: 65,
-          tax: 5,
-          subtotal: 60,
-          payment_method: "card",
-          created_at: "2023-06-15T14:30:00Z"
-        },
-        {
-          id: "tr_2",
-          items: [{ name: "Product 3", quantity: 1, price: 99 }],
-          status: "completed",
-          total: 107,
-          tax: 8,
-          subtotal: 99,
-          payment_method: "cash",
-          created_at: "2023-06-10T11:20:00Z"
-        },
-        {
-          id: "tr_3",
-          items: [{ name: "Product 4", quantity: 3, price: 20 }],
-          status: "refunded",
-          total: 65,
-          tax: 5,
-          subtotal: 60,
-          payment_method: "card",
-          created_at: "2023-06-05T09:45:00Z"
-        }
-      ]);
-      setIsLoading(false);
-    }, 1000);
+    const loadTransactions = async () => {
+      if (!customerId) return;
+      
+      setIsLoading(true);
+      try {
+        const data = await fetchTransactionsByCustomer(customerId);
+        setTransactions(data || []);
+      } catch (error) {
+        console.error("Error loading transactions:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadTransactions();
   }, [customerId]);
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <Badge variant="success">Completed</Badge>;
-      case "pending":
-        return <Badge>Pending</Badge>;
-      case "refunded":
-        return <Badge variant="destructive">Refunded</Badge>;
+  
+  const getStatusVariant = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return 'success' as const;
+      case 'open':
+        return 'secondary' as const;
+      case 'refunded':
+        return 'destructive' as const;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return 'default' as const;
     }
   };
-
-  const getPaymentMethod = (method: string | null) => {
-    if (!method) return "—";
-    return method.charAt(0).toUpperCase() + method.slice(1);
+  
+  const getStatusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return 'Completed';
+      case 'open':
+        return 'Open Tab';
+      case 'refunded':
+        return 'Refunded';
+      default:
+        return status;
+    }
   };
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "—";
-    return format(new Date(dateString), "MMM dd, yyyy");
+  
+  const getPaymentIcon = (method: string) => {
+    switch (method?.toLowerCase()) {
+      case 'cash':
+        return <DollarSign className="h-4 w-4" />;
+      case 'card':
+      case 'credit_card':
+        return <CreditCard className="h-4 w-4" />;
+      default:
+        return <FileText className="h-4 w-4" />;
+    }
   };
-
+  
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-8">
+        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  
+  if (transactions.length === 0) {
+    return (
+      <div className="text-center p-8 text-muted-foreground">
+        <Clock className="h-12 w-12 mx-auto mb-3 opacity-25" />
+        <p>No transactions found for this customer.</p>
+      </div>
+    );
+  }
+  
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg font-medium">Transaction History</CardTitle>
-          <div className="flex gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 gap-1">
-                  <Calendar className="h-4 w-4" />
-                  {date ? format(date, "MMM dd, yyyy") : "Filter Date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <CalendarComponent
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-              <Filter className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-              <Download className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="py-8 text-center text-muted-foreground">Loading transactions...</div>
-        ) : transactions.length === 0 ? (
-          <div className="py-8 text-center text-muted-foreground">
-            No transactions found for this customer
-          </div>
-        ) : (
-          <div className="overflow-auto max-h-[400px]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>{formatDate(transaction.created_at)}</TableCell>
-                    <TableCell>
-                      {transaction.items?.length || 0} item{transaction.items?.length === 1 ? '' : 's'}
-                    </TableCell>
-                    <TableCell>{formatCurrency(transaction.total)}</TableCell>
-                    <TableCell>{getStatusBadge(transaction.status)}</TableCell>
-                    <TableCell>{getPaymentMethod(transaction.payment_method)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      {transactions.map((transaction) => (
+        <Card key={transaction.id} className="overflow-hidden">
+          <CardHeader className="py-3 px-4 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-medium">
+              <span className="text-muted-foreground mr-2">
+                {format(new Date(transaction.created_at), 'MMM d, yyyy')}
+              </span>
+              <Badge variant={getStatusVariant(transaction.status)}>
+                {getStatusLabel(transaction.status)}
+              </Badge>
+            </CardTitle>
+            <div className="text-lg font-semibold">
+              {formatCurrency(transaction.total)}
+            </div>
+          </CardHeader>
+          <CardContent className="px-4 pb-4 pt-0">
+            <div className="text-sm text-muted-foreground mb-2">
+              {transaction.items?.length || 0} {transaction.items?.length === 1 ? 'item' : 'items'}
+            </div>
+            
+            <div className="flex justify-between mt-2">
+              <div className="flex items-center text-sm">
+                {getPaymentIcon(transaction.payment_method)}
+                <span className="ml-1 capitalize">
+                  {transaction.payment_method?.replace('_', ' ') || 'Unknown'}
+                </span>
+              </div>
+              
+              <Button variant="ghost" size="sm" className="h-7 px-2">
+                <FileText className="h-3.5 w-3.5 mr-1" />
+                Details
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 };
 
