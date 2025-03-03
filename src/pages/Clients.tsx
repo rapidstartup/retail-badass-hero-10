@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Plus, Users } from "lucide-react";
@@ -10,7 +9,6 @@ import { formatCurrency } from "@/utils/formatters";
 import { supabase } from "@/integrations/supabase/client";
 import type { Customer } from "@/types/index";
 import StatCard from "@/components/StatCard";
-import { useNavigate } from "react-router-dom";
 
 const Clients = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,7 +46,6 @@ const Clients = () => {
     navigate('/clients/new');
   };
 
-  // Load initial clients on mount
   React.useEffect(() => {
     searchCustomers();
   }, []);
