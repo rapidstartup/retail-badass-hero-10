@@ -1,107 +1,116 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { formatCurrency } from "@/utils/formatters";
-import { Gift, Award, TrendingUp, Zap } from "lucide-react";
+import { toast } from "sonner";
+import { Gift, Award } from "lucide-react";
 
-interface CustomerLoyaltyProps {
-  loyalty_points: number;
-  tier: string;
-  total_spend: number;
+interface Customer {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  loyalty_points: number | null;
+  tier: string | null;
+  total_spend: number | null;
 }
 
-const TIER_CONFIG = {
-  Bronze: {
-    color: "bg-amber-700",
-    icon: <Award className="h-4 w-4 text-amber-700" />,
-    nextTier: "Silver",
-    nextTierPoints: 1000
-  },
-  Silver: {
-    color: "bg-slate-400",
-    icon: <Award className="h-4 w-4 text-slate-400" />,
-    nextTier: "Gold",
-    nextTierPoints: 5000
-  },
-  Gold: {
-    color: "bg-amber-400",
-    icon: <Award className="h-4 w-4 text-amber-400" />,
-    nextTier: null,
-    nextTierPoints: null
-  }
-};
+interface CustomerLoyaltyProps {
+  customer: Customer;
+  onUpdate: () => Promise<void>;
+}
 
-export const CustomerLoyalty: React.FC<CustomerLoyaltyProps> = ({ 
-  loyalty_points = 0, 
-  tier = "Bronze", 
-  total_spend = 0 
-}) => {
-  const currentTierConfig = TIER_CONFIG[tier as keyof typeof TIER_CONFIG] || TIER_CONFIG.Bronze;
+export const CustomerLoyalty: React.FC<CustomerLoyaltyProps> = ({ customer, onUpdate }) => {
+  const [isUpdating, setIsUpdating] = useState(false);
   
-  const pointsToNextTier = currentTierConfig.nextTierPoints 
-    ? currentTierConfig.nextTierPoints - loyalty_points 
-    : 0;
+  const getTierInfo = (tier: string | null) => {
+    switch (tier?.toLowerCase()) {
+      case "silver":
+        return { next: "Gold", threshold: 1000, color: "bg-gray-400" };
+      case "gold":
+        return { next: "Platinum", threshold: 2000, color: "bg-yellow-400" };
+      case "platinum":
+        return { next: "Diamond", threshold: 5000, color: "bg-blue-400" };
+      case "diamond":
+        return { next: "Diamond", threshold: 10000, color: "bg-purple-400" };
+      default:
+        return { next: "Silver", threshold: 500, color: "bg-brown-400" };
+    }
+  };
   
-  const progressPercent = currentTierConfig.nextTierPoints 
-    ? Math.min(100, Math.round((loyalty_points / currentTierConfig.nextTierPoints) * 100)) 
-    : 100;
-
+  const tierInfo = getTierInfo(customer.tier);
+  const loyaltyPoints = customer.loyalty_points || 0;
+  const totalSpend = customer.total_spend || 0;
+  const progress = Math.min(100, Math.round((totalSpend / tierInfo.threshold) * 100));
+  
+  const handleAddPoints = async () => {
+    setIsUpdating(true);
+    try {
+      // Mock implementation - in real app, would call an API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success("Added 100 loyalty points");
+      await onUpdate();
+    } catch (error) {
+      toast.error("Failed to add points");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+  
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-medium">Loyalty Status</h3>
-        <Badge className={`${currentTierConfig.color} text-white`}>
-          {currentTierConfig.icon}
-          <span className="ml-1">{tier}</span>
-        </Badge>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-3">
-        <Card>
-          <CardHeader className="p-3 pb-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Points</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 pt-1">
-            <div className="flex items-center">
-              <Gift className="h-4 w-4 mr-1 text-primary" />
-              <span className="text-xl font-bold">{loyalty_points}</span>
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg font-medium">Loyalty Program</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-primary" />
+            <div>
+              <div className="font-medium">{customer.tier || "Bronze"} Member</div>
+              <div className="text-sm text-muted-foreground">{loyaltyPoints} points</div>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="p-3 pb-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Lifetime Spend</CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 pt-1">
-            <div className="flex items-center">
-              <TrendingUp className="h-4 w-4 mr-1 text-primary" />
-              <span className="text-xl font-bold">{formatCurrency(total_spend)}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {currentTierConfig.nextTier && (
-        <div className="space-y-2">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">Progress to {currentTierConfig.nextTier}</span>
-            <span className="font-medium">{progressPercent}%</span>
           </div>
-          <Progress value={progressPercent} className="h-2" />
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{loyalty_points} points</span>
-            <div className="flex items-center">
-              <Zap className="h-3 w-3 mr-1" />
-              <span>{pointsToNextTier} more points needed</span>
+          <Button variant="outline" size="sm" onClick={handleAddPoints} disabled={isUpdating}>
+            {isUpdating ? "Adding..." : "Add Points"}
+          </Button>
+        </div>
+        
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm mb-1">
+            <span>Progress to {tierInfo.next}</span>
+            <span>${totalSpend.toFixed(2)} / ${tierInfo.threshold}</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
+        
+        <div className="mt-4 border-t pt-4">
+          <div className="text-sm font-medium mb-2">Available Rewards</div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+              <div className="flex items-center gap-2">
+                <Gift className="h-4 w-4 text-primary" />
+                <span>10% Off Next Purchase</span>
+              </div>
+              <Button variant="outline" size="sm" disabled={loyaltyPoints < 100}>
+                Redeem (100pts)
+              </Button>
             </div>
-            <span>{currentTierConfig.nextTierPoints} points</span>
+            <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+              <div className="flex items-center gap-2">
+                <Gift className="h-4 w-4 text-primary" />
+                <span>Free Item Under $20</span>
+              </div>
+              <Button variant="outline" size="sm" disabled={loyaltyPoints < 200}>
+                Redeem (200pts)
+              </Button>
+            </div>
           </div>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

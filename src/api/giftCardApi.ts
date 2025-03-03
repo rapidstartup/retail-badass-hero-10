@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { GiftCard, CreateGiftCardParams, RedeemGiftCardParams } from "./types/giftCardTypes";
+import { GiftCard, CreateGiftCardParams, RedeemGiftCardParams } from "@/types/giftCard";
 
 // Generate a random gift card code (16 characters)
 const generateGiftCardCode = (): string => {
@@ -14,6 +14,23 @@ const generateGiftCardCode = (): string => {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
+};
+
+// Helper function to handle type conversions
+const giftCardConverter = (data: any): GiftCard => {
+  return {
+    id: data.id,
+    code: data.code,
+    initial_value: data.initial_value,
+    current_value: data.current_value,
+    is_active: data.is_active,
+    expires_at: data.expires_at,
+    customer_id: data.customer_id,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
+    redeemed_at: data.redeemed_at,
+    created_by_staff_id: data.created_by_staff_id
+  };
 };
 
 export const createGiftCard = async (params: CreateGiftCardParams): Promise<GiftCard | null> => {
@@ -36,7 +53,7 @@ export const createGiftCard = async (params: CreateGiftCardParams): Promise<Gift
       throw error;
     }
 
-    return data[0] as GiftCard;
+    return data && data[0] ? giftCardConverter(data[0]) : null;
   } catch (error) {
     console.error("Error creating gift card:", error);
     toast.error("Failed to create gift card");
@@ -55,7 +72,7 @@ export const fetchGiftCards = async (): Promise<GiftCard[]> => {
       throw error;
     }
 
-    return data as GiftCard[];
+    return data ? data.map(card => giftCardConverter(card)) : [];
   } catch (error) {
     console.error("Error fetching gift cards:", error);
     toast.error("Failed to fetch gift cards");
@@ -75,7 +92,7 @@ export const fetchGiftCardsByCustomer = async (customerId: string): Promise<Gift
       throw error;
     }
 
-    return data as GiftCard[];
+    return data ? data.map(card => giftCardConverter(card)) : [];
   } catch (error) {
     console.error(`Error fetching gift cards for customer ${customerId}:`, error);
     toast.error("Failed to fetch gift cards");
@@ -100,7 +117,7 @@ export const fetchGiftCardByCode = async (code: string): Promise<GiftCard | null
       throw error;
     }
 
-    return data as GiftCard;
+    return data ? giftCardConverter(data) : null;
   } catch (error) {
     console.error(`Error fetching gift card with code ${code}:`, error);
     toast.error("Failed to fetch gift card");
@@ -149,7 +166,7 @@ export const redeemGiftCard = async ({ code, amount }: RedeemGiftCardParams): Pr
       throw error;
     }
     
-    return data as GiftCard;
+    return data ? giftCardConverter(data) : null;
   } catch (error) {
     console.error("Error redeeming gift card:", error);
     toast.error("Failed to redeem gift card");
