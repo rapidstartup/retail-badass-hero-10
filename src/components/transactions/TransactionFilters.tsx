@@ -10,11 +10,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { TransactionFilters } from "@/types/transaction";
+import type { TransactionFilters as TransactionFiltersType } from "@/types/transaction";
 
 interface TransactionFiltersProps {
-  filters: TransactionFilters;
-  setFilters: React.Dispatch<React.SetStateAction<TransactionFilters>>;
+  filters: TransactionFiltersType;
+  setFilters: React.Dispatch<React.SetStateAction<TransactionFiltersType>>;
 }
 
 const TransactionFilters: React.FC<TransactionFiltersProps> = ({ filters, setFilters }) => {
