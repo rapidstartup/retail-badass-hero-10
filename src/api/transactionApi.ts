@@ -1,82 +1,62 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { 
+  Transaction, 
+  RawTransaction,
+  CreateTransactionParams, 
+  UpdateTransactionParams 
+} from "./types/transactionTypes";
 
-export interface Transaction {
-  id: string;
-  customer_id: string | null;
-  cashier_id: string | null;
-  items: any[];
-  subtotal: number;
-  tax: number;
-  total: number;
-  status: 'open' | 'completed' | 'refunded';
-  payment_method: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  completed_at: string | null;
-}
+// Helper function to transform raw transaction from DB to Transaction type
+const transformTransaction = (rawTx: RawTransaction): Transaction => {
+  return {
+    ...rawTx,
+    items: Array.isArray(rawTx.items) ? rawTx.items : JSON.parse(rawTx.items as string)
+  };
+};
 
-export interface TransactionFilters {
-  startDate?: string;
-  endDate?: string;
-  status?: string;
-  customerId?: string;
-  paymentMethod?: string;
-  cashierId?: string;
-  minAmount?: number;
-  maxAmount?: number;
-}
-
-export const fetchTransactions = async (filters?: TransactionFilters): Promise<Transaction[]> => {
+export const createTransaction = async (params: CreateTransactionParams): Promise<Transaction | null> => {
   try {
-    let query = supabase
+    const { data, error } = await supabase
       .from("transactions")
-      .select("*")
-      .order("created_at", { ascending: false });
-    
-    // Apply filters if provided
-    if (filters) {
-      if (filters.startDate) {
-        query = query.gte("created_at", filters.startDate);
-      }
-      
-      if (filters.endDate) {
-        query = query.lte("created_at", filters.endDate);
-      }
-      
-      if (filters.status) {
-        query = query.eq("status", filters.status);
-      }
-      
-      if (filters.customerId) {
-        query = query.eq("customer_id", filters.customerId);
-      }
-      
-      if (filters.paymentMethod) {
-        query = query.eq("payment_method", filters.paymentMethod);
-      }
-      
-      if (filters.cashierId) {
-        query = query.eq("cashier_id", filters.cashierId);
-      }
-      
-      if (filters.minAmount) {
-        query = query.gte("total", filters.minAmount);
-      }
-      
-      if (filters.maxAmount) {
-        query = query.lte("total", filters.maxAmount);
-      }
-    }
-    
-    const { data, error } = await query;
+      .insert([{
+        customer_id: params.customer_id || null,
+        cashier_id: params.cashier_id || null,
+        subtotal: params.subtotal,
+        tax: params.tax,
+        total: params.total,
+        items: params.items,
+        status: params.status || "open",
+        payment_method: params.payment_method || null
+      }])
+      .select()
+      .single();
 
     if (error) {
       throw error;
     }
 
-    return data || [];
+    return transformTransaction(data as RawTransaction);
+  } catch (error) {
+    console.error("Error creating transaction:", error);
+    toast.error("Failed to create transaction");
+    return null;
+  }
+};
+
+export const fetchTransactions = async (): Promise<Transaction[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data as RawTransaction[]).map(transformTransaction);
   } catch (error) {
     console.error("Error fetching transactions:", error);
     toast.error("Failed to fetch transactions");
@@ -96,69 +76,49 @@ export const fetchTransactionById = async (id: string): Promise<Transaction | nu
       throw error;
     }
 
-    return data;
+    return transformTransaction(data as RawTransaction);
   } catch (error) {
-    console.error(`Error fetching transaction with id ${id}:`, error);
-    toast.error("Failed to fetch transaction details");
+    console.error(`Error fetching transaction ${id}:`, error);
+    toast.error("Failed to fetch transaction");
     return null;
   }
 };
 
-export const fetchCustomerTransactions = async (customerId: string): Promise<Transaction[]> => {
+export const fetchOpenTabs = async (): Promise<Transaction[]> => {
   try {
     const { data, error } = await supabase
       .from("transactions")
       .select("*")
-      .eq("customer_id", customerId)
+      .eq("status", "open")
+      .eq("payment_method", "tab")
       .order("created_at", { ascending: false });
 
     if (error) {
       throw error;
     }
 
-    return data || [];
+    return (data as RawTransaction[]).map(transformTransaction);
   } catch (error) {
-    console.error(`Error fetching transactions for customer ${customerId}:`, error);
-    toast.error("Failed to fetch customer transactions");
+    console.error("Error fetching open tabs:", error);
+    toast.error("Failed to fetch open tabs");
     return [];
   }
 };
 
-export const createTransaction = async (transaction: Omit<Transaction, "id" | "created_at" | "updated_at">): Promise<Transaction | null> => {
+export const updateTransaction = async (id: string, updates: UpdateTransactionParams): Promise<Transaction | null> => {
   try {
     const { data, error } = await supabase
       .from("transactions")
-      .insert([transaction])
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error creating transaction:", error);
-    toast.error("Failed to create transaction");
-    return null;
-  }
-};
-
-export const updateTransactionStatus = async (id: string, status: 'open' | 'completed' | 'refunded'): Promise<Transaction | null> => {
-  try {
-    const updates: any = {
-      status,
-      updated_at: new Date().toISOString()
-    };
-    
-    // If completing the transaction, add completed_at timestamp
-    if (status === 'completed') {
-      updates.completed_at = new Date().toISOString();
-    }
-    
-    const { data, error } = await supabase
-      .from("transactions")
-      .update(updates)
+      .update({
+        customer_id: updates.customer_id,
+        items: updates.items,
+        subtotal: updates.subtotal,
+        tax: updates.tax,
+        total: updates.total,
+        status: updates.status,
+        payment_method: updates.payment_method,
+        completed_at: updates.completed_at
+      })
       .eq("id", id)
       .select()
       .single();
@@ -167,10 +127,10 @@ export const updateTransactionStatus = async (id: string, status: 'open' | 'comp
       throw error;
     }
 
-    return data;
+    return transformTransaction(data as RawTransaction);
   } catch (error) {
-    console.error(`Error updating transaction status for ${id}:`, error);
-    toast.error("Failed to update transaction status");
+    console.error(`Error updating transaction ${id}:`, error);
+    toast.error("Failed to update transaction");
     return null;
   }
 };

@@ -171,4 +171,6 @@ export function GiftCardPayment({ total, onPaymentComplete }: GiftCardPaymentPro
       )}
     </div>
   );
-}
+};
+
+export default GiftCardPayment;

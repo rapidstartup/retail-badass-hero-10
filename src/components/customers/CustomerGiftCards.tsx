@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createGiftCard, fetchGiftCardsByCustomer, GiftCard, deactivateGiftCard } from "@/api/giftCardApi";
+import { Badge } from "@/components/ui/badge";
+import { createGiftCard, fetchGiftCardsByCustomer, deactivateGiftCard, GiftCard } from "@/api/giftCardApi";
 import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import { Plus, RefreshCw, Gift, Check, AlertCircle, Ban } from "lucide-react";
@@ -282,3 +283,5 @@ export const CustomerGiftCards: React.FC<CustomerGiftCardsProps> = ({ customerId
     </div>
   );
 };
+
+export default CustomerGiftCards;

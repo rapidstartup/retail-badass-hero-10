@@ -30,14 +30,13 @@ export const createGiftCard = async (params: CreateGiftCardParams): Promise<Gift
         expires_at: params.expires_at || null,
         customer_id: params.customer_id || null
       }])
-      .select()
-      .single();
+      .select();
 
     if (error) {
       throw error;
     }
 
-    return data;
+    return data[0] as GiftCard;
   } catch (error) {
     console.error("Error creating gift card:", error);
     toast.error("Failed to create gift card");
@@ -56,7 +55,7 @@ export const fetchGiftCards = async (): Promise<GiftCard[]> => {
       throw error;
     }
 
-    return data || [];
+    return data as GiftCard[];
   } catch (error) {
     console.error("Error fetching gift cards:", error);
     toast.error("Failed to fetch gift cards");
@@ -76,7 +75,7 @@ export const fetchGiftCardsByCustomer = async (customerId: string): Promise<Gift
       throw error;
     }
 
-    return data || [];
+    return data as GiftCard[];
   } catch (error) {
     console.error(`Error fetching gift cards for customer ${customerId}:`, error);
     toast.error("Failed to fetch gift cards");
@@ -101,7 +100,7 @@ export const fetchGiftCardByCode = async (code: string): Promise<GiftCard | null
       throw error;
     }
 
-    return data;
+    return data as GiftCard;
   } catch (error) {
     console.error(`Error fetching gift card with code ${code}:`, error);
     toast.error("Failed to fetch gift card");
@@ -150,7 +149,7 @@ export const redeemGiftCard = async ({ code, amount }: RedeemGiftCardParams): Pr
       throw error;
     }
     
-    return data;
+    return data as GiftCard;
   } catch (error) {
     console.error("Error redeeming gift card:", error);
     toast.error("Failed to redeem gift card");
@@ -179,3 +178,5 @@ export const deactivateGiftCard = async (id: string): Promise<boolean> => {
     return false;
   }
 };
+
+export { type GiftCard };
