@@ -137,7 +137,7 @@ const Clients = () => {
                 placeholder="Search by name, email, or phone"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-theme-section border"
+                className="pl-10 theme-section-bg border"
                 onKeyDown={(e) => e.key === 'Enter' && searchCustomers()}
               />
             </div>
@@ -150,8 +150,8 @@ const Clients = () => {
             </Button>
           </div>
 
-          <div className="rounded-md border overflow-hidden">
-            <div className="overflow-x-auto theme-section-bg" style={{ 
+          <div className="rounded-md border theme-section-bg overflow-hidden">
+            <div className="overflow-x-auto" style={{ 
               scrollbarWidth: 'thin',
               scrollbarColor: 'var(--theme-accent-color) transparent'  
             }}>
@@ -167,7 +167,7 @@ const Clients = () => {
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
+                <TableBody className="theme-section-bg">
                   {customers.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
