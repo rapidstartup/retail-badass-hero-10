@@ -17,12 +17,7 @@ interface DateRangePickerProps {
     from: Date;
     to: Date;
   };
-  setDateRange: React.Dispatch<
-    React.SetStateAction<{
-      from: Date;
-      to: Date;
-    }>
-  >;
+  setDateRange: (date: DateRange | undefined) => void;
   className?: string;
 }
 
@@ -67,14 +62,7 @@ export function DatePickerWithRange({
               from: dateRange?.from,
               to: dateRange?.to,
             }}
-            onSelect={(selectedDateRange) => {
-              if (selectedDateRange?.from) {
-                setDateRange({
-                  from: selectedDateRange.from,
-                  to: selectedDateRange.to || selectedDateRange.from
-                });
-              }
-            }}
+            onSelect={setDateRange}
             numberOfMonths={2}
           />
         </PopoverContent>

@@ -7,6 +7,7 @@ import { Search, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { TransactionFilters as TransactionFiltersType } from "@/types/transaction";
 import { DatePickerWithRange } from "@/components/ui/date-picker";
+import { DateRange } from "react-day-picker";
 
 interface TransactionFiltersProps {
   filters: TransactionFiltersType;
@@ -26,6 +27,20 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({ filters, setFil
       maximumAmount: undefined,
       searchQuery: '',
     });
+  };
+
+  // Handler for date range changes that correctly types the data
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    // Ensure we have a valid range with both from and to dates
+    if (range?.from) {
+      setFilters(prev => ({
+        ...prev,
+        dateRange: {
+          from: range.from as Date,
+          to: range.to as Date || range.from as Date
+        }
+      }));
+    }
   };
 
   return (
@@ -60,8 +75,11 @@ const TransactionFilters: React.FC<TransactionFiltersProps> = ({ filters, setFil
         <div className="sm:col-span-3 lg:col-span-2">
           <Label>Date Range</Label>
           <DatePickerWithRange 
-            dateRange={filters.dateRange as {from: Date, to: Date}}
-            setDateRange={(range) => setFilters({ ...filters, dateRange: range })}
+            dateRange={{
+              from: filters.dateRange?.from as Date,
+              to: filters.dateRange?.to as Date
+            }}
+            setDateRange={handleDateRangeChange}
           />
         </div>
 

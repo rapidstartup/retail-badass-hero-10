@@ -48,10 +48,6 @@ const fetchTransactionStats = async () => {
 
 const Transactions = () => {
   const [activeTab, setActiveTab] = useState("all");
-  const [dateRange, setDateRange] = useState({
-    from: new Date(new Date().setDate(new Date().getDate() - 30)),
-    to: new Date()
-  });
   const [filters, setFilters] = useState<TransactionFiltersType>({
     dateRange: {
       from: new Date(new Date().setDate(new Date().getDate() - 30)),
