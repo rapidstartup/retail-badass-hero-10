@@ -11,6 +11,8 @@ import { formatCurrency, formatPhoneNumber } from "@/utils/formatters";
 import { supabase } from "@/integrations/supabase/client";
 import type { Customer } from "@/types/index";
 import StatCard from "@/components/StatCard";
+import { cn } from "@/lib/utils";
+import { useSettings } from "@/contexts/SettingsContext";
 
 const Clients = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,6 +22,7 @@ const Clients = () => {
   const [topSpender, setTopSpender] = useState(0);
   const [averageSpend, setAverageSpend] = useState(0);
   const navigate = useNavigate();
+  const { settings } = useSettings();
 
   const searchCustomers = async () => {
     setLoading(true);
@@ -66,14 +69,17 @@ const Clients = () => {
   const getLoyaltyBadge = (tier: string | null) => {
     if (!tier) return null;
     
-    const variants: Record<string, string> = {
+    const tierColors = {
       'Bronze': 'secondary',
       'Silver': 'outline',
-      'Gold': 'default'
+      'Gold': settings.theme === 'light' ? 'default' : 'default'
     };
     
     return (
-      <Badge variant={variants[tier] as any || 'secondary'}>
+      <Badge 
+        variant={tierColors[tier as keyof typeof tierColors] as any || 'secondary'}
+        className={tier === 'Gold' ? 'bg-theme-accent text-white' : ''}
+      >
         {tier}
       </Badge>
     );
@@ -84,10 +90,13 @@ const Clients = () => {
   }, []);
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
+    <div className="container mx-auto p-4 space-y-6 theme-bg">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Clients</h1>
-        <Button onClick={handleCreateNewCustomer} className="gap-2">
+        <Button 
+          onClick={handleCreateNewCustomer} 
+          className="gap-2 bg-theme-accent hover:bg-theme-accent-hover text-white"
+        >
           <Plus size={16} />
           <span>New Client</span>
         </Button>
@@ -98,21 +107,24 @@ const Clients = () => {
           title="Total Clients" 
           value={totalClients.toString()} 
           icon={<Users className="h-6 w-6" />} 
+          className="theme-container-bg border"
         />
         <StatCard 
           title="Top Spender" 
           value={formatCurrency(topSpender)} 
           description="Highest client spending"
           icon={<CreditCard className="h-6 w-6" />} 
+          className="theme-container-bg border"
         />
         <StatCard 
           title="Average Spend" 
           value={formatCurrency(averageSpend)} 
           icon={<ShoppingBag className="h-6 w-6" />} 
+          className="theme-container-bg border"
         />
       </div>
 
-      <Card>
+      <Card className="theme-container-bg border">
         <CardHeader>
           <CardTitle>Client Directory</CardTitle>
           <CardDescription>Search and manage your clients</CardDescription>
@@ -125,23 +137,27 @@ const Clients = () => {
                 placeholder="Search by name, email, or phone"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-theme-section border"
                 onKeyDown={(e) => e.key === 'Enter' && searchCustomers()}
               />
             </div>
-            <Button onClick={searchCustomers} disabled={loading}>
+            <Button 
+              onClick={searchCustomers} 
+              disabled={loading} 
+              className="bg-theme-accent hover:bg-theme-accent-hover text-white"
+            >
               {loading ? "Searching..." : "Search"}
             </Button>
           </div>
 
           <div className="rounded-md border overflow-hidden">
-            <div className="overflow-x-auto" style={{ 
+            <div className="overflow-x-auto theme-section-bg" style={{ 
               scrollbarWidth: 'thin',
-              scrollbarColor: 'var(--accent) transparent'  
+              scrollbarColor: 'var(--theme-accent-color) transparent'  
             }}>
               <Table>
-                <TableHeader>
-                  <TableRow>
+                <TableHeader className="theme-section-bg">
+                  <TableRow className="hover:bg-transparent">
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
@@ -165,7 +181,13 @@ const Clients = () => {
                     </TableRow>
                   ) : (
                     customers.map((customer) => (
-                      <TableRow key={customer.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleViewCustomer(customer.id)}>
+                      <TableRow 
+                        key={customer.id} 
+                        className={cn(
+                          "cursor-pointer hover:bg-theme-section-selected",
+                        )}
+                        onClick={() => handleViewCustomer(customer.id)}
+                      >
                         <TableCell className="font-medium">
                           {customer.first_name} {customer.last_name}
                         </TableCell>
@@ -180,6 +202,7 @@ const Clients = () => {
                           <Button 
                             variant="ghost" 
                             size="sm"
+                            className="hover:bg-theme-section-selected"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleViewCustomer(customer.id);
