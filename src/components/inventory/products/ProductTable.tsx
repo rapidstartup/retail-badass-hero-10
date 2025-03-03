@@ -86,12 +86,14 @@ const ProductTable = ({
                     variant="outline"
                     size="icon"
                     onClick={() => handleEditProduct(product)}
+                    title="Edit product"
+                    aria-label="Edit product"
                   >
                     <FileEdit className="h-4 w-4" />
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="icon">
+                      <Button variant="outline" size="icon" title="Delete product" aria-label="Delete product">
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </AlertDialogTrigger>
