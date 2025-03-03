@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Transaction, TransactionFilters } from '@/types/transaction';
@@ -48,7 +47,6 @@ export const useTransactionList = (filters: TransactionFilters) => {
       }
 
       if (filters.searchQuery) {
-        // This is simplified - proper search would depend on your database structure
         query = query.or(`id.ilike.%${filters.searchQuery}%`);
       }
 

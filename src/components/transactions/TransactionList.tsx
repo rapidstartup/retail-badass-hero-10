@@ -20,7 +20,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
 }) => {
   const [selectedTransaction, setSelectedTransaction] = useState<string | null>(null);
 
-  // Pass both status and filters
+  // Combine filters with status
   const { data, isLoading, isError } = useTransactionList({
     ...filters,
     status: status !== 'all' ? status : undefined

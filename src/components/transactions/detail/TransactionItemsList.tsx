@@ -4,7 +4,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { TransactionItem } from '@/types/transaction';
 
 interface TransactionItemsListProps {
-  items: TransactionItem[] | null;
+  items: TransactionItem[];
 }
 
 const TransactionItemsList: React.FC<TransactionItemsListProps> = ({ items }) => {
@@ -18,7 +18,7 @@ const TransactionItemsList: React.FC<TransactionItemsListProps> = ({ items }) =>
           scrollbarColor: 'var(--color-accent) transparent'
         }}
       >
-        {items && Array.isArray(items) ? (
+        {items && items.length > 0 ? (
           <div className="space-y-2">
             {items.map((item: TransactionItem, index: number) => (
               <div key={index} className="flex justify-between items-center text-sm">
