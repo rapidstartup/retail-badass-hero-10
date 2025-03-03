@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,8 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { calculateTierFromSpend, calculateSpendToNextTier } from "@/utils/tierCalculator";
-import type { Customer, Transaction } from "@/types/index";
+import { useClientProfile } from "@/hooks/useClientProfile";
+import type { Customer } from "@/types/index";
 
 // Import refactored components
 import ClientProfileHeader from "@/components/clients/profile/ClientProfileHeader";
@@ -36,20 +35,11 @@ type CustomerFormValues = z.infer<typeof customerFormSchema>;
 const ClientProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [customer, setCustomer] = useState<Customer | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<string>("30days");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [metrics, setMetrics] = useState({
-    avgTransaction: 0,
-    numTransactions: 0,
-    totalSpent: 0,
-    mostPurchased: "None",
-    currentTabBalance: 0,
-    spendToNextTier: 0
-  });
+  
+  const { customer, transactions, loading, metrics, updateCustomer } = useClientProfile(id);
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
@@ -64,109 +54,20 @@ const ClientProfile = () => {
     },
   });
 
-  useEffect(() => {
-    const fetchCustomer = async () => {
-      if (!id) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('customers')
-          .select('*')
-          .eq('id', id)
-          .single();
-        
-        if (error) throw error;
-        setCustomer(data);
-        
-        form.reset({
-          first_name: data.first_name,
-          last_name: data.last_name,
-          email: data.email,
-          phone: data.phone,
-          notes: data.notes,
-          tier: data.tier || "Bronze",
-          loyalty_points: data.loyalty_points || 0,
-        });
-      } catch (error) {
-        console.error('Error fetching customer:', error);
-      }
-    };
-
-    const fetchTransactions = async () => {
-      if (!id) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('transactions')
-          .select('*')
-          .eq('customer_id', id)
-          .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        setTransactions(data || []);
-        
-        if (data && data.length > 0) {
-          const totalSpent = data.reduce((sum, tx) => sum + (tx.total || 0), 0);
-          const avgTransaction = totalSpent / data.length;
-          const openTabs = data.filter(tx => tx.status === 'open');
-          const tabBalance = openTabs.reduce((sum, tx) => sum + (tx.total || 0), 0);
-          const spendToNextTier = calculateSpendToNextTier(totalSpent);
-          
-          setMetrics({
-            avgTransaction,
-            numTransactions: data.length,
-            totalSpent,
-            mostPurchased: "Coffee",
-            currentTabBalance: tabBalance,
-            spendToNextTier
-          });
-          
-          const updateCustomerTier = async (totalSpent: number) => {
-            if (!customer || !id) return;
-            
-            const calculatedTier = calculateTierFromSpend(totalSpent);
-            
-            const tierRanking = { "Bronze": 1, "Silver": 2, "Gold": 3 };
-            const currentTierRank = tierRanking[customer.tier as keyof typeof tierRanking] || 1;
-            const calculatedTierRank = tierRanking[calculatedTier as keyof typeof tierRanking];
-            
-            if (calculatedTierRank > currentTierRank) {
-              try {
-                const { error } = await supabase
-                  .from('customers')
-                  .update({
-                    tier: calculatedTier,
-                    total_spend: totalSpent,
-                    updated_at: new Date().toISOString(),
-                  })
-                  .eq('id', id);
-                
-                if (error) throw error;
-                
-                setCustomer(prev => {
-                  if (!prev) return null;
-                  return { ...prev, tier: calculatedTier, total_spend: totalSpent };
-                });
-                
-                toast.success(`Customer tier upgraded to ${calculatedTier}!`);
-              } catch (error) {
-                console.error('Error updating customer tier:', error);
-              }
-            }
-          };
-          
-          updateCustomerTier(totalSpent);
-        }
-      } catch (error) {
-        console.error('Error fetching transactions:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCustomer();
-    fetchTransactions();
-  }, [id, form]);
+  // Update form values when customer data is loaded
+  React.useEffect(() => {
+    if (customer) {
+      form.reset({
+        first_name: customer.first_name,
+        last_name: customer.last_name,
+        email: customer.email,
+        phone: customer.phone,
+        notes: customer.notes,
+        tier: customer.tier || "Bronze",
+        loyalty_points: customer.loyalty_points || 0,
+      });
+    }
+  }, [customer, form]);
 
   const handleGoBack = () => {
     navigate('/clients');
@@ -192,53 +93,12 @@ const ClientProfile = () => {
   };
 
   const onSubmit = async (values: CustomerFormValues) => {
-    if (!id) return;
-    
     setIsSaving(true);
-    try {
-      const totalSpend = customer?.total_spend || 0;
-      
-      const calculatedTier = calculateTierFromSpend(totalSpend);
-      
-      const tierRanking = { "Bronze": 1, "Silver": 2, "Gold": 3 };
-      const formTierRank = tierRanking[values.tier as keyof typeof tierRanking] || 1;
-      const calculatedTierRank = tierRanking[calculatedTier as keyof typeof tierRanking];
-      const finalTier = formTierRank >= calculatedTierRank ? values.tier : calculatedTier;
-      
-      const { error } = await supabase
-        .from('customers')
-        .update({
-          first_name: values.first_name,
-          last_name: values.last_name,
-          email: values.email,
-          phone: values.phone,
-          notes: values.notes,
-          tier: finalTier,
-          loyalty_points: values.loyalty_points,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-      
-      if (error) throw error;
-      
-      setCustomer(prev => {
-        if (!prev) return null;
-        return { 
-          ...prev, 
-          ...values, 
-          tier: finalTier,
-          updated_at: new Date().toISOString() 
-        };
-      });
-      
+    const success = await updateCustomer(values);
+    if (success) {
       setIsEditing(false);
-      toast.success("Client updated successfully");
-    } catch (error) {
-      console.error('Error updating customer:', error);
-      toast.error("Failed to update client");
-    } finally {
-      setIsSaving(false);
     }
+    setIsSaving(false);
   };
 
   if (loading) {
