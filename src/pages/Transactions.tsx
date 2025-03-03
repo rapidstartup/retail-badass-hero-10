@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,7 +19,6 @@ import {
 import { formatCurrency } from "@/utils/formatters";
 import type { TransactionFilters as TransactionFiltersType } from "@/types/transaction";
 import TransactionTimeline from "@/components/transactions/TransactionTimeline";
-import TransactionHourlyChart from "@/components/transactions/TransactionHourlyChart";
 import TransactionDetailPanel from "@/components/transactions/TransactionDetailPanel";
 
 const fetchTransactionStats = async () => {
@@ -49,12 +47,10 @@ const fetchTransactionStats = async () => {
     .sort((a, b) => b[1] - a[1])
     .map(([method]) => method)[0] || 'None';
   
-  // Calculate average transaction value
   const avgTransactionValue = completedCount > 0 
     ? totalSales / completedCount 
     : 0;
   
-  // Calculate today's transactions
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayTransactions = transactions.filter(tx => 
@@ -63,7 +59,6 @@ const fetchTransactionStats = async () => {
   );
   const todaySales = todayTransactions.reduce((sum, tx) => sum + (tx.total || 0), 0);
   
-  // Calculate recent transaction trend (last 7 days vs previous 7 days)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   sevenDaysAgo.setHours(0, 0, 0, 0);
@@ -155,29 +150,6 @@ const Transactions = () => {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Hourly Transaction Volume</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TransactionHourlyChart />
-            </CardContent>
-          </Card>
-        </div>
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TransactionTimeline />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
               <CardTitle>Transaction List</CardTitle>
             </CardHeader>
             <CardContent>
@@ -225,6 +197,23 @@ const Transactions = () => {
               </Tabs>
             </CardContent>
           </Card>
+        </div>
+        
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TransactionTimeline />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          {/* This section is intentionally left empty as per user request */}
         </div>
         
         <div>
