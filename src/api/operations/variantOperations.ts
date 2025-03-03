@@ -1,31 +1,25 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { ProductVariant, VariantInsert, VariantUpdate } from "../types/variantTypes";
-import { cleanVariantData } from "../utils/dataCleaners";
+import { ProductVariant, VariantInsert } from "../types/variantTypes";
 import { toast } from "sonner";
 
 // Fetch variants by product ID
 export const fetchVariantsByProductId = async (productId: string): Promise<ProductVariant[]> => {
   try {
     console.log("Fetching variants for product ID:", productId);
+    
     const { data, error } = await supabase
       .from("product_variants")
       .select("*")
-      .eq("product_id", productId)
-      .order("created_at");
+      .eq("product_id", productId);
       
     if (error) {
       console.error("Supabase error fetching variants:", error);
       throw error;
     }
     
-    console.log("Fetched variants data:", data);
-    
-    // Convert variant_attributes from Json to Record<string, any>
-    return (data || []).map(variant => ({
-      ...variant,
-      variant_attributes: variant.variant_attributes as Record<string, any>
-    }));
+    console.log("Fetched variants:", data);
+    return data || [];
   } catch (error) {
     console.error("Error fetching variants:", error);
     toast.error("Failed to load product variants");
@@ -36,19 +30,16 @@ export const fetchVariantsByProductId = async (productId: string): Promise<Produ
 // Create a new variant
 export const createVariant = async (variant: VariantInsert): Promise<ProductVariant | null> => {
   try {
-    // Ensure product_id is provided
+    // Ensure required fields are provided
     if (!variant.product_id) {
-      throw new Error("Product ID is required for variants");
+      throw new Error("Product ID is required for creating variants");
     }
 
     console.log("Creating variant with data:", variant);
-
-    // Clean and prepare variant data
-    const variantData = cleanVariantData(variant);
-
+    
     const { data, error } = await supabase
       .from("product_variants")
-      .insert(variantData)
+      .insert(variant)
       .select()
       .single();
       
@@ -57,13 +48,9 @@ export const createVariant = async (variant: VariantInsert): Promise<ProductVari
       throw error;
     }
     
-    console.log("Created variant:", data);
-    
-    // Convert variant_attributes from Json to Record<string, any>
-    return {
-      ...data,
-      variant_attributes: data.variant_attributes as Record<string, any>
-    };
+    console.log("Variant created successfully:", data);
+    toast.success("Product variant created successfully");
+    return data;
   } catch (error) {
     console.error("Error creating variant:", error);
     toast.error(`Failed to create variant: ${error instanceof Error ? error.message : "Unknown error"}`);

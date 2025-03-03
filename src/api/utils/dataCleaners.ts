@@ -1,48 +1,50 @@
 
-import { Product, ProductInsert, ProductUpdate } from "../types/productTypes";
-import { ProductVariant, VariantInsert, VariantUpdate } from "../types/variantTypes";
+import { ProductInsert } from "../types/productTypes";
+import { VariantInsert } from "../types/variantTypes";
 
-// Utility function to clean product data before sending to Supabase
-export const cleanProductData = (product: Partial<Product>): ProductInsert | ProductUpdate => {
-  const cleanedData = { ...product } as ProductInsert | ProductUpdate;
-  
-  // Remove empty category_id to prevent UUID format error
-  if (!cleanedData.category_id || cleanedData.category_id === "") {
-    delete cleanedData.category_id;
+// Clean product data before sending to the database
+export const cleanProductData = (product: ProductInsert): ProductInsert => {
+  // Ensure required fields are included
+  if (!product.name || product.price === undefined) {
+    throw new Error("Product name and price are required");
   }
-  
-  // Remove any undefined fields
-  Object.keys(cleanedData).forEach(key => {
-    if (cleanedData[key as keyof typeof cleanedData] === undefined) {
-      delete cleanedData[key as keyof typeof cleanedData];
-    }
-  });
-  
-  return cleanedData;
+
+  // Create a clean product object
+  const cleanedProduct: ProductInsert = {
+    name: product.name.trim(),
+    price: product.price,
+    description: product.description || null,
+    cost: product.cost !== undefined ? product.cost : null,
+    stock: product.stock !== undefined ? product.stock : null,
+    sku: product.sku || null,
+    barcode: product.barcode || null,
+    image_url: product.image_url || null,
+    category: product.category || null,
+    category_id: product.category_id || null,
+    has_variants: product.has_variants || false
+  };
+
+  return cleanedProduct;
 };
 
-// Utility function to clean variant data before sending to Supabase
-export const cleanVariantData = (variant: Partial<ProductVariant>): VariantInsert | VariantUpdate => {
-  const cleanedData = { ...variant } as VariantInsert | VariantUpdate;
-  
-  // Handle null or empty string fields that should be null in the database
-  ['color', 'size', 'flavor', 'sku'].forEach(field => {
-    if (field in cleanedData && (cleanedData[field as keyof typeof cleanedData] === '' || cleanedData[field as keyof typeof cleanedData] === undefined)) {
-      cleanedData[field as keyof typeof cleanedData] = null;
-    }
-  });
-  
-  // Make sure product_id is always included for inserts
-  if ('id' in variant === false && (!cleanedData.product_id || cleanedData.product_id === '')) {
+// Clean variant data before sending to the database
+export const cleanVariantData = (variant: VariantInsert): VariantInsert => {
+  // Ensure required fields are included
+  if (!variant.product_id) {
     throw new Error("Product ID is required for variants");
   }
-  
-  // Remove any undefined fields
-  Object.keys(cleanedData).forEach(key => {
-    if (cleanedData[key as keyof typeof cleanedData] === undefined) {
-      delete cleanedData[key as keyof typeof cleanedData];
-    }
-  });
-  
-  return cleanedData;
+
+  // Create a clean variant object
+  const cleanedVariant: VariantInsert = {
+    product_id: variant.product_id,
+    price: variant.price !== undefined ? variant.price : 0,
+    sku: variant.sku || null,
+    stock_count: variant.stock_count !== undefined ? variant.stock_count : null,
+    color: variant.color || null,
+    size: variant.size || null,
+    flavor: variant.flavor || null,
+    variant_attributes: variant.variant_attributes || {}
+  };
+
+  return cleanedVariant;
 };
