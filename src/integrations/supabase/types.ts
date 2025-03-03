@@ -60,6 +60,63 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_cards: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by_staff_id: string | null
+          current_value: number
+          customer_id: string | null
+          expires_at: string | null
+          id: string
+          initial_value: number
+          is_active: boolean
+          redeemed_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          created_by_staff_id?: string | null
+          current_value: number
+          customer_id?: string | null
+          expires_at?: string | null
+          id?: string
+          initial_value: number
+          is_active?: boolean
+          redeemed_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by_staff_id?: string | null
+          current_value?: number
+          customer_id?: string | null
+          expires_at?: string | null
+          id?: string
+          initial_value?: number
+          is_active?: boolean
+          redeemed_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_cards_created_by_staff_id_fkey"
+            columns: ["created_by_staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_cards_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_categories: {
         Row: {
           created_at: string | null

@@ -33,30 +33,10 @@ const giftCardConverter = (data: any): GiftCard => {
   };
 };
 
-// We'll need to create a gift_cards table first through SQL migration
-// For now, we'll simulate the API calls and handle them properly once the table exists
 export const createGiftCard = async (params: CreateGiftCardParams): Promise<GiftCard | null> => {
   try {
-    // Since the gift_cards table doesn't exist yet in the Supabase schema,
-    // we'll create a mock response for now
     const code = generateGiftCardCode();
     
-    const mockGiftCard: GiftCard = {
-      id: crypto.randomUUID(),
-      code: code,
-      initial_value: params.initial_value,
-      current_value: params.initial_value,
-      is_active: true,
-      expires_at: params.expires_at || null,
-      customer_id: params.customer_id || null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      redeemed_at: null,
-      created_by_staff_id: null
-    };
-    
-    // Once the gift_cards table is created, uncomment this code:
-    /*
     const { data, error } = await supabase
       .from("gift_cards")
       .insert([{
@@ -74,9 +54,6 @@ export const createGiftCard = async (params: CreateGiftCardParams): Promise<Gift
     }
 
     return data && data[0] ? giftCardConverter(data[0]) : null;
-    */
-    
-    return mockGiftCard;
   } catch (error) {
     console.error("Error creating gift card:", error);
     toast.error("Failed to create gift card");
@@ -86,10 +63,6 @@ export const createGiftCard = async (params: CreateGiftCardParams): Promise<Gift
 
 export const fetchGiftCards = async (): Promise<GiftCard[]> => {
   try {
-    // Mock response until gift_cards table exists
-    return [];
-    
-    /*
     const { data, error } = await supabase
       .from("gift_cards")
       .select("*")
@@ -100,7 +73,6 @@ export const fetchGiftCards = async (): Promise<GiftCard[]> => {
     }
 
     return data ? data.map(card => giftCardConverter(card)) : [];
-    */
   } catch (error) {
     console.error("Error fetching gift cards:", error);
     toast.error("Failed to fetch gift cards");
@@ -110,10 +82,6 @@ export const fetchGiftCards = async (): Promise<GiftCard[]> => {
 
 export const fetchGiftCardsByCustomer = async (customerId: string): Promise<GiftCard[]> => {
   try {
-    // Mock response until gift_cards table exists
-    return [];
-    
-    /*
     const { data, error } = await supabase
       .from("gift_cards")
       .select("*")
@@ -125,7 +93,6 @@ export const fetchGiftCardsByCustomer = async (customerId: string): Promise<Gift
     }
 
     return data ? data.map(card => giftCardConverter(card)) : [];
-    */
   } catch (error) {
     console.error(`Error fetching gift cards for customer ${customerId}:`, error);
     toast.error("Failed to fetch gift cards");
@@ -135,27 +102,17 @@ export const fetchGiftCardsByCustomer = async (customerId: string): Promise<Gift
 
 export const fetchGiftCardByCode = async (code: string): Promise<GiftCard | null> => {
   try {
-    // Mock response until gift_cards table exists
-    return null;
-    
-    /*
     const { data, error } = await supabase
       .from("gift_cards")
       .select("*")
       .eq("code", code)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        // No data found
-        toast.error("Gift card not found");
-        return null;
-      }
       throw error;
     }
 
     return data ? giftCardConverter(data) : null;
-    */
   } catch (error) {
     console.error(`Error fetching gift card with code ${code}:`, error);
     toast.error("Failed to fetch gift card");
@@ -165,10 +122,6 @@ export const fetchGiftCardByCode = async (code: string): Promise<GiftCard | null
 
 export const redeemGiftCard = async ({ code, amount }: RedeemGiftCardParams): Promise<GiftCard | null> => {
   try {
-    // Mock response until gift_cards table exists
-    return null;
-    
-    /*
     // First, get the current gift card
     const giftCard = await fetchGiftCardByCode(code);
     
@@ -209,7 +162,6 @@ export const redeemGiftCard = async ({ code, amount }: RedeemGiftCardParams): Pr
     }
     
     return data ? giftCardConverter(data) : null;
-    */
   } catch (error) {
     console.error("Error redeeming gift card:", error);
     toast.error("Failed to redeem gift card");
@@ -219,10 +171,6 @@ export const redeemGiftCard = async ({ code, amount }: RedeemGiftCardParams): Pr
 
 export const deactivateGiftCard = async (id: string): Promise<boolean> => {
   try {
-    // Mock response until gift_cards table exists
-    return true;
-    
-    /*
     const { error } = await supabase
       .from("gift_cards")
       .update({
@@ -234,7 +182,6 @@ export const deactivateGiftCard = async (id: string): Promise<boolean> => {
     if (error) {
       throw error;
     }
-    */
     
     return true;
   } catch (error) {
