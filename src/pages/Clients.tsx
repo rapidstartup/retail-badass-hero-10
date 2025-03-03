@@ -1,18 +1,16 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Users, CreditCard, ShoppingBag, Hourglass } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { formatCurrency, formatPhoneNumber } from "@/utils/formatters";
 import { supabase } from "@/integrations/supabase/client";
 import type { Customer } from "@/types/index";
-import StatCard from "@/components/StatCard";
-import { cn } from "@/lib/utils";
-import { useSettings } from "@/contexts/SettingsContext";
+
+// Import refactored components
+import ClientSearchBar from "@/components/clients/ClientSearchBar";
+import ClientStats from "@/components/clients/ClientStats";
+import ClientTable from "@/components/clients/ClientTable";
 
 const Clients = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,7 +20,6 @@ const Clients = () => {
   const [topSpender, setTopSpender] = useState(0);
   const [averageSpend, setAverageSpend] = useState(0);
   const navigate = useNavigate();
-  const { settings } = useSettings();
 
   const searchCustomers = async () => {
     setLoading(true);
@@ -65,26 +62,6 @@ const Clients = () => {
     navigate('/clients/new');
   };
 
-  // Get customer loyalty tier badge
-  const getLoyaltyBadge = (tier: string | null) => {
-    if (!tier) return null;
-    
-    const tierColors = {
-      'Bronze': 'secondary',
-      'Silver': 'outline',
-      'Gold': settings.theme === 'light' ? 'default' : 'default'
-    };
-    
-    return (
-      <Badge 
-        variant={tierColors[tier as keyof typeof tierColors] as any || 'secondary'}
-        className={tier === 'Gold' ? 'bg-theme-accent text-white' : ''}
-      >
-        {tier}
-      </Badge>
-    );
-  };
-
   useEffect(() => {
     searchCustomers();
   }, []);
@@ -102,27 +79,11 @@ const Clients = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard 
-          title="Total Clients" 
-          value={totalClients.toString()} 
-          icon={<Users className="h-6 w-6" />} 
-          className="theme-container-bg border"
-        />
-        <StatCard 
-          title="Top Spender" 
-          value={formatCurrency(topSpender)} 
-          description="Highest client spending"
-          icon={<CreditCard className="h-6 w-6" />} 
-          className="theme-container-bg border"
-        />
-        <StatCard 
-          title="Average Spend" 
-          value={formatCurrency(averageSpend)} 
-          icon={<ShoppingBag className="h-6 w-6" />} 
-          className="theme-container-bg border"
-        />
-      </div>
+      <ClientStats 
+        totalClients={totalClients}
+        topSpender={topSpender}
+        averageSpend={averageSpend}
+      />
 
       <Card className="theme-container-bg border">
         <CardHeader>
@@ -130,94 +91,18 @@ const Clients = () => {
           <CardDescription>Search and manage your clients</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search by name, email, or phone"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 theme-section-bg border"
-                onKeyDown={(e) => e.key === 'Enter' && searchCustomers()}
-              />
-            </div>
-            <Button 
-              onClick={searchCustomers} 
-              disabled={loading} 
-              className="bg-theme-accent hover:bg-theme-accent-hover text-white"
-            >
-              {loading ? "Searching..." : "Search"}
-            </Button>
-          </div>
+          <ClientSearchBar 
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            onSearch={searchCustomers}
+            loading={loading}
+          />
 
-          <div className="rounded-md border theme-section-bg overflow-hidden">
-            <div className="overflow-x-auto" style={{ 
-              scrollbarWidth: 'thin',
-              scrollbarColor: 'var(--theme-accent-color) transparent'  
-            }}>
-              <Table>
-                <TableHeader className="theme-section-bg">
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Loyalty</TableHead>
-                    <TableHead>Tier</TableHead>
-                    <TableHead className="text-right">Total Spend</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="theme-section-bg">
-                  {customers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        {loading ? (
-                          <div className="flex items-center justify-center">
-                            <Hourglass className="h-4 w-4 mr-2 animate-spin" />
-                            <span>Searching clients...</span>
-                          </div>
-                        ) : "No clients found"}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    customers.map((customer) => (
-                      <TableRow 
-                        key={customer.id} 
-                        className={cn(
-                          "cursor-pointer hover:bg-theme-section-selected",
-                        )}
-                        onClick={() => handleViewCustomer(customer.id)}
-                      >
-                        <TableCell className="font-medium">
-                          {customer.first_name} {customer.last_name}
-                        </TableCell>
-                        <TableCell>{customer.email || "—"}</TableCell>
-                        <TableCell>{customer.phone ? formatPhoneNumber(customer.phone) : "—"}</TableCell>
-                        <TableCell>{customer.loyalty_points || 0} points</TableCell>
-                        <TableCell>{getLoyaltyBadge(customer.tier)}</TableCell>
-                        <TableCell className="text-right">
-                          {formatCurrency(customer.total_spend || 0)}
-                        </TableCell>
-                        <TableCell>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="hover:bg-theme-section-selected"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewCustomer(customer.id);
-                            }}
-                          >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <ClientTable 
+            customers={customers}
+            loading={loading}
+            onViewCustomer={handleViewCustomer}
+          />
         </CardContent>
       </Card>
     </div>
