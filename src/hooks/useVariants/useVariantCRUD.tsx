@@ -12,21 +12,26 @@ export function useVariantCRUD(productId: string, refreshVariants: () => Promise
       setCreatingVariant(true);
       console.log("Creating variant with data:", { ...variantData, product_id: productId });
       
-      const result = await createVariant({
+      // Make sure product_id is set correctly
+      const dataToSend = {
         ...variantData,
         product_id: productId
-      });
+      };
+      
+      const result = await createVariant(dataToSend);
       
       if (result) {
         console.log("Variant created successfully:", result);
         await refreshVariants();
         toast.success("Variant created successfully");
+        return result;
       } else {
         throw new Error("Failed to create variant - no result returned");
       }
     } catch (error) {
       console.error("Error creating variant:", error);
       toast.error(`Failed to create variant: ${error instanceof Error ? error.message : "Unknown error"}`);
+      return null;
     } finally {
       setCreatingVariant(false);
     }
@@ -41,12 +46,14 @@ export function useVariantCRUD(productId: string, refreshVariants: () => Promise
         console.log("Variant updated successfully:", result);
         await refreshVariants();
         toast.success("Variant updated successfully");
+        return result;
       } else {
         throw new Error("Failed to update variant - no result returned");
       }
     } catch (error) {
       console.error("Error updating variant:", error);
       toast.error(`Failed to update variant: ${error instanceof Error ? error.message : "Unknown error"}`);
+      return null;
     }
   };
 
@@ -59,12 +66,14 @@ export function useVariantCRUD(productId: string, refreshVariants: () => Promise
         console.log("Variant deleted successfully");
         await refreshVariants();
         toast.success("Variant deleted successfully");
+        return true;
       } else {
         throw new Error("Failed to delete variant");
       }
     } catch (error) {
       console.error("Error deleting variant:", error);
       toast.error(`Failed to delete variant: ${error instanceof Error ? error.message : "Unknown error"}`);
+      return false;
     }
   };
 

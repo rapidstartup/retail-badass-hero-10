@@ -41,9 +41,21 @@ export const createVariant = async (variant: Omit<ProductVariant, 'id' | 'create
 
     console.log("Creating variant with data:", variant);
 
+    // Make sure we're sending proper data to Supabase
+    const variantData = {
+      product_id: variant.product_id,
+      sku: variant.sku,
+      price: variant.price || 0,
+      stock_count: variant.stock_count || 0,
+      color: variant.color || null,
+      size: variant.size || null,
+      flavor: variant.flavor || null,
+      variant_attributes: variant.variant_attributes || {}
+    };
+
     const { data, error } = await supabase
       .from("product_variants")
-      .insert(variant)
+      .insert(variantData)
       .select()
       .single();
       
@@ -53,7 +65,6 @@ export const createVariant = async (variant: Omit<ProductVariant, 'id' | 'create
     }
     
     console.log("Created variant:", data);
-    toast.success("Variant created successfully");
     
     // Convert variant_attributes from Json to Record<string, any>
     return {
@@ -84,7 +95,6 @@ export const updateVariant = async (id: string, variant: Partial<ProductVariant>
     }
     
     console.log("Updated variant:", data);
-    toast.success("Variant updated successfully");
     
     // Convert variant_attributes from Json to Record<string, any>
     return {
@@ -113,7 +123,6 @@ export const deleteVariant = async (id: string): Promise<boolean> => {
     }
     
     console.log("Variant deleted successfully");
-    toast.success("Variant deleted successfully");
     return true;
   } catch (error) {
     console.error("Error deleting variant:", error);

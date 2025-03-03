@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { ProductVariant } from "@/api/types/inventoryTypes";
 import { toast } from "sonner";
 
 export function useBulkVariantGenerator(
   productId: string,
-  handleCreateVariant: (variantData: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => Promise<void>
+  handleCreateVariant: (variantData: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => Promise<ProductVariant | null>
 ) {
   const [colorOptions, setColorOptions] = useState<string[]>([]);
   const [sizeOptions, setSizeOptions] = useState<string[]>([]);
@@ -75,96 +74,103 @@ export function useBulkVariantGenerator(
     
     try {
       setCreatingBulkVariants(true);
+      let createdVariants = 0;
       
       // If only one attribute has options, create one variant per option
       if (colorOptions.length > 0 && sizeOptions.length === 0 && flavorOptions.length === 0) {
         for (const color of colorOptions) {
-          await handleCreateVariant({
+          const result = await handleCreateVariant({
             product_id: productId,
             price: bulkBasePrice,
-            sku: "",
+            sku: `${productId.substring(0, 4)}-${color.substring(0, 3)}`,
             stock_count: bulkBaseStock,
             color: color,
             size: null,
             flavor: null,
             variant_attributes: {}
           });
+          if (result) createdVariants++;
         }
       }
       else if (sizeOptions.length > 0 && colorOptions.length === 0 && flavorOptions.length === 0) {
         for (const size of sizeOptions) {
-          await handleCreateVariant({
+          const result = await handleCreateVariant({
             product_id: productId,
             price: bulkBasePrice,
-            sku: "",
+            sku: `${productId.substring(0, 4)}-${size}`,
             stock_count: bulkBaseStock,
             color: null,
             size: size,
             flavor: null,
             variant_attributes: {}
           });
+          if (result) createdVariants++;
         }
       }
       else if (flavorOptions.length > 0 && colorOptions.length === 0 && sizeOptions.length === 0) {
         for (const flavor of flavorOptions) {
-          await handleCreateVariant({
+          const result = await handleCreateVariant({
             product_id: productId,
             price: bulkBasePrice,
-            sku: "",
+            sku: `${productId.substring(0, 4)}-${flavor.substring(0, 3)}`,
             stock_count: bulkBaseStock,
             color: null,
             size: null,
             flavor: flavor,
             variant_attributes: {}
           });
+          if (result) createdVariants++;
         }
       }
       // If two attributes have options, create a matrix of those two
       else if (colorOptions.length > 0 && sizeOptions.length > 0 && flavorOptions.length === 0) {
         for (const color of colorOptions) {
           for (const size of sizeOptions) {
-            await handleCreateVariant({
+            const result = await handleCreateVariant({
               product_id: productId,
               price: bulkBasePrice,
-              sku: "",
+              sku: `${productId.substring(0, 4)}-${color.substring(0, 3)}-${size}`,
               stock_count: bulkBaseStock,
               color: color,
               size: size,
               flavor: null,
               variant_attributes: {}
             });
+            if (result) createdVariants++;
           }
         }
       }
       else if (colorOptions.length > 0 && flavorOptions.length > 0 && sizeOptions.length === 0) {
         for (const color of colorOptions) {
           for (const flavor of flavorOptions) {
-            await handleCreateVariant({
+            const result = await handleCreateVariant({
               product_id: productId,
               price: bulkBasePrice,
-              sku: "",
+              sku: `${productId.substring(0, 4)}-${color.substring(0, 3)}-${flavor.substring(0, 3)}`,
               stock_count: bulkBaseStock,
               color: color,
               size: null,
               flavor: flavor,
               variant_attributes: {}
             });
+            if (result) createdVariants++;
           }
         }
       }
       else if (sizeOptions.length > 0 && flavorOptions.length > 0 && colorOptions.length === 0) {
         for (const size of sizeOptions) {
           for (const flavor of flavorOptions) {
-            await handleCreateVariant({
+            const result = await handleCreateVariant({
               product_id: productId,
               price: bulkBasePrice,
-              sku: "",
+              sku: `${productId.substring(0, 4)}-${size}-${flavor.substring(0, 3)}`,
               stock_count: bulkBaseStock,
               color: null,
               size: size,
               flavor: flavor,
               variant_attributes: {}
             });
+            if (result) createdVariants++;
           }
         }
       }
@@ -173,22 +179,23 @@ export function useBulkVariantGenerator(
         for (const color of colorOptions) {
           for (const size of sizeOptions) {
             for (const flavor of flavorOptions) {
-              await handleCreateVariant({
+              const result = await handleCreateVariant({
                 product_id: productId,
                 price: bulkBasePrice,
-                sku: "",
+                sku: `${productId.substring(0, 4)}-${color.substring(0, 3)}-${size}-${flavor.substring(0, 3)}`,
                 stock_count: bulkBaseStock,
                 color: color,
                 size: size,
                 flavor: flavor,
                 variant_attributes: {}
               });
+              if (result) createdVariants++;
             }
           }
         }
       }
       
-      toast.success("Successfully generated variants");
+      toast.success(`Successfully generated ${createdVariants} variants`);
     } catch (error) {
       console.error("Error generating variants:", error);
       toast.error("Failed to generate variants");
