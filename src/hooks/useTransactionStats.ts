@@ -1,15 +1,29 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { DateRange } from "react-day-picker";
 
-export const useTransactionStats = () => {
+export const useTransactionStats = (dateRange?: DateRange) => {
   return useQuery({
-    queryKey: ["transaction-stats"],
+    queryKey: ["transaction-stats", dateRange],
     queryFn: async () => {
-      const { data: transactions, error } = await supabase
+      let query = supabase
         .from('transactions')
         .select('total, status, payment_method, created_at')
         .order('created_at', { ascending: false });
+
+      // Apply date range filters if provided
+      if (dateRange?.from) {
+        query = query.gte('created_at', dateRange.from.toISOString());
+      }
+
+      if (dateRange?.to) {
+        const toDate = new Date(dateRange.to);
+        toDate.setHours(23, 59, 59, 999);
+        query = query.lte('created_at', toDate.toISOString());
+      }
+
+      const { data: transactions, error } = await query;
 
       if (error) throw error;
 

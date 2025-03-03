@@ -6,6 +6,7 @@ import TransactionList from "@/components/transactions/TransactionList";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
 import type { TransactionFilters as TransactionFiltersType } from "@/types/transaction";
 import { useIsMobile } from "@/hooks/use-mobile";
+import TransactionStats from "@/components/transactions/TransactionStats";
 
 interface TransactionContentProps {
   onSelectTransaction: (transactionId: string) => void;
@@ -24,6 +25,9 @@ const TransactionContent: React.FC<TransactionContentProps> = ({ onSelectTransac
 
   return (
     <div className="grid grid-cols-1 gap-6 mb-6">
+      {/* Add Transaction Stats inside the content component to access filters */}
+      <TransactionStats dateRange={filters.dateRange} />
+      
       <Card>
         <CardHeader>
           <CardTitle>Transaction List</CardTitle>

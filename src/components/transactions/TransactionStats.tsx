@@ -8,14 +8,28 @@ import {
 import StatCard from "@/components/StatCard";
 import { formatCurrency } from "@/utils/formatters";
 import { useTransactionStats } from "@/hooks/useTransactionStats";
+import { DateRange } from "react-day-picker";
 
-const TransactionStats = () => {
-  const { data: stats, isLoading: statsLoading } = useTransactionStats();
+interface TransactionStatsProps {
+  dateRange?: DateRange;
+}
+
+const TransactionStats: React.FC<TransactionStatsProps> = ({ dateRange }) => {
+  const { data: stats, isLoading: statsLoading } = useTransactionStats(dateRange);
+  
+  const getDateRangeDescription = () => {
+    if (!dateRange?.from) return "";
+    
+    const fromDate = dateRange.from.toLocaleDateString();
+    const toDate = dateRange.to ? dateRange.to.toLocaleDateString() : fromDate;
+    
+    return ` (${fromDate} - ${toDate})`;
+  };
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
       <StatCard
-        title="Total Sales"
+        title={`Total Sales${getDateRangeDescription()}`}
         value={statsLoading ? "Loading..." : formatCurrency(stats?.totalSales || 0)}
         icon={<BanknoteIcon />}
       />
@@ -25,7 +39,7 @@ const TransactionStats = () => {
         icon={<CalendarIcon />}
       />
       <StatCard
-        title="Avg. Transaction"
+        title={`Avg. Transaction${getDateRangeDescription()}`}
         value={statsLoading ? "Loading..." : formatCurrency(stats?.avgTransactionValue || 0)}
         icon={<TrendingUp />}
       />
