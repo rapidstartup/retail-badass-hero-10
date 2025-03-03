@@ -1,16 +1,40 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ProductVariant } from "./types/inventoryTypes";
+
+// Define proper types for product variants
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  sku?: string | null;
+  price?: number | null;
+  stock_count?: number | null;
+  color?: string | null;
+  size?: string | null;
+  flavor?: string | null;
+  variant_attributes: Record<string, any>;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type VariantInsert = Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>;
+export type VariantUpdate = Partial<VariantInsert>;
 
 // Utility function to clean variant data before sending to Supabase
-const cleanVariantData = (variant: Partial<ProductVariant>) => {
+const cleanVariantData = (variant: Partial<ProductVariant>): VariantUpdate => {
   const cleanedData = { ...variant };
   
   // Handle null or empty string fields that should be null in the database
   ['color', 'size', 'flavor', 'sku'].forEach(field => {
     if (field in cleanedData && (cleanedData[field] === '' || cleanedData[field] === undefined)) {
       cleanedData[field] = null;
+    }
+  });
+  
+  // Remove any undefined fields
+  Object.keys(cleanedData).forEach(key => {
+    if (cleanedData[key] === undefined) {
+      delete cleanedData[key];
     }
   });
   
@@ -46,7 +70,7 @@ export const fetchVariantsByProductId = async (productId: string): Promise<Produ
   }
 };
 
-export const createVariant = async (variant: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<ProductVariant | null> => {
+export const createVariant = async (variant: VariantInsert): Promise<ProductVariant | null> => {
   try {
     // Ensure product_id is provided
     if (!variant.product_id) {
@@ -56,7 +80,7 @@ export const createVariant = async (variant: Omit<ProductVariant, 'id' | 'create
     console.log("Creating variant with data:", variant);
 
     // Clean and prepare variant data
-    const variantData = {
+    const variantData = cleanVariantData({
       product_id: variant.product_id,
       sku: variant.sku || null,
       price: variant.price || 0,
@@ -65,7 +89,7 @@ export const createVariant = async (variant: Omit<ProductVariant, 'id' | 'create
       size: variant.size || null,
       flavor: variant.flavor || null,
       variant_attributes: variant.variant_attributes || {}
-    };
+    });
 
     const { data, error } = await supabase
       .from("product_variants")
@@ -92,12 +116,20 @@ export const createVariant = async (variant: Omit<ProductVariant, 'id' | 'create
   }
 };
 
-export const updateVariant = async (id: string, variant: Partial<ProductVariant>): Promise<ProductVariant | null> => {
+export const updateVariant = async (id: string, variant: VariantUpdate): Promise<ProductVariant | null> => {
   try {
     console.log("Updating variant ID:", id, "with data:", variant);
     
     // Clean the variant data before sending to Supabase
     const variantData = cleanVariantData(variant);
+    
+    // If we're updating a variant, we need to ensure we're not sending empty data
+    if (Object.keys(variantData).length === 0) {
+      console.log("No valid variant data to update");
+      return null;
+    }
+    
+    console.log("Cleaned variant data for update:", variantData);
     
     const { data, error } = await supabase
       .from("product_variants")
