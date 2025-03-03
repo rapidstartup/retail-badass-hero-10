@@ -21,11 +21,25 @@ export interface Product {
   product_categories?: { id: string; name: string } | null;
 }
 
-export type ProductInsert = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
+// ProductInsert with required fields still required
+export type ProductInsert = {
+  name: string; // Still required for inserts
+  price: number; // Still required for inserts
+  description?: string | null;
+  cost?: number | null;
+  stock?: number | null;
+  sku?: string | null;
+  barcode?: string | null;
+  image_url?: string | null;
+  category?: string | null;
+  category_id?: string | null;
+  has_variants?: boolean;
+};
+
 export type ProductUpdate = Partial<ProductInsert>;
 
 // Utility function to clean product data before sending to Supabase
-const cleanProductData = (product: Partial<Product>): ProductUpdate => {
+const cleanProductData = (product: Partial<Product>): ProductInsert | ProductUpdate => {
   const cleanedData = { ...product };
   
   // Remove empty category_id to prevent UUID format error
@@ -35,12 +49,12 @@ const cleanProductData = (product: Partial<Product>): ProductUpdate => {
   
   // Remove any undefined fields
   Object.keys(cleanedData).forEach(key => {
-    if (cleanedData[key] === undefined) {
-      delete cleanedData[key];
+    if (cleanedData[key as keyof typeof cleanedData] === undefined) {
+      delete cleanedData[key as keyof typeof cleanedData];
     }
   });
   
-  return cleanedData;
+  return cleanedData as ProductInsert | ProductUpdate;
 };
 
 // Products API
@@ -111,7 +125,7 @@ export const createProduct = async (product: ProductInsert): Promise<Product | n
 
     const { data, error } = await supabase
       .from("products")
-      .insert(productData)
+      .insert(productData as ProductInsert)
       .select()
       .single();
       
@@ -130,17 +144,40 @@ export const createProduct = async (product: ProductInsert): Promise<Product | n
   }
 };
 
-export const updateProduct = async (id: string, product: ProductUpdate): Promise<Product | null> => {
+export const updateProduct = async (id: string, updates: ProductUpdate): Promise<Product | null> => {
   try {
-    console.log("Updating product ID:", id, "with data:", product);
+    console.log("Updating product ID:", id, "with data:", updates);
     
     // Clean up the product data before sending to Supabase
-    const productData = cleanProductData(product);
+    const productData = cleanProductData(updates);
     
     // If we're updating a product, we need to ensure we're not sending empty required fields
     if (Object.keys(productData).length === 0) {
       console.log("No valid product data to update");
       return null;
+    }
+    
+    // First fetch the current product if we need name or price
+    if (('name' in updates && updates.name === undefined) || ('price' in updates && updates.price === undefined)) {
+      const { data: currentProduct, error: fetchError } = await supabase
+        .from("products")
+        .select("name, price")
+        .eq("id", id)
+        .single();
+      
+      if (fetchError) {
+        console.error("Supabase error fetching current product:", fetchError);
+        throw fetchError;
+      }
+      
+      // Merge the current values for required fields if they're not provided
+      if ('name' in updates && updates.name === undefined) {
+        productData.name = currentProduct.name;
+      }
+      
+      if ('price' in updates && updates.price === undefined) {
+        productData.price = currentProduct.price;
+      }
     }
     
     console.log("Cleaned product data for update:", productData);

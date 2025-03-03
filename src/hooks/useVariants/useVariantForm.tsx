@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ProductVariant } from "@/api/types/inventoryTypes";
+import { ProductVariant } from "@/api/variantApi";
 
 export function useVariantForm(productId: string, initialPrice: number = 0) {
   const [showAddVariant, setShowAddVariant] = useState(false);

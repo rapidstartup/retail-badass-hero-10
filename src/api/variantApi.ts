@@ -17,7 +17,18 @@ export interface ProductVariant {
   updated_at?: string;
 }
 
-export type VariantInsert = Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>;
+// VariantInsert with required fields still required
+export type VariantInsert = {
+  product_id: string; // Required for inserts
+  price: number;
+  sku?: string | null;
+  stock_count?: number | null;
+  color?: string | null;
+  size?: string | null;
+  flavor?: string | null;
+  variant_attributes?: Record<string, any>;
+};
+
 export type VariantUpdate = Partial<VariantInsert>;
 
 // Utility function to clean variant data before sending to Supabase
