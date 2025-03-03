@@ -2,12 +2,39 @@
 /**
  * Utility for calculating customer tiers based on spending
  */
+import { useSettings } from "@/contexts/SettingsContext";
 
-// Spending thresholds for tier progression
+// Define default thresholds (these will be overridden by settings)
 export const TIER_THRESHOLDS = {
   BRONZE: 0,       // Starting tier (default)
   SILVER: 500,     // $500 minimum spend to reach Silver
   GOLD: 2000       // $2000 minimum spend to reach Gold
+};
+
+/**
+ * Get the current tier thresholds from settings
+ * @returns The current tier thresholds object
+ */
+export const getTierThresholds = () => {
+  // Try to get settings from localStorage as a fallback
+  let thresholds = { ...TIER_THRESHOLDS };
+  
+  try {
+    const savedSettings = localStorage.getItem("posSettings");
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      if (settings.tierThresholdSilver !== undefined) {
+        thresholds.SILVER = settings.tierThresholdSilver;
+      }
+      if (settings.tierThresholdGold !== undefined) {
+        thresholds.GOLD = settings.tierThresholdGold;
+      }
+    }
+  } catch (error) {
+    console.error("Error reading tier thresholds from settings:", error);
+  }
+  
+  return thresholds;
 };
 
 /**
@@ -18,9 +45,11 @@ export const TIER_THRESHOLDS = {
 export const calculateTierFromSpend = (totalSpend: number | null): string => {
   if (!totalSpend || totalSpend < 0) return "Bronze";
   
-  if (totalSpend >= TIER_THRESHOLDS.GOLD) {
+  const thresholds = getTierThresholds();
+  
+  if (totalSpend >= thresholds.GOLD) {
     return "Gold";
-  } else if (totalSpend >= TIER_THRESHOLDS.SILVER) {
+  } else if (totalSpend >= thresholds.SILVER) {
     return "Silver";
   } else {
     return "Bronze";
@@ -35,11 +64,13 @@ export const calculateTierFromSpend = (totalSpend: number | null): string => {
 export const calculateSpendToNextTier = (totalSpend: number | null): number => {
   if (!totalSpend || totalSpend < 0) totalSpend = 0;
   
-  if (totalSpend >= TIER_THRESHOLDS.GOLD) {
+  const thresholds = getTierThresholds();
+  
+  if (totalSpend >= thresholds.GOLD) {
     return 0; // Already at highest tier
-  } else if (totalSpend >= TIER_THRESHOLDS.SILVER) {
-    return TIER_THRESHOLDS.GOLD - totalSpend; // Need to reach Gold
+  } else if (totalSpend >= thresholds.SILVER) {
+    return thresholds.GOLD - totalSpend; // Need to reach Gold
   } else {
-    return TIER_THRESHOLDS.SILVER - totalSpend; // Need to reach Silver
+    return thresholds.SILVER - totalSpend; // Need to reach Silver
   }
 };

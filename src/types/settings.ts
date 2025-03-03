@@ -33,6 +33,9 @@ export interface POSSettings {
   theme: "light" | "dark";
   lightModeColors: ThemeColors;
   darkModeColors: ThemeColors;
+  // Customer Tier Settings
+  tierThresholdSilver: number;
+  tierThresholdGold: number;
 }
 
 export interface SettingsContextType {
@@ -77,4 +80,6 @@ export const defaultSettings: POSSettings = {
   theme: "dark",
   lightModeColors: defaultLightColors,
   darkModeColors: defaultDarkColors,
+  tierThresholdSilver: 500,
+  tierThresholdGold: 2000,
 };

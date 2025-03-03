@@ -42,6 +42,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
             storeName: data.store_name || defaultSettings.storeName,
             storeAddress: data.store_address,
             storePhone: data.store_phone,
+            tierThresholdSilver: data.tier_threshold_silver || defaultSettings.tierThresholdSilver,
+            tierThresholdGold: data.tier_threshold_gold || defaultSettings.tierThresholdGold,
           };
           
           const savedSettings = localStorage.getItem("posSettings");
@@ -76,6 +78,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
           store_name: settings.storeName,
           store_address: settings.storeAddress,
           store_phone: settings.storePhone,
+          tier_threshold_silver: settings.tierThresholdSilver,
+          tier_threshold_gold: settings.tierThresholdGold,
         })
         .select('*')
         .single();
@@ -99,6 +103,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
           store_name: settings.storeName,
           store_address: settings.storeAddress,
           store_phone: settings.storePhone,
+          tier_threshold_silver: settings.tierThresholdSilver,
+          tier_threshold_gold: settings.tierThresholdGold,
         })
         .eq('id', settings.id);
         

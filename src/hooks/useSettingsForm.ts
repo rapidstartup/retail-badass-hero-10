@@ -11,6 +11,10 @@ export const useSettingsForm = () => {
   const [tabEnabled, setTabEnabled] = useState<boolean>(settings.tabEnabled);
   const [tabThreshold, setTabThreshold] = useState<number>(settings.tabThreshold);
   
+  // Customer tier thresholds
+  const [tierThresholdSilver, setTierThresholdSilver] = useState<number>(settings.tierThresholdSilver);
+  const [tierThresholdGold, setTierThresholdGold] = useState<number>(settings.tierThresholdGold);
+  
   // Stripe API integration fields
   const [stripeLiveSecretKey, setStripeLiveSecretKey] = useState<string>("");
   const [stripeLivePublicKey, setStripeLivePublicKey] = useState<string>("");
@@ -54,6 +58,8 @@ export const useSettingsForm = () => {
     setTaxRate(settings.taxRate);
     setTabEnabled(settings.tabEnabled);
     setTabThreshold(settings.tabThreshold);
+    setTierThresholdSilver(settings.tierThresholdSilver);
+    setTierThresholdGold(settings.tierThresholdGold);
     
     // If we have these settings stored, load them
     if (settings.stripeLiveSecretKey) setStripeLiveSecretKey(settings.stripeLiveSecretKey);
@@ -90,6 +96,10 @@ export const useSettingsForm = () => {
     taxRate, setTaxRate,
     tabEnabled, setTabEnabled,
     tabThreshold, setTabThreshold,
+    
+    // Customer tier thresholds
+    tierThresholdSilver, setTierThresholdSilver,
+    tierThresholdGold, setTierThresholdGold,
     
     // Stripe integration state and setters
     stripeLiveSecretKey, setStripeLiveSecretKey,

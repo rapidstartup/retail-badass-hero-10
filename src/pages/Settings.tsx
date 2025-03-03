@@ -12,6 +12,7 @@ import TabSettings from "@/components/settings/TabSettings";
 import IntegrationSettings from "@/components/settings/IntegrationSettings";
 import DesignSettings from "@/components/settings/DesignSettings";
 import StaffSettings from "@/components/settings/StaffSettings";
+import CustomerTierSettings from "@/components/settings/CustomerTierSettings";
 import SettingsContainer from "@/components/settings/SettingsContainer";
 import { useSettingsForm } from "@/hooks/useSettingsForm";
 
@@ -34,6 +35,8 @@ const Settings = () => {
         taxRate={settingsForm.taxRate}
         tabEnabled={settingsForm.tabEnabled}
         tabThreshold={settingsForm.tabThreshold}
+        tierThresholdSilver={settingsForm.tierThresholdSilver}
+        tierThresholdGold={settingsForm.tierThresholdGold}
         stripeLiveSecretKey={settingsForm.stripeLiveSecretKey}
         stripeLivePublicKey={settingsForm.stripeLivePublicKey}
         stripeTestSecretKey={settingsForm.stripeTestSecretKey}
@@ -74,6 +77,16 @@ const Settings = () => {
             setTabEnabled={settingsForm.setTabEnabled}
             tabThreshold={settingsForm.tabThreshold}
             setTabThreshold={settingsForm.setTabThreshold}
+          />
+        </TabsContent>
+        
+        {/* Customer Tier Settings */}
+        <TabsContent value="tiers">
+          <CustomerTierSettings
+            tierThresholdSilver={settingsForm.tierThresholdSilver}
+            setTierThresholdSilver={settingsForm.setTierThresholdSilver}
+            tierThresholdGold={settingsForm.tierThresholdGold}
+            setTierThresholdGold={settingsForm.setTierThresholdGold}
           />
         </TabsContent>
         

@@ -10,6 +10,8 @@ interface SettingsContainerProps {
   taxRate: number;
   tabEnabled: boolean;
   tabThreshold: number;
+  tierThresholdSilver: number;
+  tierThresholdGold: number;
   stripeLiveSecretKey: string;
   stripeLivePublicKey: string;
   stripeTestSecretKey: string;
@@ -36,6 +38,8 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
   taxRate,
   tabEnabled,
   tabThreshold,
+  tierThresholdSilver,
+  tierThresholdGold,
   stripeLiveSecretKey,
   stripeLivePublicKey,
   stripeTestSecretKey,
@@ -73,6 +77,8 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
       taxRate,
       tabEnabled,
       tabThreshold,
+      tierThresholdSilver,
+      tierThresholdGold,
       stripeLiveSecretKey,
       stripeLivePublicKey,
       stripeTestSecretKey,
@@ -116,10 +122,11 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
       </div>
       
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 theme-section-bg">
+        <TabsList className="grid w-full grid-cols-7 theme-section-bg">
           <TabsTrigger value="general" className="data-[state=active]:theme-section-selected-bg">General</TabsTrigger>
           <TabsTrigger value="tax" className="data-[state=active]:theme-section-selected-bg">Tax Settings</TabsTrigger>
           <TabsTrigger value="tab" className="data-[state=active]:theme-section-selected-bg">Tab System</TabsTrigger>
+          <TabsTrigger value="tiers" className="data-[state=active]:theme-section-selected-bg">Customer Tiers</TabsTrigger>
           <TabsTrigger value="integrations" className="data-[state=active]:theme-section-selected-bg">Integrations</TabsTrigger>
           <TabsTrigger value="design" className="data-[state=active]:theme-section-selected-bg">Design</TabsTrigger>
           <TabsTrigger value="staff" className="data-[state=active]:theme-section-selected-bg">Staff</TabsTrigger>
