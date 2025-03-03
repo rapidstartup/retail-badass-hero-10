@@ -20,7 +20,11 @@ const TransactionList: React.FC<TransactionListProps> = ({
 }) => {
   const [selectedTransaction, setSelectedTransaction] = useState<string | null>(null);
 
-  const { data: transactions, isLoading, isError } = useTransactionList(status, filters);
+  // Pass both status and filters
+  const { data, isLoading, isError } = useTransactionList({
+    ...filters,
+    status: status !== 'all' ? status : undefined
+  });
 
   const handleRowClick = (transactionId: string) => {
     setSelectedTransaction(transactionId);
@@ -37,13 +41,13 @@ const TransactionList: React.FC<TransactionListProps> = ({
     return <TransactionListError />;
   }
 
-  if (!transactions || transactions.length === 0) {
+  if (!data || !data.transactions || data.transactions.length === 0) {
     return <TransactionListEmpty />;
   }
 
   return (
     <TransactionTable
-      transactions={transactions}
+      transactions={data.transactions}
       selectedTransaction={selectedTransaction}
       onSelectTransaction={handleRowClick}
     />

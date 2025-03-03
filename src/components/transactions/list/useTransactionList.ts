@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Transaction, TransactionFilters } from '@/types/transaction';
 
-export const useTransactionList = (filters: TransactionFilters, page = 1, pageSize = 10) => {
+export const useTransactionList = (filters: TransactionFilters) => {
   return useQuery({
-    queryKey: ['transactions', filters, page, pageSize],
+    queryKey: ['transactions', filters],
     queryFn: async () => {
       let query = supabase
         .from('transactions')
@@ -53,8 +53,8 @@ export const useTransactionList = (filters: TransactionFilters, page = 1, pageSi
       }
 
       // Add pagination
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
+      const from = 0;
+      const to = 19; // Get 20 results
       
       query = query.range(from, to).order('created_at', { ascending: false });
       
@@ -79,13 +79,14 @@ export const useTransactionList = (filters: TransactionFilters, page = 1, pageSi
         
         return {
           ...transaction,
+          status: transaction.status as 'open' | 'completed' | 'refunded',
           items: parsedItems
         };
       });
 
       return { 
         transactions,
-        count 
+        count: count || 0
       };
     }
   });

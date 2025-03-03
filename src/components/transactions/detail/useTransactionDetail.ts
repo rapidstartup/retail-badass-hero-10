@@ -40,12 +40,28 @@ export const useTransactionDetail = (transactionId: string | null) => {
             console.error('Failed to parse transaction items:', e);
           }
         } else if (Array.isArray(data.items)) {
-          parsedItems = data.items;
+          parsedItems = data.items.map((item: any) => ({
+            id: item.id || '',
+            name: item.name || '',
+            price: item.price || 0,
+            quantity: item.quantity || 0,
+            subtotal: item.subtotal || 0,
+            product_id: item.product_id,
+            variant_id: item.variant_id
+          }));
         }
         
         // Create a properly typed transaction object
         const transaction: Transaction = {
-          ...data,
+          id: data.id,
+          status: data.status as 'open' | 'completed' | 'refunded',
+          total: data.total,
+          subtotal: data.subtotal,
+          tax: data.tax,
+          payment_method: data.payment_method,
+          created_at: data.created_at,
+          completed_at: data.completed_at,
+          customers: data.customers,
           items: parsedItems
         };
         

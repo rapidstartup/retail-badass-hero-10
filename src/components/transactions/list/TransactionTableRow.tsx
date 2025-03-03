@@ -5,19 +5,10 @@ import { TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Printer } from "lucide-react";
+import { Transaction } from "@/types/transaction";
 
 interface TransactionTableRowProps {
-  transaction: {
-    id: string;
-    status: string;
-    total: number;
-    payment_method?: string;
-    created_at: string;
-    customers?: {
-      first_name: string;
-      last_name: string;
-    };
-  };
+  transaction: Transaction;
   isSelected: boolean;
   onSelect: (transactionId: string) => void;
 }
@@ -49,7 +40,7 @@ const TransactionTableRow: React.FC<TransactionTableRowProps> = ({
       <TableCell>{formatDateTime(transaction.created_at)}</TableCell>
       <TableCell>
         {transaction.customers 
-          ? `${transaction.customers.first_name} ${transaction.customers.last_name}`
+          ? `${transaction.customers.first_name || ''} ${transaction.customers.last_name || ''}`
           : "Walk-in Customer"}
       </TableCell>
       <TableCell>{formatCurrency(transaction.total)}</TableCell>
