@@ -8,7 +8,6 @@ import {
   Package,
   Grid3X3
 } from "lucide-react";
-import EnhancedProductVariantsManager from "./EnhancedProductVariantsManager";
 import ProductVariantsManager from "./ProductVariantsManager";
 
 interface InventoryManagerProps {
@@ -20,8 +19,7 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({
   product,
   onProductUpdated
 }) => {
-  const [showEnhancedVariantsManager, setShowEnhancedVariantsManager] = useState(false);
-  const [showLegacyVariantsManager, setShowLegacyVariantsManager] = useState(false);
+  const [showVariantsManager, setShowVariantsManager] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -29,36 +27,18 @@ const InventoryManager: React.FC<InventoryManagerProps> = ({
         <Button
           variant="outline"
           className="flex items-center gap-2"
-          onClick={() => setShowEnhancedVariantsManager(true)}
-        >
-          <Grid3X3 className="h-4 w-4" />
-          <span>Advanced Variant Manager</span>
-        </Button>
-        
-        <Button
-          variant="outline"
-          className="flex items-center gap-2"
-          onClick={() => setShowLegacyVariantsManager(true)}
+          onClick={() => setShowVariantsManager(true)}
         >
           <Package className="h-4 w-4" />
-          <span>Simple Variant Manager</span>
+          <span>Variant Manager</span>
         </Button>
       </div>
 
-      {/* Enhanced (New) Variants Manager */}
-      {showEnhancedVariantsManager && (
-        <EnhancedProductVariantsManager
-          product={product}
-          onClose={() => setShowEnhancedVariantsManager(false)}
-          onProductUpdated={onProductUpdated}
-        />
-      )}
-      
-      {/* Legacy (Original) Variants Manager */}
-      {showLegacyVariantsManager && (
+      {/* Variants Manager */}
+      {showVariantsManager && (
         <ProductVariantsManager
           product={product}
-          onClose={() => setShowLegacyVariantsManager(false)}
+          onClose={() => setShowVariantsManager(false)}
         />
       )}
     </div>
