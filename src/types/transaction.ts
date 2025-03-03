@@ -11,8 +11,11 @@ export interface Transaction {
   created_at: string;
   completed_at?: string;
   customers?: {
-    first_name: string;
-    last_name: string;
+    id?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    phone?: string;
   };
   items: TransactionItem[];
 }

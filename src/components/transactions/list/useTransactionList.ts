@@ -1,11 +1,11 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { TransactionFilters } from "@/types/transaction";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Transaction, TransactionFilters } from '@/types/transaction';
 
-export const useTransactionList = (status?: string, filters: TransactionFilters) => {
+export const useTransactionList = (filters: TransactionFilters, page = 1, pageSize = 10) => {
   return useQuery({
-    queryKey: ['transactions', status, filters],
+    queryKey: ['transactions', filters, page, pageSize],
     queryFn: async () => {
       let query = supabase
         .from('transactions')
@@ -15,58 +15,78 @@ export const useTransactionList = (status?: string, filters: TransactionFilters)
           total,
           subtotal,
           tax,
+          items,
           payment_method,
           created_at,
           completed_at,
-          customers(first_name, last_name)
-        `)
-        .order('created_at', { ascending: false });
+          customers(id, first_name, last_name)
+        `);
 
-      // Apply status filter
-      if (status && status !== 'all') {
-        query = query.eq('status', status);
-      }
-
-      // Apply date range filter
+      // Apply filters
       if (filters.dateRange?.from) {
-        const fromDate = new Date(filters.dateRange.from);
-        fromDate.setHours(0, 0, 0, 0);
-        query = query.gte('created_at', fromDate.toISOString());
-      }
-      
-      if (filters.dateRange?.to) {
-        const toDate = new Date(filters.dateRange.to);
-        toDate.setHours(23, 59, 59, 999);
-        query = query.lte('created_at', toDate.toISOString());
+        query = query.gte('created_at', filters.dateRange.from.toISOString());
       }
 
-      // Apply payment method filter
+      if (filters.dateRange?.to) {
+        query = query.lte('created_at', filters.dateRange.to.toISOString());
+      }
+
       if (filters.paymentMethod) {
         query = query.eq('payment_method', filters.paymentMethod);
       }
 
-      // Apply amount range filters
-      if (filters.minimumAmount !== undefined) {
+      if (filters.status) {
+        query = query.eq('status', filters.status);
+      }
+
+      if (filters.minimumAmount) {
         query = query.gte('total', filters.minimumAmount);
       }
-      
-      if (filters.maximumAmount !== undefined) {
+
+      if (filters.maximumAmount) {
         query = query.lte('total', filters.maximumAmount);
       }
 
-      // Apply search query (customer name or transaction ID)
       if (filters.searchQuery) {
-        query = query.or(`id.ilike.%${filters.searchQuery}%,customers.first_name.ilike.%${filters.searchQuery}%,customers.last_name.ilike.%${filters.searchQuery}%`);
+        // This is simplified - proper search would depend on your database structure
+        query = query.or(`id.ilike.%${filters.searchQuery}%`);
       }
 
-      const { data, error } = await query;
+      // Add pagination
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
       
-      if (error) {
-        console.error("Error fetching transactions:", error);
-        throw new Error(error.message);
-      }
+      query = query.range(from, to).order('created_at', { ascending: false });
       
-      return data || [];
-    },
+      const { data, error, count } = await query;
+      
+      if (error) throw error;
+
+      // Parse items for each transaction
+      const transactions: Transaction[] = data.map(transaction => {
+        let parsedItems = [];
+        
+        // Handle different item formats
+        if (typeof transaction.items === 'string') {
+          try {
+            parsedItems = JSON.parse(transaction.items);
+          } catch (e) {
+            console.error(`Failed to parse items for transaction ${transaction.id}:`, e);
+          }
+        } else if (Array.isArray(transaction.items)) {
+          parsedItems = transaction.items;
+        }
+        
+        return {
+          ...transaction,
+          items: parsedItems
+        };
+      });
+
+      return { 
+        transactions,
+        count 
+      };
+    }
   });
 };

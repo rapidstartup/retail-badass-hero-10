@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { TransactionItem } from '@/types/transaction';
+import { Transaction, TransactionItem } from '@/types/transaction';
 
 export const useTransactionDetail = (transactionId: string | null) => {
   return useQuery({
@@ -28,19 +28,31 @@ export const useTransactionDetail = (transactionId: string | null) => {
         
       if (error) throw error;
       
-      // Ensure items is properly parsed as TransactionItem[]
-      if (data && typeof data.items === 'string') {
-        try {
-          data.items = JSON.parse(data.items) as TransactionItem[];
-        } catch (e) {
-          console.error('Failed to parse transaction items:', e);
-          data.items = [] as TransactionItem[];
+      // Parse items from JSON if needed
+      let parsedItems: TransactionItem[] = [];
+      
+      if (data) {
+        // Handle various item formats
+        if (typeof data.items === 'string') {
+          try {
+            parsedItems = JSON.parse(data.items);
+          } catch (e) {
+            console.error('Failed to parse transaction items:', e);
+          }
+        } else if (Array.isArray(data.items)) {
+          parsedItems = data.items;
         }
-      } else if (data && !Array.isArray(data.items)) {
-        data.items = [] as TransactionItem[];
+        
+        // Create a properly typed transaction object
+        const transaction: Transaction = {
+          ...data,
+          items: parsedItems
+        };
+        
+        return transaction;
       }
       
-      return data;
+      return null;
     },
     enabled: !!transactionId
   });

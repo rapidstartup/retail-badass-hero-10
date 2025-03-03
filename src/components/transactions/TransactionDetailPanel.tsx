@@ -24,7 +24,7 @@ const TransactionDetailPanel: React.FC<TransactionDetailPanelProps> = ({
   transactionId,
   onClose
 }) => {
-  const { data: transaction, isLoading, isError } = useTransactionDetail(transactionId);
+  const { data: transaction, isLoading, isError, refetch } = useTransactionDetail(transactionId);
   
   if (!transactionId) {
     return <EmptyDetailState />;
@@ -35,7 +35,7 @@ const TransactionDetailPanel: React.FC<TransactionDetailPanelProps> = ({
   }
   
   if (isError || !transaction) {
-    return <ErrorDetailState onClose={onClose} />;
+    return <ErrorDetailState onClose={onClose} onRetry={() => refetch()} />;
   }
   
   return (

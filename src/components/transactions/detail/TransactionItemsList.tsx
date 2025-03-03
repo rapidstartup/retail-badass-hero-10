@@ -1,12 +1,7 @@
 
 import React from 'react';
 import { formatCurrency } from '@/utils/formatters';
-
-interface TransactionItem {
-  name: string;
-  price: number;
-  quantity: number;
-}
+import { TransactionItem } from '@/types/transaction';
 
 interface TransactionItemsListProps {
   items: TransactionItem[] | null;
@@ -25,7 +20,7 @@ const TransactionItemsList: React.FC<TransactionItemsListProps> = ({ items }) =>
       >
         {items && Array.isArray(items) ? (
           <div className="space-y-2">
-            {items.map((item: any, index: number) => (
+            {items.map((item: TransactionItem, index: number) => (
               <div key={index} className="flex justify-between items-center text-sm">
                 <div>
                   <span className="font-medium">{item.quantity}x </span>
