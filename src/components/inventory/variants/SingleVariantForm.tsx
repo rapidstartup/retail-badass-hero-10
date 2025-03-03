@@ -8,7 +8,7 @@ import { ProductVariant } from "@/api/inventoryApi";
 interface SingleVariantFormProps {
   newVariant: ProductVariant;
   setNewVariant: (variant: ProductVariant) => void;
-  handleCreateVariant: (variantData: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  handleCreateVariant: (variantData: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => Promise<ProductVariant | null>;
   creatingVariant: boolean;
 }
 
