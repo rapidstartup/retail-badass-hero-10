@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Routes,
@@ -17,7 +18,7 @@ import Inventory from "@/pages/Inventory";
 import Settings from "@/pages/Settings";
 import Clients from "./pages/Clients";
 import ClientProfile from "./pages/ClientProfile";
-import NewCustomerForm from "./pages/NewCustomerForm";
+// Remove the import for NewCustomerForm since it doesn't exist
 
 // Temporary placeholder pages for components not yet implemented
 const Register = () => <div className="p-8 text-lg">Register Page</div>;
@@ -71,7 +72,7 @@ function App() {
             } />
             <Route path="clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
             <Route path="clients/:id" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
-            <Route path="clients/new" element={<ProtectedRoute><NewCustomerForm /></ProtectedRoute>} />
+            {/* Remove the route for NewCustomerForm since the component doesn't exist */}
             <Route path="transactions" element={
               <ProtectedRoute>
                 <Transactions />
