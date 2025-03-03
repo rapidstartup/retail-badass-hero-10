@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import TransactionStats from "@/components/transactions/TransactionStats";
 import TransactionContent from "@/components/transactions/TransactionContent";
-import TransactionDetailPanel from "@/components/transactions/TransactionDetailPanel";
 
 const Transactions = () => {
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
@@ -21,19 +20,6 @@ const Transactions = () => {
       <TransactionStats />
       
       <TransactionContent onSelectTransaction={handleTransactionSelect} />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          {/* This section is intentionally left empty as per user request */}
-        </div>
-        
-        <div>
-          <TransactionDetailPanel 
-            transactionId={selectedTransactionId} 
-            onClose={() => setSelectedTransactionId(null)} 
-          />
-        </div>
-      </div>
     </Layout>
   );
 };
