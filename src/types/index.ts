@@ -38,7 +38,7 @@ export interface ProductVariant {
   updated_at: string | null;
 }
 
-// Add variant type definitions for UI components
+// Variant type definitions for UI components
 export interface VariantType {
   name: string;
   values: string[];

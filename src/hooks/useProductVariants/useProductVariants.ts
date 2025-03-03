@@ -14,16 +14,15 @@ export const useProductVariants = (productId: string, basePrice: number = 0): Us
   const [error, setError] = useState<string | null>(null);
 
   // Use custom hooks
-  const { generateCombinations } = useCombinationGenerator(
-    productId,
-    basePrice,
-    variantTypes,
-    combinations,
-    setCombinations
-  );
-  
   const { variants, loading, fetchVariants } = useVariantFetching(productId);
   const { saveVariants } = useVariantOperations(productId, fetchVariants);
+  const { generateCombinations } = useCombinationGenerator(
+    productId, 
+    basePrice, 
+    variantTypes, 
+    combinations, 
+    setCombinations
+  );
 
   // Update combination when a field changes
   const updateCombination = (index: number, updates: Partial<VariantCombination>) => {

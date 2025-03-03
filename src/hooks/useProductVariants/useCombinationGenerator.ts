@@ -1,75 +1,60 @@
 
-import { useCallback } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import { VariantType, VariantCombination } from './types';
 
 export const useCombinationGenerator = (
   productId: string,
   basePrice: number,
   variantTypes: VariantType[],
-  currentCombinations: VariantCombination[],
-  setCombinations: React.Dispatch<React.SetStateAction<VariantCombination[]>>
+  combinations: VariantCombination[],
+  setCombinations: Dispatch<SetStateAction<VariantCombination[]>>
 ) => {
-  const generateCombinations = useCallback(() => {
-    if (variantTypes.length === 0) {
-      return;
-    }
+  // Generate all possible combinations of variant types
+  const generateCombinations = () => {
+    if (variantTypes.length === 0) return;
 
-    // Create all possible combinations
-    const generateCombinationsRecursive = (
-      current: Record<string, string>,
-      typeIndex: number
-    ): Record<string, string>[] => {
-      if (typeIndex >= variantTypes.length) {
-        return [current];
-      }
-
-      const type = variantTypes[typeIndex];
-      const results: Record<string, string>[] = [];
-
-      for (const value of type.values) {
-        const newCurrent = { ...current, [type.name]: value };
-        results.push(...generateCombinationsRecursive(newCurrent, typeIndex + 1));
-      }
-
-      return results;
+    // Helper function to generate cartesian product of arrays
+    const cartesian = (...arrays: string[][]): string[][] => {
+      return arrays.reduce<string[][]>(
+        (acc, array) => 
+          acc.flatMap(combo => array.map(item => [...combo, item])),
+        [[]]
+      );
     };
 
-    const attributeCombinations = generateCombinationsRecursive({}, 0);
+    // Extract all variant type values
+    const variantValues = variantTypes.map(vt => vt.values);
+    const variantNames = variantTypes.map(vt => vt.name);
 
-    // Generate an SKU prefix from product ID or name
-    const skuPrefix = productId.substring(0, 3).toUpperCase();
+    // Generate all combinations
+    const allCombinations = cartesian(...variantValues);
 
-    // Convert attribute combinations to variant combinations
-    const newCombinations: VariantCombination[] = attributeCombinations.map((attributes, index) => {
-      // Check if we already have this combination
-      const existingIndex = currentCombinations.findIndex(combination => {
-        return Object.entries(attributes).every(([key, value]) => 
-          combination.attributes[key] === value
-        );
+    // Create VariantCombination objects for each combination
+    const newCombinations: VariantCombination[] = allCombinations.map(combo => {
+      // Create an attributes object from variant names and values
+      const attributes: Record<string, string> = {};
+      variantNames.forEach((name, index) => {
+        attributes[name.toLowerCase()] = combo[index];
       });
 
-      if (existingIndex !== -1) {
-        // Use existing values
-        return currentCombinations[existingIndex];
-      }
+      // Create a SKU from the product ID and first letters of each value
+      const skuSuffix = combo
+        .map(value => value.substring(0, 1).toUpperCase())
+        .join('');
+      const sku = `${productId.substring(0, 4)}-${skuSuffix}`;
 
-      // Generate a new sku
-      const sku = `${skuPrefix}-${Object.values(attributes).join('-')}`;
-      
+      // Create a new variant combination
       return {
         product_id: productId,
         sku,
         price: basePrice,
         stock_count: 0,
-        color: attributes.color,
-        size: attributes.size,
-        flavor: attributes.flavor,
-        attributes
+        attributes,
       };
     });
 
     setCombinations(newCombinations);
-  }, [variantTypes, currentCombinations, setCombinations, productId, basePrice]);
+  };
 
   return { generateCombinations };
 };
