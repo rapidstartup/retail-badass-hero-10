@@ -11,63 +11,38 @@ import {
   CardContent,
   CardFooter
 } from '@/components/ui/card';
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from '@/components/ui/input';
+import { Form } from "@/components/ui/form";
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { 
   Package,
   Save, 
   X,
-  DollarSign, 
-  Barcode, 
-  ImageIcon, 
-  Layers,
-  ShoppingCart,
   Plus
 } from 'lucide-react';
 import ProductVariantsManager from './ProductVariantsManager';
 
-interface FormData {
-  name: string;
-  description: string;
-  price: number | undefined;
-  cost: number | undefined;
-  stock: number | undefined;
-  sku: string;
-  barcode: string;
-  image_url: string;
-  category: string;
-  category_id: string;
-  has_variants: boolean;
-}
+// Import our new form section components
+import BasicProductInfo from './product-form/BasicProductInfo';
+import PricingInfo from './product-form/PricingInfo';
+import InventoryDetails from './product-form/InventoryDetails';
+import { ProductFormData } from './product-form/types';
 
 interface ProductFormProps {
   product?: Product;
   productId?: string;
   onClose: () => void;
   onSave?: () => void;
-  threeColumns?: boolean; // New prop to determine layout
+  threeColumns?: boolean;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, onSave, threeColumns = false }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ 
+  product, 
+  productId, 
+  onClose, 
+  onSave, 
+  threeColumns = false 
+}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string; }[]>([]);
@@ -75,7 +50,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   
   // Initialize form with useForm
-  const form = useForm<FormData>({
+  const form = useForm<ProductFormData>({
     defaultValues: {
       name: '',
       description: '',
@@ -155,7 +130,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
     }
   }, [product, productId, form]);
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: ProductFormData) => {
     if (!data.name) {
       toast.error("Product name is required");
       return;
@@ -173,8 +148,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
         name: data.name,
         description: data.description,
         price: Number(data.price),
-        cost: Number(data.cost),
-        stock: Number(data.stock),
+        cost: data.cost !== undefined ? Number(data.cost) : undefined,
+        stock: data.stock !== undefined ? Number(data.stock) : undefined,
         sku: data.sku,
         barcode: data.barcode,
         image_url: data.image_url,
@@ -234,219 +209,10 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, productId, onClose, 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className={`grid grid-cols-1 ${threeColumns ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6`}>
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Product Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter product name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Price</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="0.00"
-                              className="pl-10"
-                              value={field.value === undefined ? '' : field.value}
-                              onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="cost"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Cost</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="0.00"
-                              className="pl-10"
-                              value={field.value === undefined ? '' : field.value}
-                              onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="sku"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>SKU</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Barcode className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="Enter SKU" className="pl-10" {...field} />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="barcode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Barcode</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter barcode" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="stock"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Stock Quantity</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <ShoppingCart className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type="number"
-                              placeholder="0"
-                              className="pl-10"
-                              value={field.value === undefined ? '' : field.value}
-                              onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="image_url"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Image URL</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <ImageIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="Image URL" className="pl-10" {...field} />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="category_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <Select
-                          value={field.value}
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            const selectedCategory = categories.find(cat => cat.id === value);
-                            if (selectedCategory) {
-                              form.setValue('category', selectedCategory.name);
-                            }
-                          }}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories.map(category => (
-                              <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="has_variants"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base flex items-center gap-2">
-                            <Layers className="h-4 w-4" />
-                            Has Variants
-                          </FormLabel>
-                          <FormDescription>
-                            Enable for products with multiple variants
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <BasicProductInfo form={form} />
+                <PricingInfo form={form} />
+                <InventoryDetails form={form} categories={categories} />
               </div>
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter product description" 
-                        className="min-h-[120px]" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               
               <CardFooter className="px-0 pb-0 pt-4 flex justify-end gap-2">
                 <Button 

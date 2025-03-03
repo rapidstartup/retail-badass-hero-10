@@ -2,12 +2,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-// Define proper types for product variants
+// Define proper types for product variants to match the types already in the codebase
 export interface ProductVariant {
   id: string;
   product_id: string;
   sku?: string | null;
-  price?: number | null;
+  price: number;
   stock_count?: number | null;
   color?: string | null;
   size?: string | null;
@@ -21,7 +21,7 @@ export type VariantInsert = Omit<ProductVariant, 'id' | 'created_at' | 'updated_
 export type VariantUpdate = Partial<VariantInsert>;
 
 // Utility function to clean variant data before sending to Supabase
-const cleanVariantData = (variant: Partial<ProductVariant>): VariantUpdate => {
+const cleanVariantData = (variant: Partial<ProductVariant>): Record<string, any> => {
   const cleanedData = { ...variant };
   
   // Handle null or empty string fields that should be null in the database
@@ -30,6 +30,11 @@ const cleanVariantData = (variant: Partial<ProductVariant>): VariantUpdate => {
       cleanedData[field] = null;
     }
   });
+  
+  // Make sure product_id is always included for inserts
+  if (!cleanedData.product_id && cleanedData.product_id !== '') {
+    throw new Error("Product ID is required for variants");
+  }
   
   // Remove any undefined fields
   Object.keys(cleanedData).forEach(key => {

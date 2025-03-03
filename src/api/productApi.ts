@@ -25,7 +25,7 @@ export type ProductInsert = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
 export type ProductUpdate = Partial<ProductInsert>;
 
 // Utility function to clean product data before sending to Supabase
-const cleanProductData = (product: Partial<Product>): ProductUpdate => {
+const cleanProductData = (product: Partial<Product>): Record<string, any> => {
   const cleanedData = { ...product };
   
   // Remove empty category_id to prevent UUID format error
