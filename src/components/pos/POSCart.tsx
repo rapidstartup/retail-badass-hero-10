@@ -1,8 +1,9 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { X, Minus, Plus, User, CreditCard, DollarSign, CheckCircle } from "lucide-react";
+import { X, Minus, Plus, User, CreditCard, DollarSign, CheckCircle, Gift } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { POSPaymentModal } from "./POSPaymentModal";
 
@@ -119,7 +120,17 @@ const POSCart: React.FC<POSCartProps> = ({
         </div>
         
         <CardFooter className="flex flex-col gap-2 p-4">
-          <div className="grid grid-cols-2 gap-2 w-full">
+          <div className="grid grid-cols-3 gap-2 w-full">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="w-full"
+              onClick={() => setPaymentModalOpen(true)}
+              disabled={items.length === 0}
+            >
+              <DollarSign className="mr-2" size={16} />
+              Cash
+            </Button>
             <Button 
               variant="outline" 
               size="lg" 
@@ -137,8 +148,8 @@ const POSCart: React.FC<POSCartProps> = ({
               onClick={() => setPaymentModalOpen(true)}
               disabled={items.length === 0}
             >
-              <DollarSign className="mr-2" size={16} />
-              Cash
+              <Gift className="mr-2" size={16} />
+              Gift Card
             </Button>
           </div>
           

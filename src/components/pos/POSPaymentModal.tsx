@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { formatCurrency } from "@/utils/formatters";
 
-// Import the new component modules
+// Import the payment component modules
 import { CashPayment } from "./payment-methods/CashPayment";
 import { CardPayment } from "./payment-methods/CardPayment";
 import { CheckPayment } from "./payment-methods/CheckPayment";
 import { TabPayment } from "./payment-methods/TabPayment";
 import { TransactionSummary } from "./TransactionSummary";
+import { GiftCardPayment } from "./GiftCardPayment";
 
 export interface POSPaymentModalProps {
   open: boolean;
@@ -81,6 +82,12 @@ export function POSPaymentModal({
     });
   };
 
+  const handleGiftCardPaymentComplete = (cardCode: string) => {
+    toast.success(`Payment completed using gift card: ${cardCode}`);
+    onSuccess();
+    onClose();
+  };
+
   const processPayment = async () => {
     setProcessing(true);
     
@@ -128,6 +135,10 @@ export function POSPaymentModal({
         case "tab":
           successMessage = "Transaction added to customer tab";
           break;
+        case "gift_card":
+          // Gift card payments are handled by the GiftCardPayment component
+          setProcessing(false);
+          return;
       }
       
       toast.success(successMessage);
@@ -155,10 +166,11 @@ export function POSPaymentModal({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <Tabs defaultValue="cash" className="w-full" onValueChange={setPaymentMethod}>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="cash">Cash</TabsTrigger>
                 <TabsTrigger value="card">Card</TabsTrigger>
                 <TabsTrigger value="check">Check</TabsTrigger>
+                <TabsTrigger value="gift_card">Gift Card</TabsTrigger>
                 <TabsTrigger 
                   value="tab" 
                   disabled={!customer}
@@ -198,6 +210,13 @@ export function POSPaymentModal({
                 />
               </TabsContent>
               
+              <TabsContent value="gift_card" className="mt-4">
+                <GiftCardPayment 
+                  total={total}
+                  onPaymentComplete={handleGiftCardPaymentComplete}
+                />
+              </TabsContent>
+              
               <TabsContent value="tab" className="mt-4">
                 <TabPayment customer={customer} />
               </TabsContent>
@@ -226,7 +245,7 @@ export function POSPaymentModal({
           </Button>
           <Button 
             onClick={processPayment}
-            disabled={processing}
+            disabled={processing || paymentMethod === "gift_card"}
           >
             {processing ? "Processing..." : `Complete ${paymentMethod === 'tab' ? 'Tab' : 'Payment'}`}
           </Button>
