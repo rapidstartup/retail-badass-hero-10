@@ -1,3 +1,4 @@
+
 export interface Category {
   id: string;
   name: string;
@@ -68,6 +69,8 @@ export interface Transaction {
   created_at?: string | null;
   updated_at?: string | null;
   completed_at?: string | null;
+  amount?: number; // Added for compatibility with CustomerTransactionList
+  date?: string; // Added for compatibility with CustomerTransactionList
 }
 
 export type { Customer, GiftCard } from './database.types';
