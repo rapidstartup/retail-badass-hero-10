@@ -6,6 +6,7 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
 import { UseFormReturn } from 'react-hook-form';
@@ -28,16 +29,22 @@ const PricingInfo: React.FC<PricingInfoProps> = ({ form }) => {
             <FormControl>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  className="pl-10"
-                  value={field.value === undefined ? '' : field.value}
-                  onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                <Input 
+                  type="number" 
+                  min={0} 
+                  step="0.01" 
+                  placeholder="0.00" 
+                  className="pl-10" 
+                  {...field}
+                  value={field.value === undefined ? '' : field.value} 
+                  onChange={(e) => {
+                    const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                    field.onChange(value);
+                  }}
                 />
               </div>
             </FormControl>
+            <FormDescription>The selling price of the product</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -52,16 +59,22 @@ const PricingInfo: React.FC<PricingInfoProps> = ({ form }) => {
             <FormControl>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  className="pl-10"
-                  value={field.value === undefined ? '' : field.value}
-                  onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                <Input 
+                  type="number" 
+                  min={0} 
+                  step="0.01" 
+                  placeholder="0.00" 
+                  className="pl-10" 
+                  {...field}
+                  value={field.value === undefined ? '' : field.value} 
+                  onChange={(e) => {
+                    const value = e.target.value === '' ? undefined : parseFloat(e.target.value);
+                    field.onChange(value);
+                  }}
                 />
               </div>
             </FormControl>
+            <FormDescription>Your purchase cost (not shown to customers)</FormDescription>
             <FormMessage />
           </FormItem>
         )}

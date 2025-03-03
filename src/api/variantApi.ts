@@ -21,25 +21,25 @@ export type VariantInsert = Omit<ProductVariant, 'id' | 'created_at' | 'updated_
 export type VariantUpdate = Partial<VariantInsert>;
 
 // Utility function to clean variant data before sending to Supabase
-const cleanVariantData = (variant: Partial<ProductVariant>): Record<string, any> => {
-  const cleanedData = { ...variant };
+const cleanVariantData = (variant: Partial<ProductVariant>): VariantInsert | VariantUpdate => {
+  const cleanedData = { ...variant } as VariantInsert | VariantUpdate;
   
   // Handle null or empty string fields that should be null in the database
   ['color', 'size', 'flavor', 'sku'].forEach(field => {
-    if (field in cleanedData && (cleanedData[field] === '' || cleanedData[field] === undefined)) {
-      cleanedData[field] = null;
+    if (field in cleanedData && (cleanedData[field as keyof typeof cleanedData] === '' || cleanedData[field as keyof typeof cleanedData] === undefined)) {
+      cleanedData[field as keyof typeof cleanedData] = null;
     }
   });
   
   // Make sure product_id is always included for inserts
-  if (!cleanedData.product_id && cleanedData.product_id !== '') {
+  if ('id' in variant === false && (!cleanedData.product_id || cleanedData.product_id === '')) {
     throw new Error("Product ID is required for variants");
   }
   
   // Remove any undefined fields
   Object.keys(cleanedData).forEach(key => {
-    if (cleanedData[key] === undefined) {
-      delete cleanedData[key];
+    if (cleanedData[key as keyof typeof cleanedData] === undefined) {
+      delete cleanedData[key as keyof typeof cleanedData];
     }
   });
   
@@ -85,16 +85,7 @@ export const createVariant = async (variant: VariantInsert): Promise<ProductVari
     console.log("Creating variant with data:", variant);
 
     // Clean and prepare variant data
-    const variantData = cleanVariantData({
-      product_id: variant.product_id,
-      sku: variant.sku || null,
-      price: variant.price || 0,
-      stock_count: variant.stock_count || 0,
-      color: variant.color || null,
-      size: variant.size || null,
-      flavor: variant.flavor || null,
-      variant_attributes: variant.variant_attributes || {}
-    });
+    const variantData = cleanVariantData(variant);
 
     const { data, error } = await supabase
       .from("product_variants")

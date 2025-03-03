@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { createProduct, updateProduct, fetchCategories } from '@/api/inventoryApi';
+import { createProduct, updateProduct, fetchProductById } from '@/api/productApi';
+import { fetchCategories } from '@/api/inventoryApi';
 import { Product } from '@/types';
 import { 
   Card,
@@ -101,25 +102,25 @@ const ProductForm: React.FC<ProductFormProps> = ({
       setIsEditing(true);
       const fetchProductDetails = async () => {
         try {
-          const response = await fetch(`/api/products/${productId}`);
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+          const productData = await fetchProductById(productId);
+          if (productData) {
+            setCurrentProduct(productData);
+            form.reset({
+              name: productData.name,
+              description: productData.description || '',
+              price: productData.price,
+              cost: productData.cost || undefined,
+              stock: productData.stock || undefined,
+              sku: productData.sku || '',
+              barcode: productData.barcode || '',
+              image_url: productData.image_url || '',
+              category: productData.category || '',
+              category_id: productData.category_id || '',
+              has_variants: productData.has_variants || false,
+            });
+          } else {
+            throw new Error("Product not found");
           }
-          const productData = await response.json();
-          setCurrentProduct(productData);
-          form.reset({
-            name: productData.name,
-            description: productData.description,
-            price: productData.price,
-            cost: productData.cost,
-            stock: productData.stock,
-            sku: productData.sku,
-            barcode: productData.barcode,
-            image_url: productData.image_url,
-            category: productData.category || '',
-            category_id: productData.category_id,
-            has_variants: productData.has_variants,
-          });
         } catch (error) {
           console.error("Could not fetch product details", error);
           toast.error("Failed to load product details");

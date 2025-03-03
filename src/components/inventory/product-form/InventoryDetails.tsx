@@ -5,20 +5,13 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { Barcode, ShoppingCart, Layers } from 'lucide-react';
 import { ProductFormData } from './types';
 
 interface InventoryDetailsProps {
@@ -36,10 +29,7 @@ const InventoryDetails: React.FC<InventoryDetailsProps> = ({ form, categories })
           <FormItem>
             <FormLabel>SKU</FormLabel>
             <FormControl>
-              <div className="relative">
-                <Barcode className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Enter SKU" className="pl-10" {...field} />
-              </div>
+              <Input placeholder="Stock Keeping Unit" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -53,7 +43,7 @@ const InventoryDetails: React.FC<InventoryDetailsProps> = ({ form, categories })
           <FormItem>
             <FormLabel>Barcode</FormLabel>
             <FormControl>
-              <Input placeholder="Enter barcode" {...field} />
+              <Input placeholder="UPC, EAN, etc." {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -67,16 +57,18 @@ const InventoryDetails: React.FC<InventoryDetailsProps> = ({ form, categories })
           <FormItem>
             <FormLabel>Stock Quantity</FormLabel>
             <FormControl>
-              <div className="relative">
-                <ShoppingCart className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="number"
-                  placeholder="0"
-                  className="pl-10"
-                  value={field.value === undefined ? '' : field.value}
-                  onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseInt(e.target.value))}
-                />
-              </div>
+              <Input 
+                type="number" 
+                min={0} 
+                step="1" 
+                placeholder="0" 
+                {...field}
+                value={field.value === undefined ? '' : field.value} 
+                onChange={(e) => {
+                  const value = e.target.value === '' ? undefined : parseInt(e.target.value, 10);
+                  field.onChange(value);
+                }}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -89,15 +81,13 @@ const InventoryDetails: React.FC<InventoryDetailsProps> = ({ form, categories })
         render={({ field }) => (
           <FormItem>
             <FormLabel>Category</FormLabel>
-            <Select
-              value={field.value}
+            <Select 
               onValueChange={(value) => {
-                field.onChange(value);
+                form.setValue('category_id', value);
                 const selectedCategory = categories.find(cat => cat.id === value);
-                if (selectedCategory) {
-                  form.setValue('category', selectedCategory.name);
-                }
+                form.setValue('category', selectedCategory ? selectedCategory.name : '');
               }}
+              value={field.value}
             >
               <FormControl>
                 <SelectTrigger>
@@ -105,8 +95,11 @@ const InventoryDetails: React.FC<InventoryDetailsProps> = ({ form, categories })
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {categories.map(category => (
-                  <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                <SelectItem value="">None</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -119,14 +112,11 @@ const InventoryDetails: React.FC<InventoryDetailsProps> = ({ form, categories })
         control={form.control}
         name="has_variants"
         render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
             <div className="space-y-0.5">
-              <FormLabel className="text-base flex items-center gap-2">
-                <Layers className="h-4 w-4" />
-                Has Variants
-              </FormLabel>
+              <FormLabel>Has Variants</FormLabel>
               <FormDescription>
-                Enable for products with multiple variants
+                Enable if this product has multiple variants (sizes, colors, etc.)
               </FormDescription>
             </div>
             <FormControl>
