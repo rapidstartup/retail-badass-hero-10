@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, UserRound, CalendarRange, CreditCard, 
-  Receipt, Edit, Trash, Clock, ShoppingBag 
+  Receipt, Edit, Trash, Clock, ShoppingBag, Check, X 
 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,26 @@ import { formatCurrency, formatDateTime, formatPhoneNumber } from "@/utils/forma
 import { supabase } from "@/integrations/supabase/client";
 import type { Customer, Transaction } from "@/types/index";
 import StatCard from "@/components/StatCard";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { toast } from "sonner";
+
+// Form schema for customer editing
+const customerFormSchema = z.object({
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address").optional().nullable(),
+  phone: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  tier: z.string().optional().nullable(),
+  loyalty_points: z.number().nonnegative().optional().nullable(),
+});
+
+type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
 const ClientProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,12 +45,28 @@ const ClientProfile = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<string>("30days");
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [metrics, setMetrics] = useState({
     avgTransaction: 0,
     numTransactions: 0,
     totalSpent: 0,
     mostPurchased: "None",
     currentTabBalance: 0
+  });
+
+  // Initialize form
+  const form = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerFormSchema),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      notes: "",
+      tier: "Bronze",
+      loyalty_points: 0,
+    },
   });
 
   useEffect(() => {
@@ -46,6 +82,17 @@ const ClientProfile = () => {
         
         if (error) throw error;
         setCustomer(data);
+        
+        // Set form values when customer data is loaded
+        form.reset({
+          first_name: data.first_name,
+          last_name: data.last_name,
+          email: data.email,
+          phone: data.phone,
+          notes: data.notes,
+          tier: data.tier || "Bronze",
+          loyalty_points: data.loyalty_points || 0,
+        });
       } catch (error) {
         console.error('Error fetching customer:', error);
       }
@@ -88,14 +135,67 @@ const ClientProfile = () => {
 
     fetchCustomer();
     fetchTransactions();
-  }, [id]);
+  }, [id, form]);
 
   const handleGoBack = () => {
     navigate('/clients');
   };
 
   const handleEditCustomer = () => {
-    navigate(`/clients/${id}/edit`);
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    // Reset form to original values and exit edit mode
+    if (customer) {
+      form.reset({
+        first_name: customer.first_name,
+        last_name: customer.last_name,
+        email: customer.email,
+        phone: customer.phone,
+        notes: customer.notes,
+        tier: customer.tier || "Bronze",
+        loyalty_points: customer.loyalty_points || 0,
+      });
+    }
+    setIsEditing(false);
+  };
+
+  const onSubmit = async (values: CustomerFormValues) => {
+    if (!id) return;
+    
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update({
+          first_name: values.first_name,
+          last_name: values.last_name,
+          email: values.email,
+          phone: values.phone,
+          notes: values.notes,
+          tier: values.tier,
+          loyalty_points: values.loyalty_points,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setCustomer(prev => {
+        if (!prev) return null;
+        return { ...prev, ...values, updated_at: new Date().toISOString() };
+      });
+      
+      setIsEditing(false);
+      toast.success("Client updated successfully");
+    } catch (error) {
+      console.error('Error updating customer:', error);
+      toast.error("Failed to update client");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (loading) {
@@ -136,141 +236,322 @@ const ClientProfile = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-3xl font-bold">
-            {customer.first_name} {customer.last_name}
-          </h1>
-          {customer.tier && (
-            <Badge variant={customer.tier === 'Gold' ? 'default' : customer.tier === 'Silver' ? 'outline' : 'secondary'}>
-              {customer.tier}
-            </Badge>
+          {isEditing ? (
+            <div className="flex gap-2 items-center">
+              <h1 className="text-3xl font-bold">Edit Client</h1>
+            </div>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold">
+                {customer.first_name} {customer.last_name}
+              </h1>
+              {customer.tier && (
+                <Badge variant={customer.tier === 'Gold' ? 'default' : customer.tier === 'Silver' ? 'outline' : 'secondary'}>
+                  {customer.tier}
+                </Badge>
+              )}
+            </>
           )}
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={handleEditCustomer}
-            className="border-theme-accent text-theme-accent hover:bg-theme-accent hover:text-white"
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
+          {isEditing ? (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={handleCancelEdit}
+                className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                disabled={isSaving}
+              >
+                <X className="mr-2 h-4 w-4" />
+                Cancel
+              </Button>
+              <Button 
+                onClick={form.handleSubmit(onSubmit)}
+                className="bg-theme-accent hover:bg-theme-accent-hover text-white"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent rounded-full"></div>
+                    Saving...
+                  </div>
+                ) : (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </>
+          ) : (
+            <Button 
+              variant="outline" 
+              onClick={handleEditCustomer}
+              className="border-theme-accent text-theme-accent hover:bg-theme-accent hover:text-white"
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </Button>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Left column - Customer info */}
         <div className="md:col-span-4 space-y-6">
-          <Card className="theme-container-bg border">
-            <CardHeader>
-              <CardTitle>Client Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-center mb-6">
-                {customer.photo_url ? (
-                  <img 
-                    src={customer.photo_url} 
-                    alt={`${customer.first_name} ${customer.last_name}`} 
-                    className="rounded-full w-32 h-32 object-cover border-4 border-theme-accent/20" 
-                  />
-                ) : (
-                  <div className="rounded-full w-32 h-32 bg-theme-accent/10 flex items-center justify-center">
-                    <UserRound className="h-16 w-16 text-theme-accent/40" />
-                  </div>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-start gap-2">
-                  <div className="w-6 flex-shrink-0">
-                    <UserRound className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <div className="font-medium">{customer.first_name} {customer.last_name}</div>
-                    <div className="text-sm text-muted-foreground">Name</div>
-                  </div>
-                </div>
-                
-                {customer.email && (
-                  <div className="flex items-start gap-2">
-                    <div className="w-6 flex-shrink-0">
-                      <svg className="h-5 w-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect width="20" height="16" x="2" y="4" rx="2"/>
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="font-medium">{customer.email}</div>
-                      <div className="text-sm text-muted-foreground">Email</div>
-                    </div>
-                  </div>
-                )}
-                
-                {customer.phone && (
-                  <div className="flex items-start gap-2">
-                    <div className="w-6 flex-shrink-0">
-                      <svg className="h-5 w-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="font-medium">{formatPhoneNumber(customer.phone)}</div>
-                      <div className="text-sm text-muted-foreground">Phone</div>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex items-start gap-2">
-                  <div className="w-6 flex-shrink-0">
-                    <CalendarRange className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {customer.created_at ? format(new Date(customer.created_at), 'MMM d, yyyy') : 'Unknown'}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Customer since</div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="theme-container-bg border">
-            <CardHeader>
-              <CardTitle>Loyalty Program</CardTitle>
-              <CardDescription>Points and rewards status</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xl font-bold">{customer.loyalty_points || 0}</span>
-                <span className="text-sm text-muted-foreground">Points</span>
-              </div>
-              <div className="h-2.5 bg-secondary/20 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-theme-accent rounded-full" 
-                  style={{ width: `${Math.min(((customer.loyalty_points || 0) / 100) * 100, 100)}%` }}
-                ></div>
-              </div>
-              <div className="text-sm text-muted-foreground text-center">
-                {customer.loyalty_points || 0} / 100 points to next reward
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between border-t pt-4">
-              <span className="text-sm">Current Tier</span>
-              <Badge variant={customer.tier === 'Gold' ? 'default' : customer.tier === 'Silver' ? 'outline' : 'secondary'}>
-                {customer.tier || 'Bronze'}
-              </Badge>
-            </CardFooter>
-          </Card>
-
-          {customer.notes && (
+          {isEditing ? (
             <Card className="theme-container-bg border">
               <CardHeader>
-                <CardTitle>Notes</CardTitle>
+                <CardTitle>Edit Client Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="whitespace-pre-line">{customer.notes}</p>
+                <Form {...form}>
+                  <form className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="first_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>First Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="First name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="last_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Last Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Last name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Email address" 
+                              type="email" 
+                              {...field} 
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Phone number" 
+                              {...field} 
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="tier"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Customer Tier</FormLabel>
+                          <FormControl>
+                            <select 
+                              className="w-full p-2 rounded-md border theme-section-bg"
+                              {...field}
+                              value={field.value || 'Bronze'}
+                            >
+                              <option value="Bronze">Bronze</option>
+                              <option value="Silver">Silver</option>
+                              <option value="Gold">Gold</option>
+                            </select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="loyalty_points"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Loyalty Points</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0"
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                              value={field.value !== null && field.value !== undefined ? field.value : 0}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Notes</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Customer notes" 
+                              className="resize-none min-h-[100px]"
+                              {...field}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </form>
+                </Form>
               </CardContent>
             </Card>
+          ) : (
+            <>
+              <Card className="theme-container-bg border">
+                <CardHeader>
+                  <CardTitle>Client Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-center mb-6">
+                    {customer.photo_url ? (
+                      <img 
+                        src={customer.photo_url} 
+                        alt={`${customer.first_name} ${customer.last_name}`} 
+                        className="rounded-full w-32 h-32 object-cover border-4 border-theme-accent/20" 
+                      />
+                    ) : (
+                      <div className="rounded-full w-32 h-32 bg-theme-accent/10 flex items-center justify-center">
+                        <UserRound className="h-16 w-16 text-theme-accent/40" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <div className="w-6 flex-shrink-0">
+                        <UserRound className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <div className="font-medium">{customer.first_name} {customer.last_name}</div>
+                        <div className="text-sm text-muted-foreground">Name</div>
+                      </div>
+                    </div>
+                    
+                    {customer.email && (
+                      <div className="flex items-start gap-2">
+                        <div className="w-6 flex-shrink-0">
+                          <svg className="h-5 w-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect width="20" height="16" x="2" y="4" rx="2"/>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="font-medium">{customer.email}</div>
+                          <div className="text-sm text-muted-foreground">Email</div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {customer.phone && (
+                      <div className="flex items-start gap-2">
+                        <div className="w-6 flex-shrink-0">
+                          <svg className="h-5 w-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="font-medium">{formatPhoneNumber(customer.phone)}</div>
+                          <div className="text-sm text-muted-foreground">Phone</div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-start gap-2">
+                      <div className="w-6 flex-shrink-0">
+                        <CalendarRange className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <div className="font-medium">
+                          {customer.created_at ? format(new Date(customer.created_at), 'MMM d, yyyy') : 'Unknown'}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Customer since</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="theme-container-bg border">
+                <CardHeader>
+                  <CardTitle>Loyalty Program</CardTitle>
+                  <CardDescription>Points and rewards status</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl font-bold">{customer.loyalty_points || 0}</span>
+                    <span className="text-sm text-muted-foreground">Points</span>
+                  </div>
+                  <div className="h-2.5 bg-secondary/20 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-theme-accent rounded-full" 
+                      style={{ width: `${Math.min(((customer.loyalty_points || 0) / 100) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-sm text-muted-foreground text-center">
+                    {customer.loyalty_points || 0} / 100 points to next reward
+                  </div>
+                </CardContent>
+                <CardFooter className="flex justify-between border-t pt-4">
+                  <span className="text-sm">Current Tier</span>
+                  <Badge variant={customer.tier === 'Gold' ? 'default' : customer.tier === 'Silver' ? 'outline' : 'secondary'}>
+                    {customer.tier || 'Bronze'}
+                  </Badge>
+                </CardFooter>
+              </Card>
+
+              {customer.notes && (
+                <Card className="theme-container-bg border">
+                  <CardHeader>
+                    <CardTitle>Notes</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="whitespace-pre-line">{customer.notes}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
         </div>
 
