@@ -7,7 +7,6 @@ import { ArrowLeft } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { useClientProfile } from "@/hooks/useClientProfile";
 import type { Customer } from "@/types/index";
 
@@ -39,7 +38,16 @@ const ClientProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
-  const { customer, transactions, loading, metrics, updateCustomer } = useClientProfile(id);
+  const { 
+    customer, 
+    transactions, 
+    loading, 
+    metrics, 
+    updateCustomer,
+    pagination,
+    changePage,
+    changePageSize 
+  } = useClientProfile(id);
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
@@ -101,7 +109,7 @@ const ClientProfile = () => {
     setIsSaving(false);
   };
 
-  if (loading) {
+  if (loading && !customer) {
     return (
       <div className="container mx-auto p-4 text-center">
         <div className="animate-pulse">Loading client profile...</div>
@@ -162,6 +170,10 @@ const ClientProfile = () => {
           <ClientTabsContent 
             transactions={transactions}
             customer={customer}
+            pagination={pagination}
+            onPageChange={changePage}
+            onPageSizeChange={changePageSize}
+            loading={loading}
           />
         </div>
       </div>

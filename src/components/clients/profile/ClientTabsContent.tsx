@@ -8,9 +8,25 @@ import type { Transaction, Customer } from "@/types/index";
 interface ClientTabsContentProps {
   transactions: Transaction[];
   customer: Customer;
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalPages: number;
+    totalCount: number;
+  };
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  loading: boolean;
 }
 
-const ClientTabsContent: React.FC<ClientTabsContentProps> = ({ transactions, customer }) => {
+const ClientTabsContent: React.FC<ClientTabsContentProps> = ({
+  transactions,
+  customer,
+  pagination,
+  onPageChange,
+  onPageSizeChange,
+  loading
+}) => {
   return (
     <Tabs defaultValue="history">
       <TabsList className="mb-4 theme-container-bg">
@@ -19,7 +35,13 @@ const ClientTabsContent: React.FC<ClientTabsContentProps> = ({ transactions, cus
       </TabsList>
       
       <TabsContent value="history">
-        <ClientTransactionHistory transactions={transactions} />
+        <ClientTransactionHistory 
+          transactions={transactions} 
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+          loading={loading}
+        />
       </TabsContent>
       
       <TabsContent value="payment">

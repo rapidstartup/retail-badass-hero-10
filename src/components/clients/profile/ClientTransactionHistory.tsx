@@ -1,25 +1,122 @@
 
 import React from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { formatCurrency, formatDateTime } from "@/utils/formatters";
 import type { Transaction } from "@/types/index";
 
 interface ClientTransactionHistoryProps {
   transactions: Transaction[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalPages: number;
+    totalCount: number;
+  };
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  loading: boolean;
 }
 
-const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({ transactions }) => {
+const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({ 
+  transactions, 
+  pagination, 
+  onPageChange, 
+  onPageSizeChange,
+  loading
+}) => {
+  const renderPaginationItems = () => {
+    const items = [];
+    const maxVisible = 5;
+    const halfVisible = Math.floor(maxVisible / 2);
+    
+    let startPage = Math.max(1, pagination.page - halfVisible);
+    let endPage = Math.min(pagination.totalPages, startPage + maxVisible - 1);
+    
+    if (endPage - startPage + 1 < maxVisible) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+    
+    // First page
+    if (startPage > 1) {
+      items.push(
+        <PaginationItem key="first">
+          <PaginationLink onClick={() => onPageChange(1)}>1</PaginationLink>
+        </PaginationItem>
+      );
+      
+      if (startPage > 2) {
+        items.push(
+          <PaginationItem key="ellipsis-1">
+            <PaginationLink disabled>...</PaginationLink>
+          </PaginationItem>
+        );
+      }
+    }
+    
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(
+        <PaginationItem key={i}>
+          <PaginationLink 
+            isActive={pagination.page === i} 
+            onClick={() => onPageChange(i)}
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    // Last page
+    if (endPage < pagination.totalPages) {
+      if (endPage < pagination.totalPages - 1) {
+        items.push(
+          <PaginationItem key="ellipsis-2">
+            <PaginationLink disabled>...</PaginationLink>
+          </PaginationItem>
+        );
+      }
+      
+      items.push(
+        <PaginationItem key="last">
+          <PaginationLink onClick={() => onPageChange(pagination.totalPages)}>
+            {pagination.totalPages}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    return items;
+  };
+
   return (
     <Card className="theme-container-bg border">
       <CardHeader>
         <CardTitle>Transaction History</CardTitle>
-        <CardDescription>Recent purchases and payments</CardDescription>
+        <CardDescription>
+          Recent purchases and payments 
+          {pagination.totalCount > 0 && ` (${pagination.totalCount} total)`}
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        {transactions.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin h-6 w-6 border-t-2 border-b-2 border-theme-accent rounded-full"></div>
+          </div>
+        ) : transactions.length === 0 ? (
           <div className="text-center py-6 text-muted-foreground">
             No transactions found for this client.
           </div>
@@ -98,6 +195,49 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({ tra
           </Accordion>
         )}
       </CardContent>
+      {pagination.totalPages > 1 && (
+        <CardFooter className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0 pt-4">
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="pageSize">Show:</Label>
+            <Select
+              value={pagination.pageSize.toString()}
+              onValueChange={(value) => onPageSizeChange(parseInt(value))}
+            >
+              <SelectTrigger id="pageSize" className="w-[80px]">
+                <SelectValue placeholder={pagination.pageSize.toString()} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => onPageChange(Math.max(1, pagination.page - 1))}
+                  aria-disabled={pagination.page === 1}
+                  className={pagination.page === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              
+              {renderPaginationItems()}
+              
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => onPageChange(Math.min(pagination.totalPages, pagination.page + 1))}
+                  aria-disabled={pagination.page === pagination.totalPages}
+                  className={pagination.page === pagination.totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </CardFooter>
+      )}
     </Card>
   );
 };
