@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatCurrency } from "@/utils/formatters";
 import { Gift, Award, TrendingUp } from "lucide-react";
-import type { Customer } from "@/types/index";
+import type { Customer } from '@/types/database.types';
 
 export interface CustomerLoyaltyProps {
   customer: Customer;
@@ -27,7 +27,7 @@ export const CustomerLoyalty: React.FC<CustomerLoyaltyProps> = ({ customer, onUp
     const nextTier = customer.tier === 'Bronze' ? 'Silver' : 
                      customer.tier === 'Silver' ? 'Gold' : 'Platinum';
     
-    return Math.max(0, tierThresholds[nextTier] - customer.total_spend);
+    return Math.max(0, tierThresholds[nextTier] - (customer.total_spend || 0));
   };
   
   const getNextTier = () => {
@@ -49,11 +49,11 @@ export const CustomerLoyalty: React.FC<CustomerLoyaltyProps> = ({ customer, onUp
   const calculateProgress = () => {
     if (customer.tier === 'Platinum') return 100;
     
-    const currentTierThreshold = tierThresholds[customer.tier];
+    const currentTierThreshold = tierThresholds[customer.tier || 'Bronze'];
     const nextTierThreshold = tierThresholds[getNextTier()];
     
     const range = nextTierThreshold - currentTierThreshold;
-    const progress = customer.total_spend - currentTierThreshold;
+    const progress = (customer.total_spend || 0) - currentTierThreshold;
     
     return Math.min(100, Math.max(0, (progress / range) * 100));
   };
@@ -66,8 +66,8 @@ export const CustomerLoyalty: React.FC<CustomerLoyaltyProps> = ({ customer, onUp
             <Award className="mr-2 h-5 w-5 text-primary" />
             Loyalty Program
           </span>
-          <Badge variant="outline" className={getTierColor(customer.tier)}>
-            {customer.tier} Member
+          <Badge variant="outline" className={getTierColor(customer.tier || 'Bronze')}>
+            {customer.tier || 'Bronze'} Member
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -75,19 +75,19 @@ export const CustomerLoyalty: React.FC<CustomerLoyaltyProps> = ({ customer, onUp
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground">Loyalty Points</div>
-            <div className="text-2xl font-semibold">{customer.loyalty_points}</div>
+            <div className="text-2xl font-semibold">{customer.loyalty_points || 0}</div>
             <div className="text-xs text-muted-foreground">
-              Worth {formatCurrency(customer.loyalty_points * 0.10)}
+              Worth {formatCurrency((customer.loyalty_points || 0) * 0.10)}
             </div>
           </div>
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground">Total Spend</div>
-            <div className="text-2xl font-semibold">{formatCurrency(customer.total_spend)}</div>
+            <div className="text-2xl font-semibold">{formatCurrency(customer.total_spend || 0)}</div>
             <div className="text-xs text-muted-foreground">Lifetime value</div>
           </div>
         </div>
         
-        {customer.tier !== 'Platinum' && (
+        {(customer.tier !== 'Platinum') && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Progress to {getNextTier()}</span>
@@ -111,5 +111,3 @@ export const CustomerLoyalty: React.FC<CustomerLoyaltyProps> = ({ customer, onUp
     </Card>
   );
 };
-
-export default CustomerLoyalty;

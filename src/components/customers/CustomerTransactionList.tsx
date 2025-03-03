@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { fetchTransactionsByCustomer } from "@/api/transactionApi";
-import { Badge } from "@/components/ui/badge";
+import { CustomBadge } from "@/components/ui/custom-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatters";
@@ -98,9 +96,9 @@ export const CustomerTransactionList: React.FC<CustomerTransactionListProps> = (
               <span className="text-muted-foreground mr-2">
                 {format(new Date(transaction.created_at), 'MMM d, yyyy')}
               </span>
-              <Badge variant={getStatusVariant(transaction.status)}>
+              <CustomBadge variant={getStatusVariant(transaction.status)}>
                 {getStatusLabel(transaction.status)}
-              </Badge>
+              </CustomBadge>
             </CardTitle>
             <div className="text-lg font-semibold">
               {formatCurrency(transaction.total)}
@@ -130,5 +128,3 @@ export const CustomerTransactionList: React.FC<CustomerTransactionListProps> = (
     </div>
   );
 };
-
-export default CustomerTransactionList;

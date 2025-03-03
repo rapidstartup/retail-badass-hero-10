@@ -1,4 +1,3 @@
-
 export interface Category {
   id: string;
   name: string;
@@ -55,3 +54,5 @@ export interface VariantCombination {
   product_id: string;
   attributes: Record<string, string>;
 }
+
+export type { Customer, GiftCard } from './database.types';

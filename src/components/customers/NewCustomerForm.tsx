@@ -53,7 +53,7 @@ export const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
         notes: formData.notes,
         photo_url: "",
         stripe_customer_id: "",
-        gohighlevel_id: ""
+        // gohighlevel_id is removed as it's causing an error
       });
       
       toast.success('Customer created successfully');
@@ -158,5 +158,3 @@ export const NewCustomerForm: React.FC<NewCustomerFormProps> = ({
     </form>
   );
 };
-
-export default NewCustomerForm;

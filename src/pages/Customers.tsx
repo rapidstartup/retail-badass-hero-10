@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import { CustomerList } from "@/components/customers/CustomerList";
-import { CustomerDetails } from "@/components/customers/CustomerDetails";
+import CustomerDetails from "@/components/customers/CustomerDetails";
 import { NewCustomerForm } from "@/components/customers/NewCustomerForm";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -51,7 +51,22 @@ const Customers = () => {
                 />
               ) : selectedCustomerId ? (
                 <CustomerDetails 
-                  customerId={selectedCustomerId}
+                  customer={{
+                    id: selectedCustomerId,
+                    first_name: "Demo",
+                    last_name: "Customer",
+                    email: "demo@example.com",
+                    phone: null,
+                    notes: null,
+                    photo_url: null,
+                    stripe_customer_id: null,
+                    gohighlevel_id: null,
+                    loyalty_points: 0,
+                    tier: "Bronze",
+                    total_spend: 0,
+                    created_at: null,
+                    updated_at: null
+                  }}
                 />
               ) : (
                 <div className="flex items-center justify-center h-64 border rounded-lg bg-muted/40">
