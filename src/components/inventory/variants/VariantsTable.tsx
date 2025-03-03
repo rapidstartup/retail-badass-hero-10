@@ -17,8 +17,8 @@ import { ProductVariant } from "@/types";
 interface VariantsTableProps {
   variants: ProductVariant[];
   loading: boolean;
-  handleUpdateVariant: (id: string, updates: Partial<ProductVariant>) => Promise<void>;
-  handleDeleteVariant: (id: string) => Promise<void>;
+  handleUpdateVariant: (id: string, updates: Partial<ProductVariant>) => Promise<ProductVariant | null>;
+  handleDeleteVariant: (id: string) => Promise<boolean>;
 }
 
 const VariantsTable = ({

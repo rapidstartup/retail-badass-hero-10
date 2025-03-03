@@ -1,6 +1,3 @@
 
-// Main export file for the refactored useProductVariants hook
-import { useProductVariants } from './useProductVariants';
-
-export { useProductVariants };
+// Main export file for the product variants hooks
 export * from './types';
