@@ -99,7 +99,7 @@ const VariantsTable = ({
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleDeleteVariant(variant.id)}
-                          variant="destructive"
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                           Delete
                         </AlertDialogAction>
