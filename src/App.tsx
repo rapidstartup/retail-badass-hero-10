@@ -18,12 +18,11 @@ import Inventory from "@/pages/Inventory";
 import Settings from "@/pages/Settings";
 import Clients from "./pages/Clients";
 import ClientProfile from "./pages/ClientProfile";
-// Remove the import for NewCustomerForm since it doesn't exist
+import Transactions from "./pages/Transactions";
+import Reports from "./pages/Reports";
 
 // Temporary placeholder pages for components not yet implemented
 const Register = () => <div className="p-8 text-lg">Register Page</div>;
-const Transactions = () => <div className="p-8 text-lg">Transactions Page</div>;
-const Reports = () => <div className="p-8 text-lg">Reports Page</div>;
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth();
@@ -72,7 +71,6 @@ function App() {
             } />
             <Route path="clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
             <Route path="clients/:id" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
-            {/* Remove the route for NewCustomerForm since the component doesn't exist */}
             <Route path="transactions" element={
               <ProtectedRoute>
                 <Transactions />
