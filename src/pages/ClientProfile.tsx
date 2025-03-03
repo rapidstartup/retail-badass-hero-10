@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { formatCurrency, formatDateTime, formatPhoneNumber } from "@/utils/formatters";
+import { calculateTierFromSpend, calculateSpendToNextTier, TIER_THRESHOLDS } from "@/utils/tierCalculator";
 import { supabase } from "@/integrations/supabase/client";
 import type { Customer, Transaction } from "@/types/index";
 import StatCard from "@/components/StatCard";
@@ -50,7 +51,8 @@ const ClientProfile = () => {
     numTransactions: 0,
     totalSpent: 0,
     mostPurchased: "None",
-    currentTabBalance: 0
+    currentTabBalance: 0,
+    spendToNextTier: 0
   });
 
   const form = useForm<CustomerFormValues>({
@@ -112,14 +114,52 @@ const ClientProfile = () => {
           const avgTransaction = totalSpent / data.length;
           const openTabs = data.filter(tx => tx.status === 'open');
           const tabBalance = openTabs.reduce((sum, tx) => sum + (tx.total || 0), 0);
+          const spendToNextTier = calculateSpendToNextTier(totalSpent);
           
           setMetrics({
             avgTransaction,
             numTransactions: data.length,
             totalSpent,
             mostPurchased: "Coffee",
-            currentTabBalance: tabBalance
+            currentTabBalance: tabBalance,
+            spendToNextTier
           });
+          
+          const updateCustomerTier = async (totalSpent: number) => {
+            if (!customer || !id) return;
+            
+            const calculatedTier = calculateTierFromSpend(totalSpent);
+            
+            const tierRanking = { "Bronze": 1, "Silver": 2, "Gold": 3 };
+            const currentTierRank = tierRanking[customer.tier as keyof typeof tierRanking] || 1;
+            const calculatedTierRank = tierRanking[calculatedTier as keyof typeof tierRanking];
+            
+            if (calculatedTierRank > currentTierRank) {
+              try {
+                const { error } = await supabase
+                  .from('customers')
+                  .update({
+                    tier: calculatedTier,
+                    total_spend: totalSpent,
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq('id', id);
+                
+                if (error) throw error;
+                
+                setCustomer(prev => {
+                  if (!prev) return null;
+                  return { ...prev, tier: calculatedTier, total_spend: totalSpent };
+                });
+                
+                toast.success(`Customer tier upgraded to ${calculatedTier}!`);
+              } catch (error) {
+                console.error('Error updating customer tier:', error);
+              }
+            }
+          };
+          
+          updateCustomerTier(totalSpent);
         }
       } catch (error) {
         console.error('Error fetching transactions:', error);
@@ -160,6 +200,15 @@ const ClientProfile = () => {
     
     setIsSaving(true);
     try {
+      const totalSpend = customer?.total_spend || 0;
+      
+      const calculatedTier = calculateTierFromSpend(totalSpend);
+      
+      const tierRanking = { "Bronze": 1, "Silver": 2, "Gold": 3 };
+      const formTierRank = tierRanking[values.tier as keyof typeof tierRanking] || 1;
+      const calculatedTierRank = tierRanking[calculatedTier as keyof typeof tierRanking];
+      const finalTier = formTierRank >= calculatedTierRank ? values.tier : calculatedTier;
+      
       const { error } = await supabase
         .from('customers')
         .update({
@@ -168,7 +217,7 @@ const ClientProfile = () => {
           email: values.email,
           phone: values.phone,
           notes: values.notes,
-          tier: values.tier,
+          tier: finalTier,
           loyalty_points: values.loyalty_points,
           updated_at: new Date().toISOString(),
         })
@@ -178,7 +227,12 @@ const ClientProfile = () => {
       
       setCustomer(prev => {
         if (!prev) return null;
-        return { ...prev, ...values, updated_at: new Date().toISOString() };
+        return { 
+          ...prev, 
+          ...values, 
+          tier: finalTier,
+          updated_at: new Date().toISOString() 
+        };
       });
       
       setIsEditing(false);
@@ -523,6 +577,55 @@ const ClientProfile = () => {
                   </div>
                   <div className="text-sm text-muted-foreground text-center">
                     {customer.loyalty_points || 0} / 100 points to next reward
+                  </div>
+                  
+                  <div className="mt-6 pt-4 border-t">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-medium">Spending Tier Progress</span>
+                      <Badge variant={customer.tier === 'Gold' ? 'default' : customer.tier === 'Silver' ? 'outline' : 'secondary'}>
+                        {customer.tier || 'Bronze'}
+                      </Badge>
+                    </div>
+                    
+                    {customer.tier !== 'Gold' && (
+                      <>
+                        <div className="h-2.5 bg-secondary/20 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-theme-accent rounded-full" 
+                            style={{ 
+                              width: customer.tier === 'Silver' 
+                                ? `${Math.min(((customer.total_spend || 0) / TIER_THRESHOLDS.GOLD) * 100, 100)}%`
+                                : `${Math.min(((customer.total_spend || 0) / TIER_THRESHOLDS.SILVER) * 100, 100)}%`
+                            }}
+                          ></div>
+                        </div>
+                        <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                          <span>
+                            {formatCurrency(customer.total_spend || 0)}
+                          </span>
+                          <span>
+                            {customer.tier === 'Silver' 
+                              ? formatCurrency(TIER_THRESHOLDS.GOLD)
+                              : formatCurrency(TIER_THRESHOLDS.SILVER)
+                            }
+                          </span>
+                        </div>
+                        <div className="text-sm text-center mt-2">
+                          {metrics.spendToNextTier > 0 
+                            ? `${formatCurrency(metrics.spendToNextTier)} more to reach ${customer.tier === 'Silver' ? 'Gold' : 'Silver'}`
+                            : customer.tier === 'Gold' 
+                              ? 'Highest tier reached!' 
+                              : ''
+                          }
+                        </div>
+                      </>
+                    )}
+                    
+                    {customer.tier === 'Gold' && (
+                      <div className="text-sm text-center py-2 text-theme-accent">
+                        Highest tier reached!
+                      </div>
+                    )}
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-between border-t pt-4">
