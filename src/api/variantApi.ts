@@ -44,7 +44,7 @@ export const createVariant = async (variant: Omit<ProductVariant, 'id' | 'create
     // Make sure we're sending proper data to Supabase
     const variantData = {
       product_id: variant.product_id,
-      sku: variant.sku,
+      sku: variant.sku || null,
       price: variant.price || 0,
       stock_count: variant.stock_count || 0,
       color: variant.color || null,
@@ -82,9 +82,19 @@ export const updateVariant = async (id: string, variant: Partial<ProductVariant>
   try {
     console.log("Updating variant ID:", id, "with data:", variant);
     
+    // Create a clean version of the variant data
+    const variantData = { ...variant };
+    
+    // Handle null or empty string fields that should be null in the database
+    ['color', 'size', 'flavor', 'sku'].forEach(field => {
+      if (field in variantData && (variantData[field] === '' || variantData[field] === undefined)) {
+        variantData[field] = null;
+      }
+    });
+    
     const { data, error } = await supabase
       .from("product_variants")
-      .update(variant)
+      .update(variantData)
       .eq("id", id)
       .select()
       .single();

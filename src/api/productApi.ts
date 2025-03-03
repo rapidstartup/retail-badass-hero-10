@@ -64,9 +64,11 @@ export const createProduct = async (product: Omit<Product, 'id' | 'created_at' |
       throw new Error("Product name and price are required");
     }
 
-    // Remove empty category_id to prevent UUID format error
+    // Clean up the product data before sending to Supabase
     const productData = { ...product };
-    if (productData.category_id === "") {
+    
+    // Remove empty category_id to prevent UUID format error
+    if (!productData.category_id || productData.category_id === "") {
       delete productData.category_id;
     }
 
@@ -97,9 +99,17 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
   try {
     console.log("Updating product ID:", id, "with data:", product);
     
+    // Clean up the product data before sending to Supabase
+    const productData = { ...product };
+    
+    // Remove empty category_id to prevent UUID format error
+    if (productData.category_id === "") {
+      delete productData.category_id;
+    }
+    
     const { data, error } = await supabase
       .from("products")
-      .update(product)
+      .update(productData)
       .eq("id", id)
       .select()
       .single();
