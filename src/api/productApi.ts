@@ -3,6 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Product } from "./types/inventoryTypes";
 
+// Utility function to clean product data before sending to Supabase
+const cleanProductData = (product: Partial<Product>) => {
+  const cleanedData = { ...product };
+  
+  // Remove empty category_id to prevent UUID format error
+  if (!cleanedData.category_id || cleanedData.category_id === "") {
+    delete cleanedData.category_id;
+  }
+  
+  return cleanedData;
+};
+
 // Products API
 export const fetchProducts = async (): Promise<Product[]> => {
   try {
@@ -65,12 +77,7 @@ export const createProduct = async (product: Omit<Product, 'id' | 'created_at' |
     }
 
     // Clean up the product data before sending to Supabase
-    const productData = { ...product };
-    
-    // Remove empty category_id to prevent UUID format error
-    if (!productData.category_id || productData.category_id === "") {
-      delete productData.category_id;
-    }
+    const productData = cleanProductData(product);
 
     console.log("Creating product with data:", productData);
 
@@ -100,12 +107,7 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
     console.log("Updating product ID:", id, "with data:", product);
     
     // Clean up the product data before sending to Supabase
-    const productData = { ...product };
-    
-    // Remove empty category_id to prevent UUID format error
-    if (productData.category_id === "") {
-      delete productData.category_id;
-    }
+    const productData = cleanProductData(product);
     
     const { data, error } = await supabase
       .from("products")

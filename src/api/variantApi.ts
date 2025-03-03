@@ -3,6 +3,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ProductVariant } from "./types/inventoryTypes";
 
+// Utility function to clean variant data before sending to Supabase
+const cleanVariantData = (variant: Partial<ProductVariant>) => {
+  const cleanedData = { ...variant };
+  
+  // Handle null or empty string fields that should be null in the database
+  ['color', 'size', 'flavor', 'sku'].forEach(field => {
+    if (field in cleanedData && (cleanedData[field] === '' || cleanedData[field] === undefined)) {
+      cleanedData[field] = null;
+    }
+  });
+  
+  return cleanedData;
+};
+
 // Variants API
 export const fetchVariantsByProductId = async (productId: string): Promise<ProductVariant[]> => {
   try {
@@ -41,7 +55,7 @@ export const createVariant = async (variant: Omit<ProductVariant, 'id' | 'create
 
     console.log("Creating variant with data:", variant);
 
-    // Make sure we're sending proper data to Supabase
+    // Clean and prepare variant data
     const variantData = {
       product_id: variant.product_id,
       sku: variant.sku || null,
@@ -82,15 +96,8 @@ export const updateVariant = async (id: string, variant: Partial<ProductVariant>
   try {
     console.log("Updating variant ID:", id, "with data:", variant);
     
-    // Create a clean version of the variant data
-    const variantData = { ...variant };
-    
-    // Handle null or empty string fields that should be null in the database
-    ['color', 'size', 'flavor', 'sku'].forEach(field => {
-      if (field in variantData && (variantData[field] === '' || variantData[field] === undefined)) {
-        variantData[field] = null;
-      }
-    });
+    // Clean the variant data before sending to Supabase
+    const variantData = cleanVariantData(variant);
     
     const { data, error } = await supabase
       .from("product_variants")
