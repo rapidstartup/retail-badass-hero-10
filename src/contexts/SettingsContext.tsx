@@ -67,59 +67,73 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const saveSettings = async () => {
-    if (!settings.id) {
-      const { data, error } = await supabase
-        .from('settings')
-        .insert({
-          tax_rate: settings.taxRate,
-          tab_enabled: settings.tabEnabled,
-          tab_threshold: settings.tabThreshold,
-          tab_max_days: settings.tabMaxDays,
-          store_name: settings.storeName,
-          store_address: settings.storeAddress,
-          store_phone: settings.storePhone,
-          tier_threshold_silver: settings.tierThresholdSilver,
-          tier_threshold_gold: settings.tierThresholdGold,
-        })
-        .select('*')
-        .single();
-        
-      if (error) {
-        toast.error("Failed to save settings");
-        console.error("Error saving settings:", error);
-        return;
-      }
+    try {
+      // Save to localStorage for theme settings
+      localStorage.setItem("posSettings", JSON.stringify(settings));
       
-      setSettings(prev => ({ ...prev, id: data.id }));
-      toast.success("Settings saved");
-    } else {
-      const { error } = await supabase
-        .from('settings')
-        .update({
-          tax_rate: settings.taxRate,
-          tab_enabled: settings.tabEnabled,
-          tab_threshold: settings.tabThreshold,
-          tab_max_days: settings.tabMaxDays,
-          store_name: settings.storeName,
-          store_address: settings.storeAddress,
-          store_phone: settings.storePhone,
-          tier_threshold_silver: settings.tierThresholdSilver,
-          tier_threshold_gold: settings.tierThresholdGold,
-        })
-        .eq('id', settings.id);
+      if (!settings.id) {
+        const { data, error } = await supabase
+          .from('settings')
+          .insert({
+            tax_rate: settings.taxRate,
+            tab_enabled: settings.tabEnabled,
+            tab_threshold: settings.tabThreshold,
+            tab_max_days: settings.tabMaxDays,
+            store_name: settings.storeName,
+            store_address: settings.storeAddress,
+            store_phone: settings.storePhone,
+            tier_threshold_silver: settings.tierThresholdSilver,
+            tier_threshold_gold: settings.tierThresholdGold,
+          })
+          .select('*')
+          .single();
+          
+        if (error) {
+          toast.error("Failed to save settings");
+          console.error("Error saving settings:", error);
+          return;
+        }
         
-      if (error) {
-        toast.error("Failed to save settings");
-        console.error("Error updating settings:", error);
-        return;
+        setSettings(prev => ({ ...prev, id: data.id }));
+        toast.success("Settings saved");
+      } else {
+        const { error } = await supabase
+          .from('settings')
+          .update({
+            tax_rate: settings.taxRate,
+            tab_enabled: settings.tabEnabled,
+            tab_threshold: settings.tabThreshold,
+            tab_max_days: settings.tabMaxDays,
+            store_name: settings.storeName,
+            store_address: settings.storeAddress,
+            store_phone: settings.storePhone,
+            tier_threshold_silver: settings.tierThresholdSilver,
+            tier_threshold_gold: settings.tierThresholdGold,
+          })
+          .eq('id', settings.id);
+          
+        if (error) {
+          toast.error("Failed to save settings");
+          console.error("Error updating settings:", error);
+          return;
+        }
+        
+        toast.success("Settings saved");
       }
-      
-      toast.success("Settings saved");
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+      console.error("Unexpected error saving settings:", error);
     }
   };
 
   const updateSettings = async (newSettings: Partial<POSSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
+    
+    // Save the updated settings to localStorage for immediate theme changes
+    localStorage.setItem("posSettings", JSON.stringify({
+      ...settings,
+      ...newSettings
+    }));
     
     if (saveTimeout) {
       clearTimeout(saveTimeout);

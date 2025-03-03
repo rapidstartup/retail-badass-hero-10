@@ -60,7 +60,17 @@ serve(async (req) => {
       if (id) {
         result = await supabase
           .from('settings')
-          .update(requestData)
+          .update({
+            tax_rate: requestData.taxRate,
+            tab_enabled: requestData.tabEnabled,
+            tab_threshold: requestData.tabThreshold,
+            tab_max_days: requestData.tabMaxDays,
+            store_name: requestData.storeName,
+            store_address: requestData.storeAddress,
+            store_phone: requestData.storePhone,
+            tier_threshold_silver: requestData.tierThresholdSilver,
+            tier_threshold_gold: requestData.tierThresholdGold
+          })
           .eq('id', id)
           .select()
           .single()
@@ -75,7 +85,17 @@ serve(async (req) => {
           // Update the first settings record if it exists
           result = await supabase
             .from('settings')
-            .update(requestData)
+            .update({
+              tax_rate: requestData.taxRate,
+              tab_enabled: requestData.tabEnabled,
+              tab_threshold: requestData.tabThreshold,
+              tab_max_days: requestData.tabMaxDays,
+              store_name: requestData.storeName,
+              store_address: requestData.storeAddress,
+              store_phone: requestData.storePhone,
+              tier_threshold_silver: requestData.tierThresholdSilver,
+              tier_threshold_gold: requestData.tierThresholdGold
+            })
             .eq('id', existingSettings[0].id)
             .select()
             .single()
@@ -83,7 +103,17 @@ serve(async (req) => {
           // Create new settings record if none exists
           result = await supabase
             .from('settings')
-            .insert(requestData)
+            .insert({
+              tax_rate: requestData.taxRate,
+              tab_enabled: requestData.tabEnabled,
+              tab_threshold: requestData.tabThreshold,
+              tab_max_days: requestData.tabMaxDays,
+              store_name: requestData.storeName,
+              store_address: requestData.storeAddress,
+              store_phone: requestData.storePhone,
+              tier_threshold_silver: requestData.tierThresholdSilver,
+              tier_threshold_gold: requestData.tierThresholdGold
+            })
             .select()
             .single()
         }

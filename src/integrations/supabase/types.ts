@@ -261,6 +261,8 @@ export type Database = {
           tab_max_days: number | null
           tab_threshold: number | null
           tax_rate: number | null
+          tier_threshold_gold: number | null
+          tier_threshold_silver: number | null
           updated_at: string | null
         }
         Insert: {
@@ -273,6 +275,8 @@ export type Database = {
           tab_max_days?: number | null
           tab_threshold?: number | null
           tax_rate?: number | null
+          tier_threshold_gold?: number | null
+          tier_threshold_silver?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -285,6 +289,8 @@ export type Database = {
           tab_max_days?: number | null
           tab_threshold?: number | null
           tax_rate?: number | null
+          tier_threshold_gold?: number | null
+          tier_threshold_silver?: number | null
           updated_at?: string | null
         }
         Relationships: []
