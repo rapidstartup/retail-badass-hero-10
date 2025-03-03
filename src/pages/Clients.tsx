@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, ArrowLeft } from "lucide-react";
@@ -74,7 +73,7 @@ const Clients = () => {
   }, []);
 
   return (
-    <div className="container mx-auto p-4 space-y-6 theme-bg">
+    <div className="container mx-auto p-4 space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <Button 
           onClick={() => navigate('/pos')} 
