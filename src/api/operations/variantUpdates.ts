@@ -10,7 +10,7 @@ export const updateVariant = async (id: string, variant: VariantUpdate): Promise
     console.log("Updating variant ID:", id, "with data:", variant);
     
     // Clean the variant data before sending to Supabase
-    const variantData = cleanVariantData(variant);
+    const variantData = cleanVariantData(variant as any);
     
     // If we're updating a variant, we need to ensure we're not sending empty data
     if (Object.keys(variantData).length === 0) {

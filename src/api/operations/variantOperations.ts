@@ -18,8 +18,14 @@ export const fetchVariantsByProductId = async (productId: string): Promise<Produ
       throw error;
     }
     
-    console.log("Fetched variants:", data);
-    return data || [];
+    // Convert variant_attributes from Json to Record<string, any>
+    const variants = (data || []).map(item => ({
+      ...item,
+      variant_attributes: item.variant_attributes || {}
+    })) as ProductVariant[];
+    
+    console.log("Fetched variants:", variants);
+    return variants;
   } catch (error) {
     console.error("Error fetching variants:", error);
     toast.error("Failed to load product variants");
@@ -48,9 +54,15 @@ export const createVariant = async (variant: VariantInsert): Promise<ProductVari
       throw error;
     }
     
-    console.log("Variant created successfully:", data);
+    // Convert variant_attributes from Json to Record<string, any>
+    const newVariant = {
+      ...data,
+      variant_attributes: data.variant_attributes || {}
+    } as ProductVariant;
+    
+    console.log("Variant created successfully:", newVariant);
     toast.success("Product variant created successfully");
-    return data;
+    return newVariant;
   } catch (error) {
     console.error("Error creating variant:", error);
     toast.error(`Failed to create variant: ${error instanceof Error ? error.message : "Unknown error"}`);

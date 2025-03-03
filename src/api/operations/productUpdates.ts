@@ -10,7 +10,7 @@ export const updateProduct = async (id: string, updates: ProductUpdate): Promise
     console.log("Updating product ID:", id, "with data:", updates);
     
     // Clean up the product data before sending to Supabase
-    const productData = cleanProductData(updates);
+    const productData = cleanProductData(updates as any);
     
     // If we're updating a product, we need to ensure we're not sending empty required fields
     if (Object.keys(productData).length === 0) {
