@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Routes,
@@ -16,10 +15,12 @@ import Login from "@/pages/Login";
 import POS from "@/pages/POS";
 import Inventory from "@/pages/Inventory";
 import Settings from "@/pages/Settings";
+import Clients from "./pages/Clients";
+import ClientProfile from "./pages/ClientProfile";
+import NewCustomerForm from "./pages/NewCustomerForm";
 
 // Temporary placeholder pages for components not yet implemented
 const Register = () => <div className="p-8 text-lg">Register Page</div>;
-const Clients = () => <div className="p-8 text-lg">Clients Page</div>;
 const Transactions = () => <div className="p-8 text-lg">Transactions Page</div>;
 const Reports = () => <div className="p-8 text-lg">Reports Page</div>;
 
@@ -68,11 +69,9 @@ function App() {
                 <POS />
               </ProtectedRoute>
             } />
-            <Route path="clients" element={
-              <ProtectedRoute>
-                <Clients />
-              </ProtectedRoute>
-            } />
+            <Route path="clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+            <Route path="clients/:id" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
+            <Route path="clients/new" element={<ProtectedRoute><NewCustomerForm /></ProtectedRoute>} />
             <Route path="transactions" element={
               <ProtectedRoute>
                 <Transactions />
