@@ -11,6 +11,7 @@ import type { Customer } from "@/types/index";
 import ClientSearchBar from "@/components/clients/ClientSearchBar";
 import ClientStats from "@/components/clients/ClientStats";
 import ClientTable from "@/components/clients/ClientTable";
+import NewClientModal from "@/components/clients/NewClientModal";
 
 const Clients = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,6 +20,7 @@ const Clients = () => {
   const [totalClients, setTotalClients] = useState(0);
   const [topSpender, setTopSpender] = useState(0);
   const [averageSpend, setAverageSpend] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const searchCustomers = async () => {
@@ -59,7 +61,12 @@ const Clients = () => {
   };
 
   const handleCreateNewCustomer = () => {
-    navigate('/clients/new');
+    setIsModalOpen(true);
+  };
+
+  const handleClientAdded = (newClient: Customer) => {
+    setCustomers(prev => [newClient, ...prev]);
+    searchCustomers(); // Refresh the list to update stats
   };
 
   useEffect(() => {
@@ -128,6 +135,12 @@ const Clients = () => {
           />
         </CardContent>
       </Card>
+      
+      <NewClientModal 
+        open={isModalOpen} 
+        onOpenChange={setIsModalOpen} 
+        onClientAdded={handleClientAdded}
+      />
     </div>
   );
 };

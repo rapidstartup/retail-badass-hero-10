@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { User, X, Search, Plus } from "lucide-react";
 import {
@@ -10,19 +10,13 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-
-// Mock customer data
-const mockCustomers = [
-  { id: "1", name: "John Doe", email: "john@example.com", phone: "555-1234", total_spend: 842.50 },
-  { id: "2", name: "Jane Smith", email: "jane@example.com", phone: "555-5678", total_spend: 1245.75 },
-  { id: "3", name: "Bob Johnson", email: "bob@example.com", phone: "555-9012", total_spend: 563.25 },
-  { id: "4", name: "Alice Brown", email: "alice@example.com", phone: "555-3456", total_spend: 1890.00 },
-  { id: "5", name: "Charlie Wilson", email: "charlie@example.com", phone: "555-7890", total_spend: 420.50 },
-];
+import { supabase } from "@/integrations/supabase/client";
+import type { Customer } from "@/types/index";
+import NewClientModal from "@/components/clients/NewClientModal";
 
 interface POSCustomerSearchProps {
-  selectedCustomer: any | null;
-  setSelectedCustomer: (customer: any | null) => void;
+  selectedCustomer: Customer | null;
+  setSelectedCustomer: (customer: Customer | null) => void;
 }
 
 const POSCustomerSearch: React.FC<POSCustomerSearchProps> = ({ 
@@ -30,16 +24,49 @@ const POSCustomerSearch: React.FC<POSCustomerSearchProps> = ({
   setSelectedCustomer 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(false);
   
-  const filteredCustomers = mockCustomers.filter(customer => 
-    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone.includes(searchTerm)
-  );
+  const fetchCustomers = async (search = "") => {
+    setLoading(true);
+    try {
+      let query = supabase.from('customers').select('*');
+      
+      if (search) {
+        query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
+      }
+      
+      const { data, error } = await query.order('first_name', { ascending: true }).limit(10);
+      
+      if (error) throw error;
+      setCustomers(data || []);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   
-  const handleSelectCustomer = (customer: any) => {
+  useEffect(() => {
+    if (isOpen) {
+      fetchCustomers(searchTerm);
+    }
+  }, [isOpen, searchTerm]);
+  
+  const handleSelectCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
+    setIsOpen(false);
+  };
+  
+  const handleNewCustomer = () => {
+    setIsModalOpen(true);
+  };
+  
+  const handleClientAdded = (newClient: Customer) => {
+    setCustomers(prev => [newClient, ...prev]);
+    setSelectedCustomer(newClient);
     setIsOpen(false);
   };
 
@@ -48,7 +75,7 @@ const POSCustomerSearch: React.FC<POSCustomerSearchProps> = ({
       {selectedCustomer ? (
         <div className="flex items-center gap-2 bg-primary/10 px-3 py-2 rounded-md">
           <User size={16} className="text-primary" />
-          <span className="font-medium">{selectedCustomer.name}</span>
+          <span className="font-medium">{selectedCustomer.first_name} {selectedCustomer.last_name}</span>
           <Button
             variant="ghost"
             size="icon"
@@ -66,7 +93,7 @@ const POSCustomerSearch: React.FC<POSCustomerSearchProps> = ({
               <span>Customer</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[400px] sm:max-w-md">
+          <SheetContent side="right" className="w-[400px] sm:max-w-md theme-container-bg">
             <SheetHeader>
               <SheetTitle>Select Customer</SheetTitle>
             </SheetHeader>
@@ -77,31 +104,39 @@ const POSCustomerSearch: React.FC<POSCustomerSearchProps> = ({
                 placeholder="Search by name, email, or phone"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 theme-section-bg border"
               />
             </div>
             
             <div className="mt-4 space-y-3">
-              <Button variant="outline" className="w-full justify-start gap-2">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start gap-2"
+                onClick={handleNewCustomer}
+              >
                 <Plus size={16} />
                 <span>Add New Customer</span>
               </Button>
               
               <div className="h-[1px] bg-muted my-4" />
               
-              {filteredCustomers.length === 0 ? (
+              {loading ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  Loading...
+                </div>
+              ) : customers.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">
                   No customers found
                 </div>
               ) : (
-                filteredCustomers.map(customer => (
+                customers.map(customer => (
                   <div
                     key={customer.id}
                     className="flex items-center justify-between p-3 rounded-md border hover:bg-muted/50 cursor-pointer"
                     onClick={() => handleSelectCustomer(customer)}
                   >
                     <div>
-                      <div className="font-medium">{customer.name}</div>
+                      <div className="font-medium">{customer.first_name} {customer.last_name}</div>
                       <div className="text-sm text-muted-foreground">{customer.email}</div>
                       <div className="text-sm text-muted-foreground">{customer.phone}</div>
                     </div>
@@ -115,6 +150,12 @@ const POSCustomerSearch: React.FC<POSCustomerSearchProps> = ({
           </SheetContent>
         </Sheet>
       )}
+      
+      <NewClientModal 
+        open={isModalOpen} 
+        onOpenChange={setIsModalOpen}
+        onClientAdded={handleClientAdded}
+      />
     </div>
   );
 };
