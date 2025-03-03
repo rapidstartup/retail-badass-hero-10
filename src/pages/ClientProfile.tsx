@@ -36,7 +36,6 @@ const ClientProfile = () => {
   const navigate = useNavigate();
   const [timeframe, setTimeframe] = useState<string>("30days");
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   
   const { 
     customer, 
@@ -46,7 +45,8 @@ const ClientProfile = () => {
     updateCustomer,
     pagination,
     changePage,
-    changePageSize 
+    changePageSize,
+    isSaving
   } = useClientProfile(id);
 
   const form = useForm<CustomerFormValues>({
@@ -101,12 +101,10 @@ const ClientProfile = () => {
   };
 
   const onSubmit = async (values: CustomerFormValues) => {
-    setIsSaving(true);
     const success = await updateCustomer(values);
     if (success) {
       setIsEditing(false);
     }
-    setIsSaving(false);
   };
 
   if (loading && !customer) {

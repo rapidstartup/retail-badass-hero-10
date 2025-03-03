@@ -8,8 +8,17 @@ import { useQuery } from "@tanstack/react-query";
 import TransactionList from "@/components/transactions/TransactionList";
 import TransactionFilters from "@/components/transactions/TransactionFilters";
 import StatCard from "@/components/StatCard";
-import { Dollar, ReceiptText, ShoppingBag, Users } from "lucide-react";
+import { BanknoteIcon, ReceiptIcon, ShoppingBag, Users } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
+
+interface TransactionFiltersProps {
+  filters: any;
+  setFilters: (filters: any) => void;
+}
+
+interface TransactionListProps {
+  status: string;
+}
 
 const fetchTransactionStats = async () => {
   const { data: transactions, error } = await supabase
@@ -51,6 +60,7 @@ const Transactions = () => {
     from: new Date(new Date().setDate(new Date().getDate() - 30)),
     to: new Date()
   });
+  const [filters, setFilters] = useState({});
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["transaction-stats"],
@@ -67,12 +77,12 @@ const Transactions = () => {
         <StatCard
           title="Total Sales"
           value={statsLoading ? "Loading..." : formatCurrency(stats?.totalSales || 0)}
-          icon={<Dollar />}
+          icon={<BanknoteIcon />}
         />
         <StatCard
           title="Completed Transactions"
           value={statsLoading ? "Loading..." : stats?.completedCount || 0}
-          icon={<ReceiptText />}
+          icon={<ReceiptIcon />}
         />
         <StatCard
           title="Open Tabs"
@@ -91,7 +101,7 @@ const Transactions = () => {
           <CardTitle>Transaction List</CardTitle>
         </CardHeader>
         <CardContent>
-          <TransactionFilters />
+          <TransactionFilters filters={filters} setFilters={setFilters} />
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
             <TabsList className="grid w-full grid-cols-4 lg:w-auto theme-section-bg mb-4">
@@ -102,19 +112,19 @@ const Transactions = () => {
             </TabsList>
             
             <TabsContent value="all">
-              <TransactionList status="all" dateRange={dateRange} />
+              <TransactionList status="all" />
             </TabsContent>
             
             <TabsContent value="completed">
-              <TransactionList status="completed" dateRange={dateRange} />
+              <TransactionList status="completed" />
             </TabsContent>
             
             <TabsContent value="open">
-              <TransactionList status="open" dateRange={dateRange} />
+              <TransactionList status="open" />
             </TabsContent>
             
             <TabsContent value="refunded">
-              <TransactionList status="refunded" dateRange={dateRange} />
+              <TransactionList status="refunded" />
             </TabsContent>
           </Tabs>
         </CardContent>

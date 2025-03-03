@@ -10,16 +10,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { DateRange } from "react-day-picker";
 
 interface DateRangePickerProps {
   dateRange: {
-    from: Date | undefined;
-    to: Date | undefined;
+    from: Date;
+    to: Date;
   };
   setDateRange: React.Dispatch<
     React.SetStateAction<{
-      from: Date | undefined;
-      to: Date | undefined;
+      from: Date;
+      to: Date;
     }>
   >;
   className?: string;
@@ -66,9 +67,14 @@ export function DatePickerWithRange({
               from: dateRange?.from,
               to: dateRange?.to,
             }}
-            onSelect={(selectedDateRange) => 
-              setDateRange(selectedDateRange || { from: undefined, to: undefined })
-            }
+            onSelect={(selectedDateRange) => {
+              if (selectedDateRange?.from) {
+                setDateRange({
+                  from: selectedDateRange.from,
+                  to: selectedDateRange.to || selectedDateRange.from
+                });
+              }
+            }}
             numberOfMonths={2}
           />
         </PopoverContent>
