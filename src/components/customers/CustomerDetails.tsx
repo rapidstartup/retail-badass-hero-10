@@ -1,159 +1,112 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { CustomerTransactionList } from './CustomerTransactionList';
-import CustomerGiftCards from './CustomerGiftCards';
-import { CustomerLoyalty } from './CustomerLoyalty';
 import { CustomerEditForm } from './CustomerEditForm';
-import { Mail, Phone, Edit, FileText, CreditCard, Gift, ShoppingBag } from "lucide-react";
-import type { Customer } from '@/types/database.types';
+import { CustomerTransactionList } from './CustomerTransactionList';
+import { CustomerCards } from './CustomerCards';
+import { CustomerLoyalty } from './CustomerLoyalty';
+import { CustomerGiftCards } from './CustomerGiftCards';
+import { Customer } from '@/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export interface CustomerDetailsProps {
   customer: Customer;
-  onUpdate: () => Promise<void>;
+  onUpdate?: (customer: Customer) => Promise<void>;
 }
 
 const CustomerDetails: React.FC<CustomerDetailsProps> = ({ customer, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [currentCustomer, setCurrentCustomer] = useState<Customer>(customer);
   
-  const handleSaveEdit = async (data: any) => {
-    // Handle saving customer edits
-    setIsEditing(false);
-    if (onUpdate) {
-      await onUpdate();
+  const handleSubmit = async (data: Partial<Customer>) => {
+    try {
+      const updatedCustomer = { ...currentCustomer, ...data };
+      if (onUpdate) {
+        await onUpdate(updatedCustomer as Customer);
+      }
+      setCurrentCustomer(updatedCustomer as Customer);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error updating customer:", error);
     }
   };
   
-  if (isEditing) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <CustomerEditForm 
-            customer={customer}
-            onSubmit={handleSaveEdit}
-          />
-          <Button 
-            variant="outline" 
-            className="mt-4" 
-            onClick={() => setIsEditing(false)}
-          >
-            Cancel
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-  
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {customer.first_name} {customer.last_name}
-          </h1>
-          {customer.email && (
-            <div className="flex items-center mt-1 text-muted-foreground">
-              <Mail className="mr-2 h-4 w-4" />
-              <span>{customer.email}</span>
+      {isEditing ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit Customer</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CustomerEditForm 
+              customer={currentCustomer} 
+              onSubmit={handleSubmit} 
+              onCancel={() => setIsEditing(false)}
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Customer Information</CardTitle>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsEditing(true)}
+            >
+              Edit
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">Name</h3>
+                  <p>{currentCustomer.first_name} {currentCustomer.last_name}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">Email</h3>
+                  <p>{currentCustomer.email || 'N/A'}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">Phone</h3>
+                  <p>{currentCustomer.phone || 'N/A'}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">Tier</h3>
+                  <p>{currentCustomer.tier || 'Bronze'}</p>
+                </div>
+              </div>
+              
+              {currentCustomer.notes && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">Notes</h3>
+                  <p>{currentCustomer.notes}</p>
+                </div>
+              )}
             </div>
-          )}
-          {customer.phone && (
-            <div className="flex items-center mt-1 text-muted-foreground">
-              <Phone className="mr-2 h-4 w-4" />
-              <span>{customer.phone}</span>
-            </div>
-          )}
-        </div>
-        <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-          <Edit className="mr-2 h-4 w-4" />
-          Edit
-        </Button>
-      </div>
-      
-      <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="profile">
-            <FileText className="mr-2 h-4 w-4" />
-            Profile
-          </TabsTrigger>
-          <TabsTrigger value="transactions">
-            <ShoppingBag className="mr-2 h-4 w-4" />
-            Transactions
-          </TabsTrigger>
-          <TabsTrigger value="cards">
-            <CreditCard className="mr-2 h-4 w-4" />
-            Cards
-          </TabsTrigger>
-          <TabsTrigger value="gift-cards">
-            <Gift className="mr-2 h-4 w-4" />
-            Gift Cards
-          </TabsTrigger>
+          </CardContent>
+        </Card>
+      )}
+
+      <Tabs defaultValue="transactions">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="loyalty">Loyalty</TabsTrigger>
+          <TabsTrigger value="giftcards">Gift Cards</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="profile" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <CustomerLoyalty 
-              customer={customer}
-              onUpdate={onUpdate}
-            />
-            
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-medium mb-2">Customer Information</h3>
-                
-                <div className="space-y-3">
-                  {customer.notes && (
-                    <div className="space-y-1">
-                      <div className="text-sm font-medium">Notes</div>
-                      <div className="text-sm text-muted-foreground">
-                        {customer.notes}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="space-y-1">
-                    <div className="text-sm font-medium">Customer Since</div>
-                    <div className="text-sm text-muted-foreground">
-                      {customer.created_at ? new Date(customer.created_at).toLocaleDateString() : 'Unknown'}
-                    </div>
-                  </div>
-                  
-                  {customer.stripe_customer_id && (
-                    <div className="space-y-1">
-                      <div className="text-sm font-medium">Stripe Customer ID</div>
-                      <div className="text-sm font-mono text-muted-foreground">
-                        {customer.stripe_customer_id}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-        
         <TabsContent value="transactions">
-          <CustomerTransactionList customerId={customer.id} />
+          <CustomerTransactionList customerId={currentCustomer.id} />
         </TabsContent>
         
-        <TabsContent value="cards">
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center p-8 text-muted-foreground">
-                <CreditCard className="h-12 w-12 mx-auto mb-3 opacity-25" />
-                <p>No payment cards linked to this customer.</p>
-                <Button className="mt-4" variant="outline" size="sm">
-                  Add Payment Card
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="loyalty">
+          <CustomerLoyalty customer={currentCustomer} />
         </TabsContent>
         
-        <TabsContent value="gift-cards">
-          <CustomerGiftCards customerId={customer.id} />
+        <TabsContent value="giftcards">
+          <CustomerGiftCards customerId={currentCustomer.id} />
         </TabsContent>
       </Tabs>
     </div>
