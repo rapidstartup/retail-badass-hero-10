@@ -1,49 +1,18 @@
-import { useState, useEffect } from "react";
+
 import { toast } from "sonner";
-import { StaffMember, StaffFormState } from "@/types/staff";
+import { StaffMember } from "@/types/staff";
 import { supabase } from "@/integrations/supabase/client";
 
-export function useStaffManagement() {
-  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
-  
-  // Form state
-  const [isEditing, setIsEditing] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [role, setRole] = useState("staff");
-  const [password, setPassword] = useState("");
-
-  useEffect(() => {
-    fetchStaffMembers();
-  }, []);
-
-  const fetchStaffMembers = async () => {
-    setLoading(true);
-    try {
-      console.log("Fetching staff members from Supabase...");
-      const { data, error } = await supabase
-        .from('staff')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        throw error;
-      }
-      
-      console.log("Staff members fetched:", data);
-      setStaffMembers(data || []);
-    } catch (error: any) {
-      console.error("Error fetching staff:", error);
-      toast.error(`Error fetching staff: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddStaff = async (e: React.FormEvent) => {
+export function useStaffOperations(fetchStaffMembers: () => Promise<void>) {
+  const handleAddStaff = async (
+    e: React.FormEvent, 
+    email: string, 
+    firstName: string, 
+    lastName: string, 
+    role: string, 
+    password: string, 
+    resetForm: () => void
+  ) => {
     e.preventDefault();
     
     try {
@@ -98,7 +67,15 @@ export function useStaffManagement() {
     }
   };
 
-  const handleEditStaff = async (e: React.FormEvent) => {
+  const handleEditStaff = async (
+    e: React.FormEvent, 
+    isEditing: string | null,
+    email: string, 
+    firstName: string, 
+    lastName: string, 
+    role: string,
+    resetForm: () => void
+  ) => {
     e.preventDefault();
     if (!isEditing) return;
     
@@ -173,78 +150,9 @@ export function useStaffManagement() {
     }
   };
 
-  const startEdit = (staff: StaffMember) => {
-    setIsEditing(staff.id);
-    setEmail(staff.email);
-    setFirstName(staff.first_name);
-    setLastName(staff.last_name);
-    setRole(staff.role);
-    setPassword(""); // Don't set password when editing
-  };
-
-  const resetForm = () => {
-    setIsEditing(null);
-    setEmail("");
-    setFirstName("");
-    setLastName("");
-    setRole("staff");
-    setPassword("");
-  };
-
-  const syncWithGoHighLevel = async (goHighLevelApiKey: string | undefined) => {
-    setSyncing(true);
-    try {
-      console.log("Syncing with GoHighLevel...");
-      
-      if (!goHighLevelApiKey) {
-        throw new Error("GoHighLevel API key is not configured");
-      }
-      
-      // Call Supabase Edge Function to handle GoHighLevel sync
-      const { data, error } = await supabase.functions.invoke('staff', {
-        body: { 
-          apiKey: goHighLevelApiKey,
-          action: 'sync-gohighlevel'
-        },
-        method: 'POST'
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      console.log("Staff synchronized with GoHighLevel successfully:", data);
-      toast.success("Staff synchronized with GoHighLevel successfully");
-      fetchStaffMembers();
-    } catch (error: any) {
-      console.error("Error syncing with GoHighLevel:", error);
-      toast.error(`Error syncing with GoHighLevel: ${error.message}`);
-    } finally {
-      setSyncing(false);
-    }
-  };
-
   return {
-    staffMembers,
-    loading,
-    syncing,
-    isEditing,
-    email,
-    firstName,
-    lastName,
-    role,
-    password,
-    setEmail,
-    setFirstName,
-    setLastName,
-    setRole,
-    setPassword,
     handleAddStaff,
     handleEditStaff,
-    handleDeleteStaff,
-    startEdit,
-    resetForm,
-    syncWithGoHighLevel,
-    fetchStaffMembers
+    handleDeleteStaff
   };
 }

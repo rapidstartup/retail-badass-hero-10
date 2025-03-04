@@ -5,7 +5,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import StaffList from "./staff/StaffList";
 import StaffHeader from "./staff/StaffHeader";
 import StaffFormDialog from "./staff/StaffFormDialog";
-import { useStaffManagement } from "@/hooks/useStaffManagement";
+import { useStaffManagement } from "@/hooks/staff";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 
