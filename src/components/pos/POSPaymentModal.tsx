@@ -5,6 +5,7 @@ import { TransactionSummary } from "./TransactionSummary";
 import { PaymentMethodTabs } from "./payment/PaymentMethodTabs";
 import { PaymentActions } from "./payment/PaymentActions";
 import { usePaymentLogic } from "./payment/usePaymentLogic";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface POSPaymentModalProps {
   open: boolean;
@@ -49,7 +50,7 @@ export function POSPaymentModal({
     processing,
     handleNumpadInput,
     handleGiftCardPaymentComplete,
-    processPayment,
+    processPayment: processPaymentBase,
     initializePayment
   } = usePaymentLogic(onSuccess, onClose);
 
@@ -59,6 +60,40 @@ export function POSPaymentModal({
       initializePayment(total);
     }
   }, [open, total]);
+
+  // Enhanced payment processing with Supabase integration
+  const processPayment = async () => {
+    try {
+      // First, save the transaction to Supabase
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert({
+          customer_id: customer?.id || null,
+          items: cartItems,
+          subtotal: subtotal,
+          tax: tax,
+          total: total,
+          payment_method: paymentMethod,
+          status: paymentMethod === 'tab' ? 'open' : 'completed',
+          completed_at: paymentMethod === 'tab' ? null : new Date().toISOString()
+        })
+        .select();
+
+      if (error) {
+        console.error('Error saving transaction:', error);
+        // Continue with payment processing but log the error
+      } else {
+        console.log('Transaction saved successfully:', data);
+      }
+
+      // Continue with the base payment processing
+      await processPaymentBase();
+    } catch (error) {
+      console.error('Transaction processing error:', error);
+      // Let the base payment processor handle errors
+      await processPaymentBase();
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
