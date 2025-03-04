@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -7,12 +7,21 @@ import { Switch } from "@/components/ui/switch";
 import POSNumpad from "@/components/pos/POSNumpad";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface TabSettingsProps {
   tabEnabled: boolean;
   setTabEnabled: (enabled: boolean) => void;
   tabThreshold: number;
   setTabThreshold: (threshold: number) => void;
+  tabMaxDays: number;
+  setTabMaxDays: (days: number) => void;
+  tabAutoClosePolicy: "manual" | "daily" | "weekly" | "threshold";
+  setTabAutoClosePolicy: (policy: "manual" | "daily" | "weekly" | "threshold") => void;
+  tabCustomerEligibility: "all" | "registered" | "approved";
+  setTabCustomerEligibility: (eligibility: "all" | "registered" | "approved") => void;
+  tabNotifications: boolean;
+  setTabNotifications: (enabled: boolean) => void;
 }
 
 const TabSettings: React.FC<TabSettingsProps> = ({
@@ -20,12 +29,16 @@ const TabSettings: React.FC<TabSettingsProps> = ({
   setTabEnabled,
   tabThreshold,
   setTabThreshold,
+  tabMaxDays,
+  setTabMaxDays,
+  tabAutoClosePolicy,
+  setTabAutoClosePolicy,
+  tabCustomerEligibility,
+  setTabCustomerEligibility,
+  tabNotifications,
+  setTabNotifications
 }) => {
   const [inputMode, setInputMode] = useState<"standard" | "numpad">("standard");
-  const [maxTabDays, setMaxTabDays] = useState<number>(7);
-  const [tabNotifications, setTabNotifications] = useState<boolean>(true);
-  const [autoClosePolicy, setAutoClosePolicy] = useState<string>("manual");
-  const [customerRestriction, setCustomerRestriction] = useState<string>("all");
   
   const handleThresholdChange = (value: string) => {
     if (value === "") {
@@ -118,8 +131,8 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                 <Input
                   id="maxTabDays"
                   type="number"
-                  value={maxTabDays}
-                  onChange={(e) => setMaxTabDays(parseInt(e.target.value) || 7)}
+                  value={tabMaxDays}
+                  onChange={(e) => setTabMaxDays(parseInt(e.target.value) || 7)}
                   min="1"
                   max="30"
                 />
@@ -130,7 +143,7 @@ const TabSettings: React.FC<TabSettingsProps> = ({
               
               <div className="space-y-2">
                 <Label htmlFor="autoClosePolicy">Auto-Close Policy</Label>
-                <Select value={autoClosePolicy} onValueChange={setAutoClosePolicy}>
+                <Select value={tabAutoClosePolicy} onValueChange={(value) => setTabAutoClosePolicy(value as "manual" | "daily" | "weekly" | "threshold")}>
                   <SelectTrigger id="autoClosePolicy">
                     <SelectValue placeholder="Select policy" />
                   </SelectTrigger>
@@ -148,7 +161,7 @@ const TabSettings: React.FC<TabSettingsProps> = ({
               
               <div className="space-y-2">
                 <Label htmlFor="customerRestriction">Customer Eligibility</Label>
-                <Select value={customerRestriction} onValueChange={setCustomerRestriction}>
+                <Select value={tabCustomerEligibility} onValueChange={(value) => setTabCustomerEligibility(value as "all" | "registered" | "approved")}>
                   <SelectTrigger id="customerRestriction">
                     <SelectValue placeholder="Select eligibility" />
                   </SelectTrigger>

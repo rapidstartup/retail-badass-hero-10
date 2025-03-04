@@ -10,6 +10,10 @@ export const useSettingsForm = () => {
   const [taxRate, setTaxRate] = useState<number>(settings.taxRate);
   const [tabEnabled, setTabEnabled] = useState<boolean>(settings.tabEnabled);
   const [tabThreshold, setTabThreshold] = useState<number>(settings.tabThreshold);
+  const [tabMaxDays, setTabMaxDays] = useState<number>(settings.tabMaxDays);
+  const [tabAutoClosePolicy, setTabAutoClosePolicy] = useState<"manual" | "daily" | "weekly" | "threshold">(settings.tabAutoClosePolicy);
+  const [tabCustomerEligibility, setTabCustomerEligibility] = useState<"all" | "registered" | "approved">(settings.tabCustomerEligibility);
+  const [tabNotifications, setTabNotifications] = useState<boolean>(settings.tabNotifications);
   
   // Customer tier thresholds
   const [tierThresholdSilver, setTierThresholdSilver] = useState<number>(settings.tierThresholdSilver);
@@ -58,6 +62,10 @@ export const useSettingsForm = () => {
     setTaxRate(settings.taxRate);
     setTabEnabled(settings.tabEnabled);
     setTabThreshold(settings.tabThreshold);
+    setTabMaxDays(settings.tabMaxDays);
+    setTabAutoClosePolicy(settings.tabAutoClosePolicy);
+    setTabCustomerEligibility(settings.tabCustomerEligibility);
+    setTabNotifications(settings.tabNotifications);
     setTierThresholdSilver(settings.tierThresholdSilver);
     setTierThresholdGold(settings.tierThresholdGold);
     
@@ -96,6 +104,10 @@ export const useSettingsForm = () => {
     taxRate, setTaxRate,
     tabEnabled, setTabEnabled,
     tabThreshold, setTabThreshold,
+    tabMaxDays, setTabMaxDays,
+    tabAutoClosePolicy, setTabAutoClosePolicy,
+    tabCustomerEligibility, setTabCustomerEligibility,
+    tabNotifications, setTabNotifications,
     
     // Customer tier thresholds
     tierThresholdSilver, setTierThresholdSilver,

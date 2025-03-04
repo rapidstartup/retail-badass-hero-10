@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, Check, RefreshCw } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface TabManagerProps {
   tabEnabled: boolean;
@@ -18,6 +19,7 @@ interface TabManagerProps {
 export function TabManager({ tabEnabled, tabThreshold, onCheckoutTab }: TabManagerProps) {
   const [tabs, setTabs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { settings } = useSettings();
   
   // Fetch open tabs
   const fetchOpenTabs = async () => {
@@ -25,12 +27,25 @@ export function TabManager({ tabEnabled, tabThreshold, onCheckoutTab }: TabManag
       setLoading(true);
       const { data, error } = await supabase
         .from("transactions")
-        .select("*, customers(first_name, last_name, email)")
+        .select("*, customers(first_name, last_name, email, tier)")
         .eq("status", "open")
         .eq("payment_method", "tab");
         
       if (error) throw error;
-      setTabs(data || []);
+      
+      // Filter tabs based on customer eligibility setting if needed
+      let filteredTabs = data || [];
+      
+      if (settings.tabCustomerEligibility === "registered" && filteredTabs.length > 0) {
+        filteredTabs = filteredTabs.filter(tab => tab.customer_id !== null);
+      } else if (settings.tabCustomerEligibility === "approved" && filteredTabs.length > 0) {
+        filteredTabs = filteredTabs.filter(tab => 
+          tab.customer_id !== null && 
+          (tab.customers?.tier === "Silver" || tab.customers?.tier === "Gold")
+        );
+      }
+      
+      setTabs(filteredTabs);
     } catch (error) {
       console.error("Error fetching tabs:", error);
     } finally {
@@ -43,7 +58,7 @@ export function TabManager({ tabEnabled, tabThreshold, onCheckoutTab }: TabManag
     if (tabEnabled) {
       fetchOpenTabs();
     }
-  }, [tabEnabled]);
+  }, [tabEnabled, settings.tabCustomerEligibility]);
   
   // Set up realtime subscription to listen for new tabs
   useEffect(() => {
@@ -62,7 +77,65 @@ export function TabManager({ tabEnabled, tabThreshold, onCheckoutTab }: TabManag
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tabEnabled]);
+  }, [tabEnabled, settings.tabCustomerEligibility]);
+  
+  // Auto-close tabs based on policy
+  useEffect(() => {
+    if (!tabEnabled || settings.tabAutoClosePolicy === "manual") return;
+    
+    const autoCloseIntervalCheck = setInterval(async () => {
+      try {
+        // Different logic based on auto-close policy
+        if (settings.tabAutoClosePolicy === "daily") {
+          const oneDayAgo = new Date();
+          oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+          
+          await supabase
+            .from("transactions")
+            .update({ 
+              status: "completed",
+              completed_at: new Date().toISOString()
+            })
+            .eq("status", "open")
+            .eq("payment_method", "tab")
+            .lt("created_at", oneDayAgo.toISOString());
+        } else if (settings.tabAutoClosePolicy === "weekly") {
+          const oneWeekAgo = new Date();
+          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+          
+          await supabase
+            .from("transactions")
+            .update({ 
+              status: "completed",
+              completed_at: new Date().toISOString()
+            })
+            .eq("status", "open")
+            .eq("payment_method", "tab")
+            .lt("created_at", oneWeekAgo.toISOString());
+        } else if (settings.tabAutoClosePolicy === "threshold") {
+          // Close tabs that exceed the threshold
+          await supabase
+            .from("transactions")
+            .update({ 
+              status: "completed",
+              completed_at: new Date().toISOString()
+            })
+            .eq("status", "open")
+            .eq("payment_method", "tab")
+            .gte("total", settings.tabThreshold);
+        }
+        
+        // Refresh the tabs list
+        fetchOpenTabs();
+      } catch (error) {
+        console.error("Error during auto-close check:", error);
+      }
+    }, 60000); // Check every minute
+    
+    return () => {
+      clearInterval(autoCloseIntervalCheck);
+    };
+  }, [tabEnabled, settings.tabAutoClosePolicy, settings.tabThreshold]);
   
   const handleRefresh = () => {
     fetchOpenTabs();
@@ -151,7 +224,7 @@ export function TabManager({ tabEnabled, tabThreshold, onCheckoutTab }: TabManag
           </ScrollArea>
         )}
         
-        {tabs.some(tab => tab.total >= tabThreshold) && (
+        {tabs.some(tab => tab.total >= tabThreshold) && settings.tabNotifications && (
           <Alert className="mt-4" variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Attention Required</AlertTitle>

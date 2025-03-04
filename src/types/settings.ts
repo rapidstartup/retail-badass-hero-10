@@ -17,6 +17,10 @@ export interface POSSettings {
   tabEnabled: boolean;
   tabThreshold: number;
   tabMaxDays: number;
+  // Tab System Advanced Settings
+  tabAutoClosePolicy: "manual" | "daily" | "weekly" | "threshold";
+  tabCustomerEligibility: "all" | "registered" | "approved";
+  tabNotifications: boolean;
   // Store Information
   storeName: string;
   storeAddress?: string;
@@ -75,6 +79,9 @@ export const defaultSettings: POSSettings = {
   tabEnabled: true,
   tabThreshold: 100,
   tabMaxDays: 7,
+  tabAutoClosePolicy: "manual",
+  tabCustomerEligibility: "all",
+  tabNotifications: true,
   storeName: "NextPOS",
   stripeMode: "test",
   theme: "dark",

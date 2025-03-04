@@ -10,6 +10,10 @@ interface SettingsContainerProps {
   taxRate: number;
   tabEnabled: boolean;
   tabThreshold: number;
+  tabMaxDays: number;
+  tabAutoClosePolicy: "manual" | "daily" | "weekly" | "threshold";
+  tabCustomerEligibility: "all" | "registered" | "approved";
+  tabNotifications: boolean;
   tierThresholdSilver: number;
   tierThresholdGold: number;
   stripeLiveSecretKey: string;
@@ -38,6 +42,10 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
   taxRate,
   tabEnabled,
   tabThreshold,
+  tabMaxDays,
+  tabAutoClosePolicy,
+  tabCustomerEligibility,
+  tabNotifications,
   tierThresholdSilver,
   tierThresholdGold,
   stripeLiveSecretKey,
@@ -77,6 +85,10 @@ const SettingsContainer: React.FC<SettingsContainerProps> = ({
       taxRate,
       tabEnabled,
       tabThreshold,
+      tabMaxDays,
+      tabAutoClosePolicy,
+      tabCustomerEligibility,
+      tabNotifications,
       tierThresholdSilver,
       tierThresholdGold,
       stripeLiveSecretKey,

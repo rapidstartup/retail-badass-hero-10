@@ -257,8 +257,11 @@ export type Database = {
           store_address: string | null
           store_name: string | null
           store_phone: string | null
+          tab_auto_close_policy: string | null
+          tab_customer_eligibility: string | null
           tab_enabled: boolean | null
           tab_max_days: number | null
+          tab_notifications: boolean | null
           tab_threshold: number | null
           tax_rate: number | null
           tier_threshold_gold: number | null
@@ -271,8 +274,11 @@ export type Database = {
           store_address?: string | null
           store_name?: string | null
           store_phone?: string | null
+          tab_auto_close_policy?: string | null
+          tab_customer_eligibility?: string | null
           tab_enabled?: boolean | null
           tab_max_days?: number | null
+          tab_notifications?: boolean | null
           tab_threshold?: number | null
           tax_rate?: number | null
           tier_threshold_gold?: number | null
@@ -285,8 +291,11 @@ export type Database = {
           store_address?: string | null
           store_name?: string | null
           store_phone?: string | null
+          tab_auto_close_policy?: string | null
+          tab_customer_eligibility?: string | null
           tab_enabled?: boolean | null
           tab_max_days?: number | null
+          tab_notifications?: boolean | null
           tab_threshold?: number | null
           tax_rate?: number | null
           tier_threshold_gold?: number | null
