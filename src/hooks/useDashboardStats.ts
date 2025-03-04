@@ -2,6 +2,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/utils/formatters";
+import { Json } from "@/integrations/supabase/types";
+
+interface TransactionItem {
+  quantity: number;
+}
 
 export const useDashboardStats = () => {
   return useQuery({
@@ -39,9 +44,32 @@ export const useDashboardStats = () => {
       // Calculate today's stats
       const todaySales = todayTransactions.reduce((sum, tx) => sum + (tx.total || 0), 0);
       const todayItemsSold = todayTransactions.reduce((sum, tx) => {
-        const items = Array.isArray(tx.items) ? tx.items : [];
-        const itemCount = items.reduce((count, item) => count + (item.quantity || 1), 0);
-        return sum + itemCount;
+        // Safely handle items array
+        if (!tx.items) return sum;
+        
+        let items: any[] = [];
+        
+        // Handle string or array
+        if (typeof tx.items === 'string') {
+          try {
+            items = JSON.parse(tx.items);
+          } catch (e) {
+            console.error('Failed to parse items:', e);
+            return sum;
+          }
+        } else if (Array.isArray(tx.items)) {
+          items = tx.items;
+        } else {
+          return sum;
+        }
+        
+        // Sum up quantities from items
+        return sum + items.reduce((count, item) => {
+          const quantity = typeof item === 'object' && item !== null && 'quantity' in item 
+            ? Number(item.quantity) || 1 
+            : 1;
+          return count + quantity;
+        }, 0);
       }, 0);
       
       // Calculate yesterday's stats

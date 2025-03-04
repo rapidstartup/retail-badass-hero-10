@@ -1,6 +1,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
+
+interface ProductItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
 
 export const useTopProducts = () => {
   return useQuery({
@@ -25,12 +32,28 @@ export const useTopProducts = () => {
       transactions.forEach(transaction => {
         if (!transaction.items) return;
         
-        const items = Array.isArray(transaction.items) ? transaction.items : [];
+        // Handle different formats of items
+        let items: any[] = [];
+        
+        if (typeof transaction.items === 'string') {
+          try {
+            items = JSON.parse(transaction.items);
+          } catch (e) {
+            console.error('Failed to parse items:', e);
+            return;
+          }
+        } else if (Array.isArray(transaction.items)) {
+          items = transaction.items;
+        } else {
+          return;
+        }
         
         items.forEach(item => {
-          const productName = item.name || 'Unknown Product';
-          const quantity = item.quantity || 1;
-          const price = item.price || 0;
+          if (typeof item !== 'object' || item === null) return;
+          
+          const productName = 'name' in item ? String(item.name) : 'Unknown Product';
+          const quantity = 'quantity' in item ? Number(item.quantity) || 1 : 1;
+          const price = 'price' in item ? Number(item.price) || 0 : 0;
           
           if (!productCounts[productName]) {
             productCounts[productName] = {

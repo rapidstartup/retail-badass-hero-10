@@ -38,14 +38,26 @@ export const useRecentTransactions = (limit = 5) => {
           }
         } else if (Array.isArray(transaction.items)) {
           parsedItems = transaction.items;
-          itemsCount = parsedItems.reduce((count, item) => count + (item.quantity || 1), 0);
+          itemsCount = parsedItems.reduce((count, item) => {
+            const quantity = typeof item === 'object' && item !== null && 'quantity' in item 
+              ? Number(item.quantity) || 1 
+              : 1;
+            return count + quantity;
+          }, 0);
         }
         
-        // Extract customer name
-        const customer = transaction.customers || {};
-        const customerName = customer.first_name && customer.last_name 
-          ? `${customer.first_name} ${customer.last_name}` 
-          : 'Walk-in Customer';
+        // Extract customer name safely
+        let customerName = 'Walk-in Customer';
+        
+        if (transaction.customers) {
+          const customer = transaction.customers as Record<string, any>;
+          if (customer && typeof customer === 'object' && 'first_name' in customer && 'last_name' in customer) {
+            customerName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+            if (!customerName) {
+              customerName = 'Walk-in Customer';
+            }
+          }
+        }
         
         return {
           id: transaction.id,
