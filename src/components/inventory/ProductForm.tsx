@@ -4,29 +4,17 @@ import { toast } from 'sonner';
 import { createProduct, updateProduct, fetchProductById } from '@/api/productApi';
 import { fetchCategories } from '@/api/inventoryApi';
 import { Product } from '@/types';
-import { 
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Form } from "@/components/ui/form";
-import { Button } from '@/components/ui/button';
 import { useForm } from 'react-hook-form';
-import { 
-  Package,
-  Save, 
-  X,
-  Plus
-} from 'lucide-react';
-import ProductVariantsManager from './ProductVariantsManager';
 
 // Import our new form section components
 import BasicProductInfo from './product-form/BasicProductInfo';
 import PricingInfo from './product-form/PricingInfo';
 import InventoryDetails from './product-form/InventoryDetails';
+import FormHeader from './product-form/FormHeader';
+import FormFooter from './product-form/FormFooter';
+import VariantManagerModal from './product-form/VariantManagerModal';
 import { ProductFormData } from './product-form/types';
 
 interface ProductFormProps {
@@ -197,15 +185,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
   return (
     <>
       <Card className="w-full mx-auto shadow-lg border border-border/30 bg-card">
-        <CardHeader className="bg-muted/30 rounded-t-lg border-b border-border/30">
-          <div className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
-            <CardTitle className="text-xl">{isEditing ? 'Edit Product' : 'Add New Product'}</CardTitle>
-          </div>
-          <CardDescription>
-            {isEditing ? 'Update product information in your inventory' : 'Add a new product to your inventory'}
-          </CardDescription>
-        </CardHeader>
+        <FormHeader isEditing={isEditing} />
+        
         <CardContent className="p-4 pt-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -215,45 +196,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 <InventoryDetails form={form} categories={categories} />
               </div>
               
-              <CardFooter className="px-0 pb-0 pt-4 flex justify-end gap-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={onClose}
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="min-w-[120px]"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  {isSubmitting ? 'Saving...' : 'Save Product'}
-                </Button>
-                {isEditing && currentProduct && currentProduct.has_variants && (
-                  <Button 
-                    type="button" 
-                    onClick={() => setShowVariantsManager(true)}
-                    disabled={isSubmitting}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Manage Variants
-                  </Button>
-                )}
-              </CardFooter>
+              <FormFooter 
+                isSubmitting={isSubmitting}
+                isEditing={isEditing}
+                hasVariants={currentProduct?.has_variants || false}
+                onClose={onClose}
+                onManageVariants={() => setShowVariantsManager(true)}
+              />
             </form>
           </Form>
         </CardContent>
       </Card>
 
-      {showVariantsManager && currentProduct && (
-        <ProductVariantsManager 
-          product={currentProduct} 
-          onClose={handleVariantManagerClose} 
-        />
-      )}
+      <VariantManagerModal 
+        product={currentProduct}
+        showVariantsManager={showVariantsManager}
+        onClose={handleVariantManagerClose}
+      />
     </>
   );
 };
