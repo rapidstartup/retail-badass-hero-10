@@ -50,6 +50,13 @@ const StaffSettings = () => {
     setIsFormOpen(true);
   };
 
+  const handleCloseForm = () => {
+    resetForm();
+    setIsFormOpen(false);
+  };
+
+  console.log("Current staff members:", staffMembers);
+
   return (
     <Card>
       <StaffHeader 
@@ -74,7 +81,7 @@ const StaffSettings = () => {
           setRole={setRole}
           password={password}
           setPassword={setPassword}
-          resetForm={resetForm}
+          resetForm={handleCloseForm}
           handleAddStaff={handleAddStaff}
           handleEditStaff={handleEditStaff}
         />
