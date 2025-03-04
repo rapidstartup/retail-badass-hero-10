@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Printer } from "lucide-react";
 import { Transaction } from "@/types/transaction";
+import { useNavigate } from "react-router-dom";
 
 interface TransactionTableRowProps {
   transaction: Transaction;
@@ -18,6 +19,8 @@ const TransactionTableRow: React.FC<TransactionTableRowProps> = ({
   isSelected,
   onSelect 
 }) => {
+  const navigate = useNavigate();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -28,6 +31,16 @@ const TransactionTableRow: React.FC<TransactionTableRowProps> = ({
         return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
+    }
+  };
+
+  const handleViewCustomer = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (transaction.customer_id) {
+      navigate(`/clients/${transaction.customer_id}`);
+    } else {
+      // If no customer_id, just show the transaction details
+      onSelect(transaction.id);
     }
   };
 
@@ -61,10 +74,7 @@ const TransactionTableRow: React.FC<TransactionTableRowProps> = ({
         <Button 
           variant="ghost" 
           size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect(transaction.id);
-          }}
+          onClick={handleViewCustomer}
         >
           <Eye className="h-4 w-4" />
         </Button>
