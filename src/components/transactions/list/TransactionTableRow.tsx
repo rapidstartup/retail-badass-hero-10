@@ -36,8 +36,8 @@ const TransactionTableRow: React.FC<TransactionTableRowProps> = ({
 
   const handleViewCustomer = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (transaction.customer_id) {
-      navigate(`/clients/${transaction.customer_id}`);
+    if (transaction.customers?.id) {
+      navigate(`/clients/${transaction.customers.id}`);
     } else {
       // If no customer_id, just show the transaction details
       onSelect(transaction.id);
