@@ -139,7 +139,7 @@ export function useBulkVariantGenerator(productId: string, handleCreateVariant: 
       // Generate a unique SKU for this variant
       const sku = skuPrefix
         ? `${skuPrefix}-${variantName}`
-        : generateSku(variantName);
+        : generateSku(combo.color || "", combo.size || "");
       
       const variantData = {
         product_id: productId,

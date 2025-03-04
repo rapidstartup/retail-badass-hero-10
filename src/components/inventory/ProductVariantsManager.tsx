@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw, FileText, Grid3X3 } from "lucide-react";
 import { Product } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useVariantManager } from "@/hooks/useVariantManager";
+import { useVariantManager } from "@/hooks/useVariants";
 import SingleVariantForm from "./variants/SingleVariantForm";
 import BulkVariantGenerator from "./variants/BulkVariantGenerator";
 import VariantsTable from "./variants/VariantsTable";

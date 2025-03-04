@@ -1,9 +1,9 @@
 
-import { useVariantFetching } from "./useVariants/useVariantFetching";
-import { useVariantCRUD } from "./useVariants/useVariantCRUD";
-import { useVariantForm } from "./useVariants/useVariantForm";
-import { useBulkVariantGenerator } from "./useVariants/useBulkVariantGenerator";
-import { useSkuGenerator } from "./useVariants/useSkuGenerator";
+import { useVariantFetching } from "./useVariantFetching";
+import { useVariantCRUD } from "./useVariantCRUD";
+import { useVariantForm } from "./useVariantForm";
+import { useBulkVariantGenerator } from "./useBulkVariantGenerator";
+import { useSkuGenerator } from "./useSkuGenerator";
 import { Product, ProductVariant } from "@/types";
 
 export const useVariantManager = (product: Product) => {
