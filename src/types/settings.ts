@@ -59,14 +59,14 @@ export const defaultLightColors: ThemeColors = {
 };
 
 export const defaultDarkColors: ThemeColors = {
-  background: "#0f172a",
-  sidebar: "#1e293b",
-  accent: "#60a5fa",
+  background: "#171717",
+  sidebar: "#000000",
+  accent: "#157efb",
   text: "#f8fafc",
   accentHover: "#3b82f6",
   sidebarHover: "#334155",
-  container: "#1e293b",
-  section: "#1e293b",
+  container: "#101010",
+  section: "#202020",
   sectionSelected: "#0f172a",
 };
 

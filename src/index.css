@@ -56,14 +56,14 @@
     --border: 215 27.9% 16.9%;
     --input: 215 27.9% 16.9%;
     --ring: 216 12.2% 83.9%;
-    --theme-background-color: #0f172a;
-    --theme-sidebar-color: #1e293b;
-    --theme-accent-color: #60a5fa;
+    --theme-background-color: #171717;
+    --theme-sidebar-color: #000000;
+    --theme-accent-color: #157efb;
     --theme-text-color: #f8fafc;
     --theme-accent-hover-color: #3b82f6;
     --theme-sidebar-hover-color: #334155;
-    --theme-container-color: #1e293b;
-    --theme-section-color: #1e293b;
+    --theme-container-color: #101010;
+    --theme-section-color: #202020;
     --theme-section-selected-color: #0f172a;
   }
 }
