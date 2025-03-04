@@ -14,66 +14,57 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart as ReBarChart, Bar } from "recharts";
-
-// Mock data for the dashboard
-const salesData = [
-  { name: "Jan", total: 1500 },
-  { name: "Feb", total: 2300 },
-  { name: "Mar", total: 2000 },
-  { name: "Apr", total: 2780 },
-  { name: "May", total: 1890 },
-  { name: "Jun", total: 2390 },
-  { name: "Jul", total: 3490 },
-];
-
-const topProducts = [
-  { name: "Coffee", sales: 124, revenue: 496 },
-  { name: "Pastry", sales: 98, revenue: 392 },
-  { name: "Sandwich", sales: 65, revenue: 455 },
-  { name: "Juice", sales: 45, revenue: 225 },
-];
-
-const recentTransactions = [
-  { id: "TRX-001", customer: "John Doe", amount: 42.50, items: 3, date: new Date(2023, 6, 15, 14, 30) },
-  { id: "TRX-002", customer: "Sarah Smith", amount: 127.80, items: 7, date: new Date(2023, 6, 15, 13, 15) },
-  { id: "TRX-003", customer: "Michael Brown", amount: 65.25, items: 2, date: new Date(2023, 6, 15, 11, 45) },
-  { id: "TRX-004", customer: "Emily Johnson", amount: 32.10, items: 1, date: new Date(2023, 6, 15, 10, 20) },
-];
+import { useNavigate } from "react-router-dom";
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useSalesOverview } from "@/hooks/useSalesOverview";
+import { useTopProducts } from "@/hooks/useTopProducts";
+import { useRecentTransactions } from "@/hooks/useRecentTransactions";
 
 const Dashboard = () => {
-  console.log("Dashboard rendering");
+  const navigate = useNavigate();
+  
+  // Fetch dashboard data
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: salesData, isLoading: salesLoading } = useSalesOverview();
+  const { data: topProducts, isLoading: productsLoading } = useTopProducts();
+  const { data: recentTransactions, isLoading: transactionsLoading } = useRecentTransactions();
+  
+  const handleNewTransaction = () => {
+    navigate("/pos");
+  };
   
   return (
     <Layout>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <Button>New Transaction</Button>
+        <Button onClick={handleNewTransaction}>New Transaction</Button>
       </div>
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <StatCard 
-          title="Today's Sales" 
-          value={formatCurrency(3240.50)}
-          trend={{ value: 12, positive: true }}
+          title="Today's Sales"
+          description={!statsLoading ? stats?.formattedDate : undefined}
+          value={statsLoading ? "Loading..." : formatCurrency(stats?.todaySales || 0)}
+          trend={!statsLoading && stats ? { value: stats.salesTrend, positive: stats.salesTrend > 0 } : undefined}
           icon={<DollarSign className="h-6 w-6" />}
         />
         <StatCard 
           title="Transactions" 
-          value={formatNumber(42)}
-          trend={{ value: 8, positive: true }}
+          value={statsLoading ? "Loading..." : formatNumber(stats?.transactionCount || 0)}
+          trend={!statsLoading && stats ? { value: stats.transactionTrend, positive: stats.transactionTrend > 0 } : undefined}
           icon={<CreditCard className="h-6 w-6" />}
         />
         <StatCard 
           title="New Customers" 
-          value={formatNumber(5)}
-          trend={{ value: 2, positive: false }}
+          value={statsLoading ? "Loading..." : formatNumber(stats?.newCustomersCount || 0)}
+          trend={!statsLoading && stats ? { value: stats.customersTrend, positive: stats.customersTrend > 0 } : undefined}
           icon={<Users className="h-6 w-6" />}
         />
         <StatCard 
           title="Items Sold" 
-          value={formatNumber(187)}
-          trend={{ value: 10, positive: true }}
+          value={statsLoading ? "Loading..." : formatNumber(stats?.itemsSold || 0)}
+          trend={!statsLoading && stats ? { value: stats.itemsSoldTrend, positive: stats.itemsSoldTrend > 0 } : undefined}
           icon={<ShoppingCart className="h-6 w-6" />}
         />
       </div>
@@ -87,23 +78,29 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="pl-2">
             <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis 
-                  tickFormatter={(value) => `$${value}`}
-                />
-                <Tooltip 
-                  formatter={(value) => [`$${value}`, 'Revenue']}
-                  labelFormatter={(label) => `Month: ${label}`}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="total" 
-                  stroke="hsl(var(--primary))" 
-                  fill="hsl(var(--primary) / 0.2)" 
-                />
-              </AreaChart>
+              {salesLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">Loading sales data...</p>
+                </div>
+              ) : (
+                <AreaChart data={salesData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis 
+                    tickFormatter={(value) => `$${value}`}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [`$${value}`, 'Revenue']}
+                    labelFormatter={(label) => `Month: ${label}`}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="total" 
+                    stroke="hsl(var(--primary))" 
+                    fill="hsl(var(--primary) / 0.2)" 
+                  />
+                </AreaChart>
+              )}
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -115,13 +112,19 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="pl-2">
             <ResponsiveContainer width="100%" height={300}>
-              <ReBarChart data={topProducts}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="sales" fill="hsl(var(--primary))" />
-              </ReBarChart>
+              {productsLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">Loading product data...</p>
+                </div>
+              ) : (
+                <ReBarChart data={topProducts}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="sales" fill="hsl(var(--primary))" />
+                </ReBarChart>
+              )}
             </ResponsiveContainer>
           </CardContent>
         </Card>
@@ -135,34 +138,50 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left font-medium py-2 px-4">ID</th>
-                  <th className="text-left font-medium py-2 px-4">Customer</th>
-                  <th className="text-left font-medium py-2 px-4">Items</th>
-                  <th className="text-left font-medium py-2 px-4">Amount</th>
-                  <th className="text-left font-medium py-2 px-4">Time</th>
-                  <th className="text-left font-medium py-2 px-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentTransactions.map((transaction) => (
-                  <tr key={transaction.id} className="border-b hover:bg-muted/50">
-                    <td className="py-3 px-4">{transaction.id}</td>
-                    <td className="py-3 px-4">{transaction.customer}</td>
-                    <td className="py-3 px-4">{transaction.items}</td>
-                    <td className="py-3 px-4">{formatCurrency(transaction.amount)}</td>
-                    <td className="py-3 px-4">
-                      {transaction.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td className="py-3 px-4">
-                      <Button variant="ghost" size="sm">View</Button>
-                    </td>
+            {transactionsLoading ? (
+              <div className="flex items-center justify-center h-24">
+                <p className="text-muted-foreground">Loading transactions...</p>
+              </div>
+            ) : recentTransactions && recentTransactions.length > 0 ? (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left font-medium py-2 px-4">ID</th>
+                    <th className="text-left font-medium py-2 px-4">Customer</th>
+                    <th className="text-left font-medium py-2 px-4">Items</th>
+                    <th className="text-left font-medium py-2 px-4">Amount</th>
+                    <th className="text-left font-medium py-2 px-4">Time</th>
+                    <th className="text-left font-medium py-2 px-4">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {recentTransactions.map((transaction) => (
+                    <tr key={transaction.id} className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4">{transaction.id.substring(0, 8)}</td>
+                      <td className="py-3 px-4">{transaction.customer}</td>
+                      <td className="py-3 px-4">{transaction.items}</td>
+                      <td className="py-3 px-4">{formatCurrency(transaction.amount)}</td>
+                      <td className="py-3 px-4">
+                        {transaction.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigate(`/transactions?id=${transaction.id}`)}
+                        >
+                          View
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-muted-foreground">No recent transactions</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
