@@ -35,6 +35,10 @@ const Settings = () => {
         taxRate={settingsForm.taxRate}
         tabEnabled={settingsForm.tabEnabled}
         tabThreshold={settingsForm.tabThreshold}
+        tabMaxDays={settingsForm.tabMaxDays}
+        tabAutoClosePolicy={settingsForm.tabAutoClosePolicy}
+        tabCustomerEligibility={settingsForm.tabCustomerEligibility}
+        tabNotifications={settingsForm.tabNotifications}
         tierThresholdSilver={settingsForm.tierThresholdSilver}
         tierThresholdGold={settingsForm.tierThresholdGold}
         stripeLiveSecretKey={settingsForm.stripeLiveSecretKey}
@@ -77,6 +81,14 @@ const Settings = () => {
             setTabEnabled={settingsForm.setTabEnabled}
             tabThreshold={settingsForm.tabThreshold}
             setTabThreshold={settingsForm.setTabThreshold}
+            tabMaxDays={settingsForm.tabMaxDays}
+            setTabMaxDays={settingsForm.setTabMaxDays}
+            tabAutoClosePolicy={settingsForm.tabAutoClosePolicy}
+            setTabAutoClosePolicy={settingsForm.setTabAutoClosePolicy}
+            tabCustomerEligibility={settingsForm.tabCustomerEligibility}
+            setTabCustomerEligibility={settingsForm.setTabCustomerEligibility}
+            tabNotifications={settingsForm.tabNotifications}
+            setTabNotifications={settingsForm.setTabNotifications}
           />
         </TabsContent>
         

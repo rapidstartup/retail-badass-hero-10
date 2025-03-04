@@ -1,6 +1,7 @@
 
 import React from "react";
-import { Alert, AlertCircle } from "@/components/ui/alert";
+import { Alert } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 
 interface TabPaymentProps {
