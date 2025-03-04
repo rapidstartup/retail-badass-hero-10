@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { StaffMember, StaffFormState } from "@/types/staff";
@@ -204,14 +203,10 @@ export function useStaffManagement() {
       // Call Supabase Edge Function to handle GoHighLevel sync
       const { data, error } = await supabase.functions.invoke('staff', {
         body: { 
-          apiKey: goHighLevelApiKey 
+          apiKey: goHighLevelApiKey,
+          action: 'sync-gohighlevel'
         },
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Fix: Pass string literals directly in the headers object
-          // instead of trying to use the action property which is causing the type error
-        }
+        method: 'POST'
       });
       
       if (error) {
@@ -249,6 +244,7 @@ export function useStaffManagement() {
     handleDeleteStaff,
     startEdit,
     resetForm,
-    syncWithGoHighLevel
+    syncWithGoHighLevel,
+    fetchStaffMembers
   };
 }

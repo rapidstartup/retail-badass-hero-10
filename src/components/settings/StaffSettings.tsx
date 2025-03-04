@@ -1,11 +1,13 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSettings } from "@/contexts/SettingsContext";
 import StaffList from "./staff/StaffList";
 import StaffHeader from "./staff/StaffHeader";
 import StaffFormDialog from "./staff/StaffFormDialog";
 import { useStaffManagement } from "@/hooks/useStaffManagement";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 const StaffSettings = () => {
   const { settings } = useSettings();
@@ -31,7 +33,8 @@ const StaffSettings = () => {
     handleDeleteStaff,
     startEdit,
     resetForm,
-    syncWithGoHighLevel
+    syncWithGoHighLevel,
+    fetchStaffMembers
   } = useStaffManagement();
 
   const goHighLevelApiKey = settings.goHighLevelApiKey;
@@ -55,6 +58,10 @@ const StaffSettings = () => {
     setIsFormOpen(false);
   };
 
+  const handleRefresh = () => {
+    fetchStaffMembers();
+  };
+
   console.log("Current staff members:", staffMembers);
 
   return (
@@ -66,6 +73,18 @@ const StaffSettings = () => {
         syncing={syncing}
       />
       <CardContent>
+        <div className="mb-4 flex justify-end">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={loading}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? "Refreshing..." : "Refresh Staff List"}
+          </Button>
+        </div>
+        
         {/* Staff Form Dialog */}
         <StaffFormDialog
           isOpen={isFormOpen}
