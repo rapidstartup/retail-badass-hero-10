@@ -61,7 +61,7 @@ export const defaultLightColors: ThemeColors = {
 export const defaultDarkColors: ThemeColors = {
   background: "#171717",
   sidebar: "#000000",
-  accent: "#157efb",
+  accent: "#15e7fb",
   text: "#f8fafc",
   accentHover: "#3b82f6",
   sidebarHover: "#334155",
