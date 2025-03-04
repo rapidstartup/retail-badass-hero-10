@@ -1,209 +1,170 @@
-import { useState } from "react";
-import { ProductVariant } from "@/api/types/inventoryTypes";
-import { toast } from "sonner";
 
-export function useBulkVariantGenerator(
-  productId: string,
-  handleCreateVariant: (variantData: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => Promise<ProductVariant | null>
-) {
+import { useState } from "react";
+import { ProductVariant } from "@/api/types/variantTypes";
+import { useSkuGenerator } from "./useSkuGenerator";
+
+type CreateVariantFunction = (variantData: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>) => Promise<ProductVariant | null>;
+
+export function useBulkVariantGenerator(productId: string, handleCreateVariant: CreateVariantFunction) {
+  // Color options
   const [colorOptions, setColorOptions] = useState<string[]>([]);
+  const [newColorOption, setNewColorOption] = useState<string>("");
+  
+  // Size options
   const [sizeOptions, setSizeOptions] = useState<string[]>([]);
+  const [newSizeOption, setNewSizeOption] = useState<string>("");
+  
+  // Flavor options
   const [flavorOptions, setFlavorOptions] = useState<string[]>([]);
-  const [newColorOption, setNewColorOption] = useState("");
-  const [newSizeOption, setNewSizeOption] = useState("");
-  const [newFlavorOption, setNewFlavorOption] = useState("");
+  const [newFlavorOption, setNewFlavorOption] = useState<string>("");
+  
+  // Base options for all variants
   const [bulkBasePrice, setBulkBasePrice] = useState<number>(0);
   const [bulkBaseStock, setBulkBaseStock] = useState<number>(0);
-  const [creatingBulkVariants, setCreatingBulkVariants] = useState(false);
   
-  // Function to initialize bulk generator with product data
-  const initializeBulkGenerator = (price: number, existingVariants: ProductVariant[]) => {
-    setBulkBasePrice(price);
-    
-    // Extract unique colors, sizes, and flavors from existing variants
-    const uniqueColors = Array.from(new Set(existingVariants.map(v => v.color).filter(Boolean))) as string[];
-    const uniqueSizes = Array.from(new Set(existingVariants.map(v => v.size).filter(Boolean))) as string[];
-    const uniqueFlavors = Array.from(new Set(existingVariants.map(v => v.flavor).filter(Boolean))) as string[];
-    
-    if (uniqueColors.length > 0) setColorOptions(uniqueColors);
-    if (uniqueSizes.length > 0) setSizeOptions(uniqueSizes);
-    if (uniqueFlavors.length > 0) setFlavorOptions(uniqueFlavors);
-  };
+  // SKU generator
+  const { skuPrefix, setSkuPrefix, generateSku } = useSkuGenerator("");
   
-  const addColorOption = () => {
-    if (!newColorOption) return;
-    if (!colorOptions.includes(newColorOption)) {
-      setColorOptions([...colorOptions, newColorOption]);
-    }
+  // Initialize/reset the bulk generator
+  const initializeBulkGenerator = () => {
+    setColorOptions([]);
+    setSizeOptions([]);
+    setFlavorOptions([]);
     setNewColorOption("");
-  };
-  
-  const addSizeOption = () => {
-    if (!newSizeOption) return;
-    if (!sizeOptions.includes(newSizeOption)) {
-      setSizeOptions([...sizeOptions, newSizeOption]);
-    }
     setNewSizeOption("");
-  };
-  
-  const addFlavorOption = () => {
-    if (!newFlavorOption) return;
-    if (!flavorOptions.includes(newFlavorOption)) {
-      setFlavorOptions([...flavorOptions, newFlavorOption]);
-    }
     setNewFlavorOption("");
+    setBulkBasePrice(0);
+    setBulkBaseStock(0);
+    setSkuPrefix("");
   };
   
+  // Helper to add color option
+  const addColorOption = () => {
+    if (newColorOption.trim() !== "" && !colorOptions.includes(newColorOption.trim())) {
+      setColorOptions([...colorOptions, newColorOption.trim()]);
+      setNewColorOption("");
+    }
+  };
+  
+  // Helper to add size option
+  const addSizeOption = () => {
+    if (newSizeOption.trim() !== "" && !sizeOptions.includes(newSizeOption.trim())) {
+      setSizeOptions([...sizeOptions, newSizeOption.trim()]);
+      setNewSizeOption("");
+    }
+  };
+  
+  // Helper to add flavor option
+  const addFlavorOption = () => {
+    if (newFlavorOption.trim() !== "" && !flavorOptions.includes(newFlavorOption.trim())) {
+      setFlavorOptions([...flavorOptions, newFlavorOption.trim()]);
+      setNewFlavorOption("");
+    }
+  };
+  
+  // Helper to remove color option
   const removeColorOption = (color: string) => {
     setColorOptions(colorOptions.filter(c => c !== color));
   };
   
+  // Helper to remove size option
   const removeSizeOption = (size: string) => {
     setSizeOptions(sizeOptions.filter(s => s !== size));
   };
   
+  // Helper to remove flavor option
   const removeFlavorOption = (flavor: string) => {
     setFlavorOptions(flavorOptions.filter(f => f !== flavor));
   };
   
+  // Generate all possible combinations of variants
   const generateBulkVariants = async () => {
-    if (colorOptions.length === 0 && sizeOptions.length === 0 && flavorOptions.length === 0) {
-      toast.error("You need to add at least one color, size, or flavor option");
+    // Validate input
+    if (
+      (colorOptions.length === 0 && sizeOptions.length === 0 && flavorOptions.length === 0) ||
+      isNaN(bulkBasePrice) || 
+      bulkBasePrice <= 0
+    ) {
+      console.error("Cannot generate variants: Need at least one option type and a valid base price");
       return;
     }
     
-    try {
-      setCreatingBulkVariants(true);
-      let createdVariants = 0;
-      
-      // If only one attribute has options, create one variant per option
-      if (colorOptions.length > 0 && sizeOptions.length === 0 && flavorOptions.length === 0) {
+    const hasColors = colorOptions.length > 0;
+    const hasSizes = sizeOptions.length > 0;
+    const hasFlavors = flavorOptions.length > 0;
+    
+    // Generate combinations
+    let combinations: {color?: string, size?: string, flavor?: string}[] = [{}];
+    
+    if (hasColors) {
+      const newCombos: {color?: string, size?: string, flavor?: string}[] = [];
+      for (const combo of combinations) {
         for (const color of colorOptions) {
-          const result = await handleCreateVariant({
-            product_id: productId,
-            price: bulkBasePrice,
-            sku: `${productId.substring(0, 4)}-${color.substring(0, 3)}`,
-            stock_count: bulkBaseStock,
-            color: color,
-            size: null,
-            flavor: null,
-            variant_attributes: {}
-          });
-          if (result) createdVariants++;
+          newCombos.push({...combo, color});
         }
       }
-      else if (sizeOptions.length > 0 && colorOptions.length === 0 && flavorOptions.length === 0) {
+      combinations = newCombos;
+    }
+    
+    if (hasSizes) {
+      const newCombos: {color?: string, size?: string, flavor?: string}[] = [];
+      for (const combo of combinations) {
         for (const size of sizeOptions) {
-          const result = await handleCreateVariant({
-            product_id: productId,
-            price: bulkBasePrice,
-            sku: `${productId.substring(0, 4)}-${size}`,
-            stock_count: bulkBaseStock,
-            color: null,
-            size: size,
-            flavor: null,
-            variant_attributes: {}
-          });
-          if (result) createdVariants++;
+          newCombos.push({...combo, size});
         }
       }
-      else if (flavorOptions.length > 0 && colorOptions.length === 0 && sizeOptions.length === 0) {
+      combinations = newCombos;
+    }
+    
+    if (hasFlavors) {
+      const newCombos: {color?: string, size?: string, flavor?: string}[] = [];
+      for (const combo of combinations) {
         for (const flavor of flavorOptions) {
-          const result = await handleCreateVariant({
-            product_id: productId,
-            price: bulkBasePrice,
-            sku: `${productId.substring(0, 4)}-${flavor.substring(0, 3)}`,
-            stock_count: bulkBaseStock,
-            color: null,
-            size: null,
-            flavor: flavor,
-            variant_attributes: {}
-          });
-          if (result) createdVariants++;
+          newCombos.push({...combo, flavor});
         }
       }
-      // If two attributes have options, create a matrix of those two
-      else if (colorOptions.length > 0 && sizeOptions.length > 0 && flavorOptions.length === 0) {
-        for (const color of colorOptions) {
-          for (const size of sizeOptions) {
-            const result = await handleCreateVariant({
-              product_id: productId,
-              price: bulkBasePrice,
-              sku: `${productId.substring(0, 4)}-${color.substring(0, 3)}-${size}`,
-              stock_count: bulkBaseStock,
-              color: color,
-              size: size,
-              flavor: null,
-              variant_attributes: {}
-            });
-            if (result) createdVariants++;
-          }
-        }
-      }
-      else if (colorOptions.length > 0 && flavorOptions.length > 0 && sizeOptions.length === 0) {
-        for (const color of colorOptions) {
-          for (const flavor of flavorOptions) {
-            const result = await handleCreateVariant({
-              product_id: productId,
-              price: bulkBasePrice,
-              sku: `${productId.substring(0, 4)}-${color.substring(0, 3)}-${flavor.substring(0, 3)}`,
-              stock_count: bulkBaseStock,
-              color: color,
-              size: null,
-              flavor: flavor,
-              variant_attributes: {}
-            });
-            if (result) createdVariants++;
-          }
-        }
-      }
-      else if (sizeOptions.length > 0 && flavorOptions.length > 0 && colorOptions.length === 0) {
-        for (const size of sizeOptions) {
-          for (const flavor of flavorOptions) {
-            const result = await handleCreateVariant({
-              product_id: productId,
-              price: bulkBasePrice,
-              sku: `${productId.substring(0, 4)}-${size}-${flavor.substring(0, 3)}`,
-              stock_count: bulkBaseStock,
-              color: null,
-              size: size,
-              flavor: flavor,
-              variant_attributes: {}
-            });
-            if (result) createdVariants++;
-          }
-        }
-      }
-      // If all three attributes have options, create a 3D matrix
-      else if (colorOptions.length > 0 && sizeOptions.length > 0 && flavorOptions.length > 0) {
-        for (const color of colorOptions) {
-          for (const size of sizeOptions) {
-            for (const flavor of flavorOptions) {
-              const result = await handleCreateVariant({
-                product_id: productId,
-                price: bulkBasePrice,
-                sku: `${productId.substring(0, 4)}-${color.substring(0, 3)}-${size}-${flavor.substring(0, 3)}`,
-                stock_count: bulkBaseStock,
-                color: color,
-                size: size,
-                flavor: flavor,
-                variant_attributes: {}
-              });
-              if (result) createdVariants++;
-            }
-          }
-        }
-      }
+      combinations = newCombos;
+    }
+    
+    console.log("Generated combinations:", combinations);
+    
+    // Create variants for each combination
+    for (const combo of combinations) {
+      const variantName = [
+        combo.color || "",
+        combo.size || "",
+        combo.flavor || ""
+      ].filter(Boolean).join("-");
       
-      toast.success(`Successfully generated ${createdVariants} variants`);
-    } catch (error) {
-      console.error("Error generating variants:", error);
-      toast.error("Failed to generate variants");
-    } finally {
-      setCreatingBulkVariants(false);
+      // Generate a unique SKU for this variant
+      const sku = skuPrefix
+        ? `${skuPrefix}-${variantName}`
+        : generateSku(variantName);
+      
+      const variantData = {
+        product_id: productId,
+        sku,
+        price: bulkBasePrice,
+        stock_count: bulkBaseStock,
+        color: combo.color || null,
+        size: combo.size || null,
+        flavor: combo.flavor || null,
+        variant_attributes: {
+          ...(combo.color && { color: combo.color }),
+          ...(combo.size && { size: combo.size }),
+          ...(combo.flavor && { flavor: combo.flavor })
+        }
+      };
+      
+      // Create the variant in the database
+      try {
+        await handleCreateVariant(variantData);
+      } catch (error) {
+        console.error("Error creating variant:", error);
+      }
     }
   };
-
+  
   return {
     colorOptions,
     sizeOptions,
@@ -218,14 +179,15 @@ export function useBulkVariantGenerator(
     setBulkBasePrice,
     bulkBaseStock,
     setBulkBaseStock,
-    creatingBulkVariants,
-    initializeBulkGenerator,
+    skuPrefix,
+    setSkuPrefix,
     addColorOption,
     addSizeOption,
     addFlavorOption,
     removeColorOption,
     removeSizeOption,
     removeFlavorOption,
-    generateBulkVariants
+    generateBulkVariants,
+    initializeBulkGenerator
   };
 }

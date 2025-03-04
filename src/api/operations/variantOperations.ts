@@ -41,12 +41,23 @@ export const createVariant = async (variant: VariantInsert): Promise<ProductVari
       throw new Error("Product ID is required for creating variants");
     }
 
+    if (typeof variant.price !== 'number' || isNaN(variant.price)) {
+      throw new Error("Valid price is required for variants");
+    }
+
     console.log("Creating variant with data:", variant);
+    
+    // Ensure variant_attributes is always an object
+    const variantData = {
+      ...variant,
+      variant_attributes: variant.variant_attributes || {},
+      updated_at: new Date().toISOString()
+    };
     
     const { data, error } = await supabase
       .from("product_variants")
-      .insert(variant)
-      .select()
+      .insert(variantData)
+      .select("*")
       .single();
       
     if (error) {

@@ -71,6 +71,7 @@ export interface Transaction {
   completed_at?: string | null;
   amount?: number; // Added for compatibility with CustomerTransactionList
   date?: string; // Added for compatibility with CustomerTransactionList
+  customers?: { id: string; first_name?: string; last_name?: string };
 }
 
 export type { Customer, GiftCard } from './database.types';

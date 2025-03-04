@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -16,6 +16,7 @@ import SingleVariantForm from "./variants/SingleVariantForm";
 import BulkVariantGenerator from "./variants/BulkVariantGenerator";
 import VariantsTable from "./variants/VariantsTable";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
 interface ProductVariantsManagerProps {
   product: Product;
@@ -58,13 +59,39 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
     removeColorOption,
     removeSizeOption,
     removeFlavorOption,
-    generateBulkVariants
+    generateBulkVariants,
+    resetForm,
+    initializeBulkGenerator
   } = useVariantManager(product);
+
+  // Fetch variants when component mounts
+  useEffect(() => {
+    fetchVariants();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Success handler for variant creation
+  const handleVariantCreated = async (data: any) => {
+    await fetchVariants();
+    if (mode === "single") {
+      resetForm();
+      toast.success("Variant created successfully");
+    }
+  };
+
+  // Wrapper for createVariant to handle refresh after creation
+  const createVariantWithRefresh = async (variantData: any) => {
+    const result = await handleCreateVariant(variantData);
+    if (result) {
+      handleVariantCreated(result);
+    }
+    return result;
+  };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh]">
-        <ScrollArea className="max-h-[calc(90vh-100px)]">
+        <ScrollArea className="max-h-[calc(90vh-100px)]" style={{ background: "transparent" }}>
           <DialogHeader>
             <DialogTitle>
               Variants for {product.name}
@@ -81,7 +108,13 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
               </div>
               <div className="flex space-x-2">
                 <Button 
-                  onClick={() => setShowAddVariant(prev => !prev)} 
+                  onClick={() => {
+                    setShowAddVariant(prev => !prev);
+                    if (!showAddVariant) {
+                      resetForm();
+                      initializeBulkGenerator();
+                    }
+                  }} 
                   className="flex items-center gap-1"
                   variant={showAddVariant ? "secondary" : "default"}
                 >
@@ -116,7 +149,7 @@ const ProductVariantsManager = ({ product, onClose }: ProductVariantsManagerProp
                   <SingleVariantForm 
                     newVariant={newVariant}
                     setNewVariant={setNewVariant}
-                    handleCreateVariant={handleCreateVariant}
+                    handleCreateVariant={createVariantWithRefresh}
                     creatingVariant={creatingVariant}
                   />
                 </TabsContent>

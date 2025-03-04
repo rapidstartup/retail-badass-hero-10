@@ -3,7 +3,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Save, RefreshCw } from "lucide-react";
-import { ProductVariant } from "@/api/inventoryApi";
+import { ProductVariant } from "@/api/types/variantTypes";
 
 interface SingleVariantFormProps {
   newVariant: ProductVariant;
@@ -18,8 +18,32 @@ const SingleVariantForm = ({
   handleCreateVariant,
   creatingVariant
 }: SingleVariantFormProps) => {
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newVariant.price || isNaN(Number(newVariant.price))) {
+      // Use sonner toast for error message
+      console.error("Valid price is required");
+      return;
+    }
+    
+    const variantData = {
+      product_id: newVariant.product_id,
+      sku: newVariant.sku || null,
+      color: newVariant.color || null,
+      size: newVariant.size || null,
+      flavor: newVariant.flavor || null,
+      price: Number(newVariant.price),
+      stock_count: Number(newVariant.stock_count) || 0,
+      variant_attributes: newVariant.variant_attributes || {}
+    };
+    
+    await handleCreateVariant(variantData);
+  };
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="space-y-2">
         <label className="text-sm font-medium">SKU</label>
         <Input
@@ -66,6 +90,7 @@ const SingleVariantForm = ({
           placeholder="Price"
           value={newVariant.price || ""}
           onChange={(e) => setNewVariant({...newVariant, price: Number(e.target.value)})}
+          required
         />
       </div>
       
@@ -83,19 +108,7 @@ const SingleVariantForm = ({
       
       <div className="space-y-2 md:col-span-3 flex items-end">
         <Button 
-          onClick={() => {
-            const variantData = {
-              product_id: newVariant.product_id,
-              sku: newVariant.sku,
-              color: newVariant.color,
-              size: newVariant.size,
-              flavor: newVariant.flavor,
-              price: newVariant.price,
-              stock_count: newVariant.stock_count,
-              variant_attributes: newVariant.variant_attributes || {}
-            };
-            handleCreateVariant(variantData);
-          }} 
+          type="submit"
           className="w-full"
           disabled={creatingVariant}
         >
@@ -103,7 +116,7 @@ const SingleVariantForm = ({
           Create Variant
         </Button>
       </div>
-    </div>
+    </form>
   );
 };
 
