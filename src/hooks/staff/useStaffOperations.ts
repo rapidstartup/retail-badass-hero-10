@@ -133,7 +133,13 @@ export function useStaffOperations(fetchStaffMembers: () => Promise<void>) {
         
         // This is just for completeness but will likely fail without admin privileges
         try {
-          const { error: authError } = await supabase.rpc('delete_user', { user_id: authId });
+          const { error: authError } = await supabase.functions.invoke('staff', {
+            body: { 
+              userId: authId,
+              action: 'delete-user'
+            }
+          });
+          
           if (authError) {
             console.warn("Could not delete auth user (requires admin rights):", authError);
           }

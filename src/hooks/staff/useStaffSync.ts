@@ -20,8 +20,7 @@ export function useStaffSync(fetchStaffMembers: () => Promise<void>) {
         body: { 
           apiKey: goHighLevelApiKey,
           action: 'sync-gohighlevel'
-        },
-        method: 'POST'
+        }
       });
       
       if (error) {
