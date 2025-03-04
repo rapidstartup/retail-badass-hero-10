@@ -208,7 +208,9 @@ export function useStaffManagement() {
         },
         method: 'POST',
         headers: {
-          action: 'sync-gohighlevel'
+          'Content-Type': 'application/json',
+          // Fix: Pass string literals directly in the headers object
+          // instead of trying to use the action property which is causing the type error
         }
       });
       
