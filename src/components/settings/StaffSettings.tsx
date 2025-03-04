@@ -1,26 +1,26 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSettings } from "@/contexts/SettingsContext";
-import StaffForm from "./staff/StaffForm";
 import StaffList from "./staff/StaffList";
 import StaffHeader from "./staff/StaffHeader";
+import StaffFormDialog from "./staff/StaffFormDialog";
 import { useStaffManagement } from "@/hooks/useStaffManagement";
 
 const StaffSettings = () => {
   const { settings } = useSettings();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  
   const {
     staffMembers,
     loading,
     syncing,
-    isAdding,
     isEditing,
     email,
     firstName,
     lastName,
     role,
     password,
-    setIsAdding,
     setEmail,
     setFirstName,
     setLastName,
@@ -38,11 +38,16 @@ const StaffSettings = () => {
   
   const handleAddStaffClick = () => {
     resetForm();
-    setIsAdding(true);
+    setIsFormOpen(true);
   };
   
   const handleSyncWithGoHighLevel = () => {
     syncWithGoHighLevel(goHighLevelApiKey);
+  };
+
+  const handleStartEdit = (staff: any) => {
+    startEdit(staff);
+    setIsFormOpen(true);
   };
 
   return (
@@ -54,32 +59,31 @@ const StaffSettings = () => {
         syncing={syncing}
       />
       <CardContent>
-        {/* Add/Edit Form */}
-        {(isAdding || isEditing) && (
-          <StaffForm
-            isAdding={isAdding}
-            isEditing={isEditing}
-            email={email}
-            setEmail={setEmail}
-            firstName={firstName}
-            setFirstName={setFirstName}
-            lastName={lastName}
-            setLastName={setLastName}
-            role={role}
-            setRole={setRole}
-            password={password}
-            setPassword={setPassword}
-            resetForm={resetForm}
-            handleAddStaff={handleAddStaff}
-            handleEditStaff={handleEditStaff}
-          />
-        )}
+        {/* Staff Form Dialog */}
+        <StaffFormDialog
+          isOpen={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          isEditing={isEditing}
+          email={email}
+          setEmail={setEmail}
+          firstName={firstName}
+          setFirstName={setFirstName}
+          lastName={lastName}
+          setLastName={setLastName}
+          role={role}
+          setRole={setRole}
+          password={password}
+          setPassword={setPassword}
+          resetForm={resetForm}
+          handleAddStaff={handleAddStaff}
+          handleEditStaff={handleEditStaff}
+        />
         
         {/* Staff List */}
         <StaffList
           staffMembers={staffMembers}
           loading={loading}
-          startEdit={startEdit}
+          startEdit={handleStartEdit}
           handleDeleteStaff={handleDeleteStaff}
         />
       </CardContent>

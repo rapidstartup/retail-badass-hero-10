@@ -16,7 +16,6 @@ export function useStaffManagement() {
   const [syncing, setSyncing] = useState(false);
   
   // Form state
-  const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -78,7 +77,6 @@ export function useStaffManagement() {
   };
 
   const startEdit = (staff: StaffMember) => {
-    setIsAdding(false);
     setIsEditing(staff.id);
     setEmail(staff.email);
     setFirstName(staff.first_name);
@@ -88,7 +86,6 @@ export function useStaffManagement() {
   };
 
   const resetForm = () => {
-    setIsAdding(false);
     setIsEditing(null);
     setEmail("");
     setFirstName("");
@@ -114,14 +111,12 @@ export function useStaffManagement() {
     staffMembers,
     loading,
     syncing,
-    isAdding,
     isEditing,
     email,
     firstName,
     lastName,
     role,
     password,
-    setIsAdding,
     setEmail,
     setFirstName,
     setLastName,
