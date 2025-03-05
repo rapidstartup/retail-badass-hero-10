@@ -14,11 +14,14 @@ interface StaffListProps {
 }
 
 const StaffList = ({ staffMembers, loading, startEdit, handleDeleteStaff }: StaffListProps) => {
+  // Debug staff data
+  console.log("StaffList received staffMembers:", staffMembers);
+  
   if (loading) {
     return <div className="py-6 text-center">Loading staff members...</div>;
   }
 
-  if (staffMembers.length === 0) {
+  if (!staffMembers || staffMembers.length === 0) {
     return <div className="py-6 text-center">No staff members found. Add your first staff member to get started.</div>;
   }
 

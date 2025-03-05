@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSettings } from "@/contexts/SettingsContext";
 import StaffList from "./staff/StaffList";
@@ -37,6 +37,18 @@ const StaffSettings = () => {
     fetchStaffMembers
   } = useStaffManagement();
 
+  // Add an effect to periodically check for staff members during initial load
+  useEffect(() => {
+    // Debug log to track component renders and staff data
+    console.log("StaffSettings render with staffMembers:", staffMembers);
+    
+    // If no staff members are loaded yet, fetch them
+    if (!loading && staffMembers.length === 0) {
+      console.log("No staff members loaded, trying to fetch again...");
+      fetchStaffMembers();
+    }
+  }, [staffMembers, loading, fetchStaffMembers]);
+
   const goHighLevelApiKey = settings.goHighLevelApiKey;
   
   const handleAddStaffClick = () => {
@@ -59,10 +71,9 @@ const StaffSettings = () => {
   };
 
   const handleRefresh = () => {
+    console.log("Manual refresh requested");
     fetchStaffMembers();
   };
-
-  console.log("Current staff members:", staffMembers);
 
   return (
     <Card>
@@ -105,7 +116,13 @@ const StaffSettings = () => {
           handleEditStaff={handleEditStaff}
         />
         
-        {/* Staff List */}
+        {/* Staff List with Debug Info */}
+        {staffMembers.length === 0 && !loading && (
+          <div className="mb-2 p-2 bg-amber-50 text-amber-700 rounded text-sm">
+            Debug: No staff members in state. Try refreshing the list.
+          </div>
+        )}
+        
         <StaffList
           staffMembers={staffMembers}
           loading={loading}

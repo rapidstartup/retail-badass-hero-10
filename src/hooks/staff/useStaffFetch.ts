@@ -26,6 +26,11 @@ export function useStaffFetch() {
       }
       
       console.log("Staff members fetched:", data);
+      
+      if (!data || data.length === 0) {
+        console.log("No staff members found in database");
+      }
+      
       setStaffMembers(data || []);
     } catch (error: any) {
       console.error("Error fetching staff:", error);
