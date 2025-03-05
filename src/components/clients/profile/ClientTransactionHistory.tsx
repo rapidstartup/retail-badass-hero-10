@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Transaction } from "@/types/transaction";
 
@@ -7,7 +6,10 @@ import TransactionTable from "./transaction/TransactionTable";
 import RefundDialog from "./transaction/RefundDialog";
 import TransactionDetailsSheet from "./transaction/TransactionDetailsSheet";
 import TransactionPagination from "./transaction/TransactionPagination";
+import EmailDialog from "./transaction/EmailDialog";
+import TransactionInvoice from "./TransactionInvoice";
 import { useTransactionRefund } from "./transaction/useTransactionRefund";
+import { useTransactionEmail } from "./transaction/useTransactionEmail";
 
 interface ClientTransactionHistoryProps {
   transactions: Transaction[];
@@ -30,12 +32,12 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
   loading
 }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [selectedTransactionForDetails, setSelectedTransactionForDetails] = useState<Transaction | null>(null);
   
   const {
     isRefundDialogOpen,
     setIsRefundDialogOpen,
-    selectedTransaction,
-    setSelectedTransaction,
+    selectedTransaction: selectedTransactionForRefund,
     refundAmount,
     setRefundAmount,
     isProcessingRefund,
@@ -43,10 +45,28 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
     handleProcessRefund
   } = useTransactionRefund();
 
+  const {
+    isEmailDialogOpen,
+    setIsEmailDialogOpen,
+    selectedTransaction: selectedTransactionForEmail,
+    recipientEmail,
+    setRecipientEmail,
+    emailSubject,
+    setEmailSubject,
+    emailMessage,
+    setEmailMessage,
+    isSendingEmail,
+    handleEmailClick,
+    handleSendEmail
+  } = useTransactionEmail();
+
   const handleViewDetails = (transaction: Transaction) => {
-    setSelectedTransaction(transaction);
+    setSelectedTransactionForDetails(transaction);
     setIsDetailsOpen(true);
   };
+
+  // Using an ID for the invoice to be captured for email
+  const invoiceId = `transaction-invoice-preview`;
 
   return (
     <div className="space-y-4">
@@ -64,12 +84,13 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
             transactions={transactions}
             onViewDetails={handleViewDetails}
             onRefund={handleRefundClick}
+            onEmail={handleEmailClick}
           />
           
           <TransactionDetailsSheet 
             open={isDetailsOpen}
             onOpenChange={setIsDetailsOpen}
-            transaction={selectedTransaction}
+            transaction={selectedTransactionForDetails}
           />
           
           <TransactionPagination 
@@ -81,11 +102,31 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
           <RefundDialog 
             open={isRefundDialogOpen}
             onOpenChange={setIsRefundDialogOpen}
-            transaction={selectedTransaction}
+            transaction={selectedTransactionForRefund}
             refundAmount={refundAmount}
             onRefundAmountChange={setRefundAmount}
             onProcessRefund={handleProcessRefund}
             isProcessing={isProcessingRefund}
+          />
+
+          <div id={invoiceId} style={{ display: 'none' }}>
+            {selectedTransactionForEmail && (
+              <TransactionInvoice transaction={selectedTransactionForEmail} />
+            )}
+          </div>
+
+          <EmailDialog
+            open={isEmailDialogOpen}
+            onOpenChange={setIsEmailDialogOpen}
+            transaction={selectedTransactionForEmail}
+            recipientEmail={recipientEmail}
+            onRecipientEmailChange={setRecipientEmail}
+            emailSubject={emailSubject}
+            onEmailSubjectChange={setEmailSubject}
+            emailMessage={emailMessage}
+            onEmailMessageChange={setEmailMessage}
+            onSendEmail={() => handleSendEmail(invoiceId)}
+            isSending={isSendingEmail}
           />
         </>
       )}

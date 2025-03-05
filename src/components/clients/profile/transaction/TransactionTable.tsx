@@ -11,18 +11,20 @@ import {
 import { formatCurrency, formatDateTime } from "@/utils/formatters";
 import { Transaction } from "@/types/transaction";
 import { Button } from "@/components/ui/button";
-import { ArrowDownLeft, Eye } from "lucide-react";
+import { ArrowDownLeft, Eye, Mail } from "lucide-react";
 
 interface TransactionTableProps {
   transactions: Transaction[];
   onViewDetails: (transaction: Transaction) => void;
   onRefund: (transaction: Transaction) => void;
+  onEmail: (transaction: Transaction) => void;
 }
 
 const TransactionTable: React.FC<TransactionTableProps> = ({
   transactions,
   onViewDetails,
-  onRefund
+  onRefund,
+  onEmail
 }) => {
   return (
     <Table>
@@ -58,6 +60,13 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                 onClick={() => onViewDetails(transaction)}
               >
                 <Eye className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onEmail(transaction)}
+              >
+                <Mail className="h-4 w-4" />
               </Button>
               {transaction.status === 'completed' && (
                 <Button 
