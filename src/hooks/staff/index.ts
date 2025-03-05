@@ -5,7 +5,7 @@ import { useStaffOperations } from "./useStaffOperations";
 import { useStaffSync } from "./useStaffSync";
 
 export function useStaffManagement() {
-  const { staffMembers, loading, fetchStaffMembers, refetch } = useStaffFetch();
+  const { staffMembers, loading, refetch } = useStaffFetch();
   
   const {
     isEditing,
@@ -61,7 +61,6 @@ export function useStaffManagement() {
     startEdit,
     resetForm,
     syncWithGoHighLevel,
-    fetchStaffMembers,
     refetch
   };
 }

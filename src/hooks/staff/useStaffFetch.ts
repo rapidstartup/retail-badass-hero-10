@@ -41,6 +41,6 @@ export function useStaffFetch() {
     staffMembers,
     setStaffMembers,
     loading,
-    refetch: fetchStaffMembers
+    refetch: fetchStaffMembers // Rename to refetch for consistency
   };
 }
