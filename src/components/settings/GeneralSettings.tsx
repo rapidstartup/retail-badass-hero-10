@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,7 +17,6 @@ const GeneralSettings = () => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Update local state when settings change
   useEffect(() => {
     setStoreName(settings.storeName || "NextPOS");
     setStoreAddress(settings.storeAddress || "");
@@ -41,17 +39,14 @@ const GeneralSettings = () => {
     }
   };
 
-  // Upload logo image
   const uploadLogo = async (file: File) => {
     if (!file) return;
     
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.error("Please upload an image file");
       return;
     }
     
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       toast.error("Image size must be less than 2MB");
       return;
@@ -60,15 +55,12 @@ const GeneralSettings = () => {
     try {
       setIsUploading(true);
       
-      // Create a unique file name
       const fileExt = file.name.split('.').pop();
       const fileName = `logo-${Date.now()}.${fileExt}`;
       const filePath = `store-logos/${fileName}`;
       
-      // Create an optimized version of the image using canvas
       const optimizedImage = await resizeAndOptimizeImage(file, 300);
       
-      // Upload the optimized image to Supabase storage
       const { data, error } = await supabase.storage
         .from('pos-assets')
         .upload(filePath, optimizedImage, {
@@ -80,12 +72,10 @@ const GeneralSettings = () => {
         throw error;
       }
       
-      // Get the public URL for the uploaded file
       const { data: urlData } = supabase.storage
         .from('pos-assets')
         .getPublicUrl(filePath);
       
-      // Update the logoUrl state and settings
       setLogoUrl(urlData.publicUrl);
       await updateSettings({ logoUrl: urlData.publicUrl });
       
@@ -98,14 +88,12 @@ const GeneralSettings = () => {
     }
   };
   
-  // Resize and optimize image before uploading
   const resizeAndOptimizeImage = (file: File, maxWidth: number): Promise<Blob> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        const img = new Image();
+        const img = document.createElement('img');
         img.onload = () => {
-          // Calculate new dimensions while maintaining aspect ratio
           let width = img.width;
           let height = img.height;
           
@@ -114,7 +102,6 @@ const GeneralSettings = () => {
             width = maxWidth;
           }
           
-          // Create canvas and draw the resized image
           const canvas = document.createElement('canvas');
           canvas.width = width;
           canvas.height = height;
@@ -122,7 +109,6 @@ const GeneralSettings = () => {
           const ctx = canvas.getContext('2d');
           ctx!.drawImage(img, 0, 0, width, height);
           
-          // Convert to blob with 0.8 quality
           canvas.toBlob(
             (blob) => resolve(blob as Blob),
             file.type,
@@ -135,40 +121,33 @@ const GeneralSettings = () => {
     });
   };
   
-  // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       uploadLogo(e.target.files[0]);
     }
   };
   
-  // Handle logo remove
   const handleRemoveLogo = async () => {
     try {
-      // Extract the filename from the URL
       if (logoUrl) {
         const urlParts = logoUrl.split('/');
         const fileName = urlParts[urlParts.length - 1];
         const filePath = `store-logos/${fileName}`;
         
-        // Attempt to delete the file from storage
         await supabase.storage.from('pos-assets').remove([filePath]);
       }
       
-      // Update settings to remove the logo URL
       setLogoUrl('');
       await updateSettings({ logoUrl: '' });
       
       toast.success("Logo removed");
     } catch (error) {
       console.error("Error removing logo:", error);
-      // Even if storage deletion fails, still remove the URL from settings
       setLogoUrl('');
       await updateSettings({ logoUrl: '' });
     }
   };
 
-  // Update store name in real-time
   const handleStoreNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setStoreName(value);
