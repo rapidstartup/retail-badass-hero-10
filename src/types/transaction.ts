@@ -10,6 +10,8 @@ export interface Transaction {
   payment_method?: string;
   created_at: string;
   completed_at?: string;
+  refund_amount?: number;
+  refund_date?: string;
   customers?: {
     id?: string;
     first_name?: string;
