@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSettings } from "@/contexts/SettingsContext";
 import StaffList from "./staff/StaffList";
@@ -13,7 +13,6 @@ import { toast } from "sonner";
 const StaffSettings = () => {
   const { settings } = useSettings();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [manualRefreshCount, setManualRefreshCount] = useState(0);
   
   const {
     staffMembers,
@@ -39,25 +38,6 @@ const StaffSettings = () => {
     refetch
   } = useStaffManagement();
 
-  // Log staff data when it changes for debugging
-  useEffect(() => {
-    console.log("Staff members in StaffSettings:", staffMembers);
-  }, [staffMembers]);
-
-  // Auto-refresh if no staff members are loaded
-  useEffect(() => {
-    if (!loading && staffMembers.length === 0 && manualRefreshCount < 3) {
-      // Try a few automatic refreshes on initial load
-      const timer = setTimeout(() => {
-        console.log("Auto-refreshing staff list...");
-        refetch();
-        setManualRefreshCount(prev => prev + 1);
-      }, 1500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [loading, staffMembers, refetch, manualRefreshCount]);
-
   const goHighLevelApiKey = settings.goHighLevelApiKey;
   
   const handleAddStaffClick = () => {
@@ -80,9 +60,7 @@ const StaffSettings = () => {
   };
 
   const handleRefresh = () => {
-    console.log("Manual refresh requested");
     toast.info("Refreshing staff list...");
-    setManualRefreshCount(prev => prev + 1);
     refetch();
   };
 
@@ -126,13 +104,6 @@ const StaffSettings = () => {
           handleAddStaff={handleAddStaff}
           handleEditStaff={handleEditStaff}
         />
-        
-        {staffMembers.length === 0 && !loading && (
-          <div className="mb-4 p-3 bg-amber-50 text-amber-700 rounded border border-amber-200">
-            <p className="font-medium">Debug info: No staff members loaded.</p>
-            <p className="text-sm mt-1">Database may be empty or there might be a connection issue. Try adding your first staff member or check your database configuration.</p>
-          </div>
-        )}
         
         <StaffList
           staffMembers={staffMembers}

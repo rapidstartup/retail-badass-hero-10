@@ -15,9 +15,6 @@ interface StaffListProps {
 }
 
 const StaffList = ({ staffMembers, loading, startEdit, handleDeleteStaff }: StaffListProps) => {
-  // Debug staff data
-  console.log("StaffList received staffMembers:", staffMembers);
-  
   if (loading) {
     return (
       <div className="rounded-md border">
