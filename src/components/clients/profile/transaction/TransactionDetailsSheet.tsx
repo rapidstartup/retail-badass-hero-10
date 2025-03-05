@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
@@ -7,6 +7,8 @@ import TransactionInvoice from "../TransactionInvoice";
 import EmailDialog from "./EmailDialog";
 import { useTransactionEmail } from "./useTransactionEmail";
 import { Transaction } from "@/types/transaction";
+import { supabase } from "@/integrations/supabase/client";
+import { Customer } from "@/types";
 
 interface TransactionDetailsSheetProps {
   open: boolean;
@@ -21,6 +23,7 @@ const TransactionDetailsSheet: React.FC<TransactionDetailsSheetProps> = ({
 }) => {
   const invoiceRef = useRef<HTMLDivElement>(null);
   const invoiceId = `invoice-${transaction?.id || 'preview'}`;
+  const [customerDetails, setCustomerDetails] = useState<Customer | null>(null);
   
   const {
     isEmailDialogOpen,
@@ -37,6 +40,34 @@ const TransactionDetailsSheet: React.FC<TransactionDetailsSheetProps> = ({
     handleSendEmail
   } = useTransactionEmail();
 
+  // Fetch customer details from Supabase when transaction changes
+  useEffect(() => {
+    const fetchCustomerDetails = async () => {
+      if (transaction?.customer_id) {
+        try {
+          const { data, error } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('id', transaction.customer_id)
+            .single();
+          
+          if (error) {
+            console.error('Error fetching customer:', error);
+            return;
+          }
+          
+          setCustomerDetails(data);
+        } catch (error) {
+          console.error('Error fetching customer details:', error);
+        }
+      } else {
+        setCustomerDetails(null);
+      }
+    };
+
+    fetchCustomerDetails();
+  }, [transaction]);
+
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
@@ -49,7 +80,7 @@ const TransactionDetailsSheet: React.FC<TransactionDetailsSheetProps> = ({
                   size="sm" 
                   variant="outline" 
                   className="flex items-center gap-1"
-                  onClick={() => handleEmailClick(transaction, transaction.customers?.email)}
+                  onClick={() => handleEmailClick(transaction, customerDetails?.email)}
                 >
                   <Mail className="h-4 w-4" />
                   Email Receipt
@@ -63,7 +94,8 @@ const TransactionDetailsSheet: React.FC<TransactionDetailsSheetProps> = ({
           {transaction && (
             <div className="mt-6 space-y-6" id={invoiceId} ref={invoiceRef}>
               <TransactionInvoice 
-                transaction={transaction} 
+                transaction={transaction}
+                customerDetails={customerDetails}
               />
             </div>
           )}

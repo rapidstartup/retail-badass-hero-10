@@ -1,8 +1,9 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Transaction } from "@/types/transaction";
 import { useStore } from "@/hooks/useStore";
 import { useSettings } from "@/contexts/SettingsContext";
+import { Customer } from "@/types/index";
 
 // Import refactored components
 import InvoiceStoreInfo from './invoice/InvoiceStoreInfo';
@@ -15,10 +16,12 @@ import { useInvoiceEmail } from './invoice/useInvoiceEmail';
 
 interface TransactionInvoiceProps {
   transaction: Transaction;
+  customerDetails?: Customer | null;
 }
 
 const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({ 
-  transaction
+  transaction,
+  customerDetails
 }) => {
   const { store } = useStore();
   const { settings } = useSettings();
@@ -44,11 +47,11 @@ const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({
   React.useEffect(() => {
     if (transaction) {
       initializeEmailData(
-        transaction.customers?.email || '',
+        customerDetails?.email || transaction.customers?.email || '',
         `Receipt from ${store?.store_name || 'NextPOS'} - #${transaction.id.slice(0, 8)}`
       );
     }
-  }, [transaction, store?.store_name]);
+  }, [transaction, store?.store_name, customerDetails]);
   
   // Handle download button click
   const handleDownloadInvoice = async () => {
@@ -117,10 +120,10 @@ const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({
 
         {/* Customer Information */}
         <InvoiceCustomerInfo 
-          firstName={transaction.customers?.first_name} 
-          lastName={transaction.customers?.last_name} 
-          email={transaction.customers?.email} 
-          phone={transaction.customers?.phone}
+          firstName={customerDetails?.first_name || transaction.customers?.first_name} 
+          lastName={customerDetails?.last_name || transaction.customers?.last_name} 
+          email={customerDetails?.email || transaction.customers?.email} 
+          phone={customerDetails?.phone || transaction.customers?.phone}
         />
 
         {/* Transaction Details */}

@@ -16,11 +16,30 @@ export const useTransactionEmail = () => {
   );
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
-  const handleEmailClick = (transaction: Transaction, defaultEmail?: string) => {
+  const handleEmailClick = async (transaction: Transaction, defaultEmail?: string) => {
     setSelectedTransaction(transaction);
     
-    // Prioritize the customer email from the transaction
-    const customerEmail = transaction.customers?.email || defaultEmail || "";
+    let customerEmail = defaultEmail || "";
+    
+    // If no email provided and we have a customer_id, fetch from Supabase
+    if (!customerEmail && transaction.customer_id) {
+      try {
+        const { data, error } = await supabase
+          .from('customers')
+          .select('email')
+          .eq('id', transaction.customer_id)
+          .single();
+        
+        if (!error && data) {
+          customerEmail = data.email || "";
+        }
+      } catch (error) {
+        console.error('Error fetching customer email:', error);
+      }
+    }
+    
+    // Fallback to transaction.customers?.email if still no email
+    customerEmail = customerEmail || transaction.customers?.email || "";
     
     // Set the email recipient to the customer's email address
     setRecipientEmail(customerEmail);
