@@ -99,6 +99,16 @@ const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({
     await sendInvoice(pdfBase64, store?.store_name || 'NextPOS');
   };
 
+  // Get the appropriate background color based on the current theme
+  const backgroundColor = settings.theme === 'light' 
+    ? settings.lightModeColors.background 
+    : settings.darkModeColors.background;
+
+  // Get the appropriate text color based on the current theme
+  const textColor = settings.theme === 'light'
+    ? settings.lightModeColors.text
+    : settings.darkModeColors.text;
+
   return (
     <div className="space-y-6">
       {/* Invoice Content - Wrapped in a ref for PDF generation */}
@@ -106,8 +116,8 @@ const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({
         ref={invoiceRef} 
         className="theme-container-bg p-6 space-y-6 rounded-lg border border-border"
         style={{ 
-          backgroundColor: 'white', 
-          color: '#333'
+          backgroundColor: backgroundColor, 
+          color: textColor
         }}
       >
         {/* Store Information */}
