@@ -44,21 +44,23 @@ const StaffSettings = () => {
   useEffect(() => {
     const checkConnection = async () => {
       try {
+        console.log("Checking Supabase connection...");
+        
         // Simple query to check connection
         const { error } = await supabase.from('staff').select('id').limit(1);
         
         if (error) {
           console.error("Supabase connection check failed:", error);
           setSupabaseConnected(false);
-          toast.error("Could not connect to Supabase staff table");
+          toast.error("Cannot connect to staff database - please check your network");
         } else {
-          console.log("Supabase connection successful, staff table exists");
+          console.log("Supabase connection confirmed");
           setSupabaseConnected(true);
         }
       } catch (err) {
         console.error("Supabase connection error:", err);
         setSupabaseConnected(false);
-        toast.error("Failed to connect to database");
+        toast.error("Database connection error");
       }
     };
     
@@ -107,11 +109,9 @@ const StaffSettings = () => {
                 Warning: Cannot connect to staff database table
               </div>
             )}
-            {staffMembers && (
-              <div className="text-muted-foreground text-sm">
-                Found {staffMembers.length} staff members
-              </div>
-            )}
+            <div className="text-muted-foreground text-sm">
+              Found {staffMembers?.length || 0} staff members
+            </div>
           </div>
           <Button 
             variant="outline" 
@@ -145,7 +145,7 @@ const StaffSettings = () => {
         />
         
         <StaffList
-          staffMembers={staffMembers}
+          staffMembers={staffMembers || []}
           loading={loading}
           startEdit={handleStartEdit}
           handleDeleteStaff={handleDeleteStaff}
