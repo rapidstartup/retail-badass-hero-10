@@ -1,12 +1,28 @@
 
 import React from "react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, TooltipProps } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 interface TopProductsChartProps {
   topProducts: any[] | undefined;
   isLoading: boolean;
 }
+
+// Custom tooltip component with improved contrast
+const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-theme-background border border-theme-accent rounded-md shadow-lg p-3">
+        <p className="font-medium text-theme-text">Product: {label}</p>
+        <p className="text-theme-text">
+          Sales: <span className="font-medium">{payload[0].value}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 const TopProductsChart: React.FC<TopProductsChartProps> = ({ topProducts, isLoading }) => {
   return (
@@ -26,8 +42,8 @@ const TopProductsChart: React.FC<TopProductsChartProps> = ({ topProducts, isLoad
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
-              <Bar dataKey="sales" fill="hsl(var(--primary))" />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="sales" fill="var(--theme-accent-color)" />
             </BarChart>
           )}
         </ResponsiveContainer>

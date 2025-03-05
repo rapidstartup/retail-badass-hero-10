@@ -1,12 +1,28 @@
 
 import React from "react";
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, TooltipProps } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 interface SalesOverviewChartProps {
   salesData: any[] | undefined;
   isLoading: boolean;
 }
+
+// Custom tooltip component with improved contrast
+const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-theme-background border border-theme-accent rounded-md shadow-lg p-3">
+        <p className="font-medium text-theme-text">Month: {label}</p>
+        <p className="text-theme-text">
+          Revenue: <span className="font-medium">${payload[0].value}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({ salesData, isLoading }) => {
   return (
@@ -28,15 +44,13 @@ const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({ salesData, isLo
               <YAxis 
                 tickFormatter={(value) => `$${value}`}
               />
-              <Tooltip 
-                formatter={(value) => [`$${value}`, 'Revenue']}
-                labelFormatter={(label) => `Month: ${label}`}
-              />
+              <Tooltip content={<CustomTooltip />} />
               <Area 
                 type="monotone" 
                 dataKey="total" 
-                stroke="hsl(var(--primary))" 
-                fill="hsl(var(--primary) / 0.2)" 
+                stroke="var(--theme-accent-color)" 
+                fill="var(--theme-accent-color)"
+                fillOpacity={0.2}
               />
             </AreaChart>
           )}
