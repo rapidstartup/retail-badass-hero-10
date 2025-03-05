@@ -72,6 +72,7 @@ const GeneralSettings = () => {
         });
       
       if (error) {
+        console.error("Error uploading logo:", error);
         throw error;
       }
       
@@ -80,7 +81,9 @@ const GeneralSettings = () => {
         .getPublicUrl(filePath);
       
       setLogoUrl(urlData.publicUrl);
+      
       await updateSettings({ logoUrl: urlData.publicUrl });
+      await saveSettings();
       
       toast.success("Logo uploaded successfully");
     } catch (error) {
@@ -137,17 +140,23 @@ const GeneralSettings = () => {
         const fileName = urlParts[urlParts.length - 1];
         const filePath = `store-logos/${fileName}`;
         
-        await supabase.storage.from('pos-assets').remove([filePath]);
+        const { error } = await supabase.storage.from('pos-assets').remove([filePath]);
+        
+        if (error) {
+          console.error("Error removing logo file:", error);
+        }
       }
       
       setLogoUrl('');
       await updateSettings({ logoUrl: '' });
+      await saveSettings();
       
       toast.success("Logo removed");
     } catch (error) {
       console.error("Error removing logo:", error);
       setLogoUrl('');
       await updateSettings({ logoUrl: '' });
+      await saveSettings();
     }
   };
 
@@ -164,7 +173,6 @@ const GeneralSettings = () => {
   const handleStoreNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setStoreName(value);
-    updateSettings({ storeName: value });
   };
 
   return (
