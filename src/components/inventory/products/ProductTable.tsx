@@ -23,6 +23,21 @@ const ProductTable = ({
   handleManageVariants,
   handleDeleteProduct
 }: ProductTableProps) => {
+  
+  const handleEditClick = (product: Product, e: React.MouseEvent) => {
+    console.log("Edit product clicked");
+    e.preventDefault();
+    e.stopPropagation();
+    handleEditProduct(product, e);
+  };
+  
+  const handleVariantsClick = (product: Product, e: React.MouseEvent) => {
+    console.log("Manage variants clicked");
+    e.preventDefault();
+    e.stopPropagation();
+    handleManageVariants(product, e);
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -70,13 +85,9 @@ const ProductTable = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={(e) => {
-                      console.log("Manage variants clicked");
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleManageVariants(product, e);
-                    }}
+                    onClick={(e) => handleVariantsClick(product, e)}
                     className="flex items-center gap-1"
+                    type="button"
                   >
                     <Eye className="h-3 w-3" />
                     Manage
@@ -90,20 +101,22 @@ const ProductTable = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={(e) => {
-                      console.log("Edit product clicked");
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleEditProduct(product, e);
-                    }}
+                    onClick={(e) => handleEditClick(product, e)}
                     title="Edit product"
                     aria-label="Edit product"
+                    type="button"
                   >
                     <FileEdit className="h-4 w-4" />
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="icon" title="Delete product" aria-label="Delete product">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        title="Delete product" 
+                        aria-label="Delete product"
+                        type="button"
+                      >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </AlertDialogTrigger>

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useProducts } from "@/contexts/ProductContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { deleteProduct } from "@/api/productApi";
 import { toast } from "sonner";
 import ProductForm from "./ProductForm";
@@ -122,14 +122,15 @@ const ProductManagement = () => {
         open={showAddForm} 
         onOpenChange={(open) => {
           console.log("Add dialog onOpenChange:", open);
-          setShowAddForm(open);
           if (!open) {
             console.log("Closing add dialog");
             setSelectedProduct(null);
           }
+          setShowAddForm(open);
         }}
       >
         <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
+          <DialogTitle>Add New Product</DialogTitle>
           <ProductForm onClose={handleFormClose} onSave={refreshProducts} threeColumns={true} />
         </DialogContent>
       </Dialog>
@@ -139,14 +140,15 @@ const ProductManagement = () => {
         open={showEditForm} 
         onOpenChange={(open) => {
           console.log("Edit dialog onOpenChange:", open);
-          setShowEditForm(open);
           if (!open) {
             console.log("Closing edit dialog");
             setSelectedProduct(null);
           }
+          setShowEditForm(open);
         }}
       >
         <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
+          <DialogTitle>Edit Product</DialogTitle>
           {selectedProduct && (
             <ProductForm 
               product={selectedProduct} 
