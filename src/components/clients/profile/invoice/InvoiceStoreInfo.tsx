@@ -2,20 +2,28 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Image } from "lucide-react";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface InvoiceStoreInfoProps {
   storeName: string;
-  storeAddress: string;
-  storePhone: string;
+  storeAddress?: string;
+  storePhone?: string;
   logoUrl?: string;
 }
 
 const InvoiceStoreInfo: React.FC<InvoiceStoreInfoProps> = ({
   storeName,
-  storeAddress,
-  storePhone,
+  storeAddress: propStoreAddress,
+  storePhone: propStorePhone,
   logoUrl
 }) => {
+  // Get settings data to ensure we always have the latest store info
+  const { settings } = useSettings();
+  
+  // Use props if provided, otherwise fall back to settings
+  const storeAddress = propStoreAddress || settings.storeAddress;
+  const storePhone = propStorePhone || settings.storePhone;
+
   return (
     <Card className="border-none shadow-none">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -39,8 +47,8 @@ const InvoiceStoreInfo: React.FC<InvoiceStoreInfoProps> = ({
         )}
       </CardHeader>
       <CardContent className="grid gap-2 text-sm pt-0">
-        <p>{storeAddress}</p>
-        <p>{storePhone}</p>
+        {storeAddress && <p>{storeAddress}</p>}
+        {storePhone && <p>{storePhone}</p>}
       </CardContent>
     </Card>
   );
