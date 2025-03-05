@@ -101,8 +101,11 @@ const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({
       {/* Invoice Content - Wrapped in a ref for PDF generation */}
       <div 
         ref={invoiceRef} 
-        className="bg-white p-6 space-y-6 rounded-lg border text-black"
-        style={{ backgroundColor: 'white', color: '#333' }}
+        className="theme-container-bg p-6 space-y-6 rounded-lg border border-border"
+        style={{ 
+          backgroundColor: 'white', 
+          color: '#333'
+        }}
       >
         {/* Store Information */}
         <InvoiceStoreInfo 

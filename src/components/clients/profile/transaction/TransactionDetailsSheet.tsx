@@ -40,7 +40,7 @@ const TransactionDetailsSheet: React.FC<TransactionDetailsSheetProps> = ({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="w-full sm:max-w-3xl overflow-y-auto">
+        <SheetContent className="w-full sm:max-w-3xl overflow-y-auto theme-bg">
           <SheetHeader>
             <div className="flex justify-between items-center">
               <SheetTitle>Transaction Details</SheetTitle>
