@@ -12,6 +12,7 @@ import {
   fetchCurrentPeriodTransactions,
   fetchPreviousPeriodTransactions,
   fetchTodayTransactions,
+  fetchYesterdayTransactions,
   fetchCurrentPeriodCustomers,
   fetchPreviousPeriodCustomers
 } from './index';
@@ -28,12 +29,14 @@ export const useDashboardStats = (periodType: PeriodType) => {
         currentPeriodTransactions,
         previousPeriodTransactions, 
         todayTransactions,
+        yesterdayTransactions,
         currentPeriodCustomers,
         previousPeriodCustomers
       ] = await Promise.all([
         fetchCurrentPeriodTransactions(currentPeriodStart),
         fetchPreviousPeriodTransactions(previousPeriodStart, previousPeriodEnd),
         fetchTodayTransactions(today),
+        fetchYesterdayTransactions(),
         fetchCurrentPeriodCustomers(currentPeriodStart),
         fetchPreviousPeriodCustomers(previousPeriodStart, previousPeriodEnd)
       ]);
@@ -42,6 +45,7 @@ export const useDashboardStats = (periodType: PeriodType) => {
       const currentPeriodSales = currentPeriodTransactions.reduce((sum, t) => sum + t.total, 0);
       const previousPeriodSales = previousPeriodTransactions.reduce((sum, t) => sum + t.total, 0);
       const todaySales = todayTransactions.reduce((sum, t) => sum + t.total, 0);
+      const yesterdaySales = yesterdayTransactions.reduce((sum, t) => sum + t.total, 0);
       
       // Calculate items sold
       const currentPeriodItemsSold = calculateItemsSold(currentPeriodTransactions);
@@ -50,6 +54,7 @@ export const useDashboardStats = (periodType: PeriodType) => {
       
       // Calculate period-over-period trend percentages
       const salesTrend = calculateTrendPercentage(currentPeriodSales, previousPeriodSales);
+      const todaySalesTrend = calculateTrendPercentage(todaySales, yesterdaySales);
       const transactionTrend = calculateTrendPercentage(
         currentPeriodTransactions.length, 
         previousPeriodTransactions.length
@@ -66,6 +71,7 @@ export const useDashboardStats = (periodType: PeriodType) => {
       // Prepare dashboard stats object
       const dashboardStats: DashboardStats = {
         todaySales,
+        todaySalesTrend,
         currentPeriodSales,
         salesTrend,
         transactionCount: currentPeriodTransactions.length,

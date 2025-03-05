@@ -41,6 +41,26 @@ export const fetchTodayTransactions = async (today: Date) => {
   return data || [];
 };
 
+export const fetchYesterdayTransactions = async () => {
+  // Get yesterday's date range
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setHours(0, 0, 0, 0);
+  
+  const yesterdayEnd = new Date(yesterday);
+  yesterdayEnd.setHours(23, 59, 59, 999);
+  
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('total, items')
+    .gte('created_at', yesterday.toISOString())
+    .lte('created_at', yesterdayEnd.toISOString())
+    .eq('status', 'completed');
+  
+  if (error) throw error;
+  return data || [];
+};
+
 export const fetchCurrentPeriodCustomers = async (currentPeriodStart: Date) => {
   const { data, error } = await supabase
     .from('customers')

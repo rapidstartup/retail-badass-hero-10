@@ -30,7 +30,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [periodType, setPeriodType] = useState<PeriodType>('week');
   
-  // Fetch dashboard data
   const { data: stats, isLoading: statsLoading } = useDashboardStats(periodType);
   const { data: salesData, isLoading: salesLoading } = useSalesOverview();
   const { data: topProducts, isLoading: productsLoading } = useTopProducts();
@@ -44,7 +43,6 @@ const Dashboard = () => {
     setPeriodType(value as PeriodType);
   };
 
-  // Get period subtitle text based on period type
   const getPeriodSubtitle = (type: PeriodType): string => {
     switch (type) {
       case 'day':
@@ -77,16 +75,15 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <StatCard 
           title="Today's Sales"
           description={!statsLoading ? stats?.formattedDate : undefined}
           value={statsLoading ? "Loading..." : formatCurrency(stats?.todaySales || 0)}
           trend={!statsLoading && stats ? { 
-            value: stats.salesTrend, 
-            positive: stats.salesTrend > 0,
-            periodLabel: stats.periodLabel
+            value: stats.todaySalesTrend, 
+            positive: stats.todaySalesTrend > 0,
+            periodLabel: "yesterday"
           } : undefined}
           icon={<DollarSign className="h-6 w-6" />}
         />
@@ -125,7 +122,6 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Charts */}
       <div className="grid gap-6 md:grid-cols-2 mb-6">
         <Card>
           <CardHeader>
@@ -186,7 +182,6 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Recent Transactions */}
       <Card>
         <CardHeader>
           <CardTitle>Recent Transactions</CardTitle>

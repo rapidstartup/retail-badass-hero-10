@@ -3,6 +3,7 @@ export type PeriodType = 'day' | 'week' | 'month';
 
 export interface DashboardStats {
   todaySales: number;
+  todaySalesTrend: number;
   currentPeriodSales: number;
   salesTrend: number;
   transactionCount: number;

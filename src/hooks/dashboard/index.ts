@@ -6,6 +6,7 @@ import {
   fetchCurrentPeriodTransactions, 
   fetchPreviousPeriodTransactions,
   fetchTodayTransactions,
+  fetchYesterdayTransactions,
   fetchCurrentPeriodCustomers,
   fetchPreviousPeriodCustomers 
 } from './useDashboardQueries';
@@ -21,6 +22,7 @@ export {
   fetchCurrentPeriodTransactions, 
   fetchPreviousPeriodTransactions,
   fetchTodayTransactions,
+  fetchYesterdayTransactions,
   fetchCurrentPeriodCustomers,
   fetchPreviousPeriodCustomers,
   useDashboardStats
