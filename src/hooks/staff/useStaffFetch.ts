@@ -12,17 +12,29 @@ export function useStaffFetch() {
     setLoading(true);
     
     try {
-      console.log("Fetching staff members from Supabase...");
+      console.log("Fetching staff members directly from Supabase staff table...");
       
+      // Check Supabase connection
+      console.log("Supabase URL:", supabase.supabaseUrl);
+      
+      // Explicitly set timeout for fetch operation
       const { data, error } = await supabase
         .from('staff')
-        .select('*');
+        .select('*')
+        .timeout(10000); // 10 second timeout
       
       if (error) {
+        console.error("Supabase error:", error);
         throw error;
       }
       
       console.log("Staff data fetched successfully:", data);
+      if (data && data.length > 0) {
+        console.log("First staff member:", data[0]);
+      } else {
+        console.log("No staff members found in the database");
+      }
+      
       setStaffMembers(data || []);
     } catch (error: any) {
       console.error("Error fetching staff:", error);
@@ -34,13 +46,15 @@ export function useStaffFetch() {
 
   // Initial fetch on mount
   useEffect(() => {
+    console.log("useStaffFetch hook mounted, fetching staff...");
     fetchStaffMembers();
   }, []);
 
+  // Expose refetch method for manual refreshes
   return {
     staffMembers,
     setStaffMembers,
     loading,
-    refetch: fetchStaffMembers // Rename to refetch for consistency
+    refetch: fetchStaffMembers
   };
 }
