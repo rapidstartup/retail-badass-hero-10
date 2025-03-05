@@ -254,6 +254,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          logo_url: string | null
           store_address: string | null
           store_name: string | null
           store_phone: string | null
@@ -271,6 +272,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          logo_url?: string | null
           store_address?: string | null
           store_name?: string | null
           store_phone?: string | null
@@ -288,6 +290,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          logo_url?: string | null
           store_address?: string | null
           store_name?: string | null
           store_phone?: string | null

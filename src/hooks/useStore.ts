@@ -20,20 +20,28 @@ export const useStore = () => {
   const { data: store, isLoading } = useQuery({
     queryKey: ["store-settings"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("settings")
-        .select("store_name, store_address, store_phone, logo_url")
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("settings")
+          .select("store_name, store_address, store_phone, logo_url")
+          .single();
 
-      if (error) throw error;
-      
-      // Merge fetched data with defaults for any missing fields
-      return {
-        store_name: data.store_name || DEFAULT_STORE.store_name,
-        store_address: data.store_address || DEFAULT_STORE.store_address,
-        store_phone: data.store_phone || DEFAULT_STORE.store_phone,
-        logo_url: data.logo_url
-      } as StoreSettings;
+        if (error) {
+          console.error("Error fetching store settings:", error);
+          return DEFAULT_STORE;
+        }
+        
+        // Merge fetched data with defaults for any missing fields
+        return {
+          store_name: data?.store_name || DEFAULT_STORE.store_name,
+          store_address: data?.store_address || DEFAULT_STORE.store_address,
+          store_phone: data?.store_phone || DEFAULT_STORE.store_phone,
+          logo_url: data?.logo_url
+        } as StoreSettings;
+      } catch (error) {
+        console.error("Unexpected error fetching store settings:", error);
+        return DEFAULT_STORE;
+      }
     },
     placeholderData: DEFAULT_STORE
   });
