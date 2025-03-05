@@ -3,6 +3,7 @@ import React from "react";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, TooltipProps } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
+import { format } from "date-fns";
 
 interface SalesOverviewChartProps {
   salesData: any[] | undefined;
@@ -14,7 +15,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameT
   if (active && payload && payload.length) {
     return (
       <div className="bg-theme-background border border-theme-accent rounded-md shadow-lg p-3">
-        <p className="font-medium text-theme-text">Month: {label}</p>
+        <p className="font-medium text-theme-text">Date: {label}</p>
         <p className="text-theme-text">
           Revenue: <span className="font-medium">${payload[0].value}</span>
         </p>
@@ -25,11 +26,17 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameT
 };
 
 const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({ salesData, isLoading }) => {
+  // Format the date data for the chart
+  const formattedData = salesData?.map(item => ({
+    name: format(new Date(item.date), 'MMM dd'),
+    total: item.sales
+  })) || [];
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Sales Overview</CardTitle>
-        <CardDescription>Monthly sales performance</CardDescription>
+        <CardDescription>Daily sales performance</CardDescription>
       </CardHeader>
       <CardContent className="pl-2">
         <ResponsiveContainer width="100%" height={300}>
@@ -38,7 +45,7 @@ const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({ salesData, isLo
               <p className="text-muted-foreground">Loading sales data...</p>
             </div>
           ) : (
-            <AreaChart data={salesData}>
+            <AreaChart data={formattedData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis 

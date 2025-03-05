@@ -29,7 +29,7 @@ const TopProductsChart: React.FC<TopProductsChartProps> = ({ topProducts, isLoad
     <Card>
       <CardHeader>
         <CardTitle>Top Products</CardTitle>
-        <CardDescription>Best selling items this week</CardDescription>
+        <CardDescription>Best selling items this period</CardDescription>
       </CardHeader>
       <CardContent className="pl-2">
         <ResponsiveContainer width="100%" height={300}>
@@ -43,7 +43,7 @@ const TopProductsChart: React.FC<TopProductsChartProps> = ({ topProducts, isLoad
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="sales" fill="var(--theme-accent-color)" />
+              <Bar dataKey="quantity" fill="var(--theme-accent-color)" />
             </BarChart>
           )}
         </ResponsiveContainer>

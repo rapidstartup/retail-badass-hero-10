@@ -15,7 +15,9 @@ const Reports = () => {
     topProducts,
     dailySales,
     topCustomers,
-    inventoryStatus
+    inventoryStatus,
+    stats,
+    isLoading
   } = useReportData();
 
   return (
@@ -25,7 +27,10 @@ const Reports = () => {
         handleDateRangeChange={handleDateRangeChange} 
       />
       
-      <ReportStatCards />
+      <ReportStatCards 
+        stats={stats}
+        isLoading={isLoading}
+      />
       
       <ReportTabs 
         activeTab={activeTab}
