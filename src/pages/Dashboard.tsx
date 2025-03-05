@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, BarChart as ReBarChart, Bar } from "recharts";
 import { useNavigate } from "react-router-dom";
-import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useDashboardStats, PeriodType } from "@/hooks/dashboard";
 import { useSalesOverview } from "@/hooks/useSalesOverview";
 import { useTopProducts } from "@/hooks/useTopProducts";
 import { useRecentTransactions } from "@/hooks/useRecentTransactions";
