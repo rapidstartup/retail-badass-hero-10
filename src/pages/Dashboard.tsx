@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import StatCard from "@/components/StatCard";
-import { formatCurrency, formatNumber } from "@/utils/formatters";
+import { formatCurrency, formatNumber, formatDate } from "@/utils/formatters";
 import { 
   CreditCard, 
   DollarSign, 
@@ -78,7 +78,7 @@ const Dashboard = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <StatCard 
           title="Today's Sales"
-          description={!statsLoading ? stats?.formattedDate : undefined}
+          description={!statsLoading ? formatDate(new Date()) : undefined}
           value={statsLoading ? "Loading..." : formatCurrency(stats?.todaySales || 0)}
           trend={!statsLoading && stats ? { 
             value: stats.todaySalesTrend, 
