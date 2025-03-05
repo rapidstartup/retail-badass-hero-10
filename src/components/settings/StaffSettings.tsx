@@ -15,6 +15,7 @@ const StaffSettings = () => {
   const { settings } = useSettings();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [supabaseConnected, setSupabaseConnected] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
   
   const {
     staffMembers,
@@ -40,7 +41,7 @@ const StaffSettings = () => {
     refetch
   } = useStaffManagement();
 
-  // Check Supabase connection on mount
+  // Check Supabase connection on mount and after staff changes
   useEffect(() => {
     const checkConnection = async () => {
       try {
@@ -65,7 +66,12 @@ const StaffSettings = () => {
     };
     
     checkConnection();
-  }, []);
+  }, [lastRefresh]);
+
+  // Check if we have staff data
+  useEffect(() => {
+    console.log("Current staff members:", staffMembers);
+  }, [staffMembers]);
 
   const goHighLevelApiKey = settings.goHighLevelApiKey;
   
@@ -91,6 +97,7 @@ const StaffSettings = () => {
   const handleRefresh = () => {
     toast.info("Refreshing staff list...");
     refetch();
+    setLastRefresh(Date.now());
   };
 
   return (
@@ -110,7 +117,7 @@ const StaffSettings = () => {
               </div>
             )}
             <div className="text-muted-foreground text-sm">
-              Found {staffMembers?.length || 0} staff members
+              Found {Array.isArray(staffMembers) ? staffMembers.length : 0} staff members
             </div>
           </div>
           <Button 
@@ -145,7 +152,7 @@ const StaffSettings = () => {
         />
         
         <StaffList
-          staffMembers={staffMembers || []}
+          staffMembers={Array.isArray(staffMembers) ? staffMembers : []}
           loading={loading}
           startEdit={handleStartEdit}
           handleDeleteStaff={handleDeleteStaff}
