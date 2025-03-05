@@ -11,6 +11,7 @@ interface StatCardProps {
   trend?: {
     value: number;
     positive: boolean;
+    periodLabel?: string; // Add custom period label
   };
   className?: string;
 }
@@ -41,7 +42,9 @@ const StatCard = ({
                 )}>
                   {trend.positive ? "+" : "-"}{Math.abs(trend.value)}%
                 </span>
-                <span className="text-xs text-muted-foreground ml-1">vs. last period</span>
+                <span className="text-xs text-muted-foreground ml-1">
+                  vs. {trend.periodLabel || "last period"}
+                </span>
               </div>
             )}
           </div>

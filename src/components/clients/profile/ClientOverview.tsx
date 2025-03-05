@@ -20,6 +20,12 @@ interface ClientOverviewProps {
 }
 
 const ClientOverview: React.FC<ClientOverviewProps> = ({ metrics, timeframe, setTimeframe }) => {
+  const periodLabels = {
+    "30days": "previous 30 days",
+    "90days": "previous 90 days",
+    "alltime": "all time"
+  };
+
   return (
     <Card className="theme-container-bg border">
       <CardHeader>
@@ -57,16 +63,31 @@ const ClientOverview: React.FC<ClientOverviewProps> = ({ metrics, timeframe, set
             title="Avg. Transaction" 
             value={formatCurrency(metrics.avgTransaction)}
             icon={<Receipt className="h-6 w-6" />}
+            trend={timeframe !== "alltime" ? {
+              value: 0, // This would need to be calculated based on previous periods
+              positive: true,
+              periodLabel: periodLabels[timeframe as keyof typeof periodLabels]
+            } : undefined}
           />
           <StatCard 
             title="Transactions" 
             value={metrics.numTransactions.toString()}
             icon={<ShoppingBag className="h-6 w-6" />}
+            trend={timeframe !== "alltime" ? {
+              value: 0, // This would need to be calculated based on previous periods
+              positive: true,
+              periodLabel: periodLabels[timeframe as keyof typeof periodLabels]
+            } : undefined}
           />
           <StatCard 
             title="Total Spent" 
             value={formatCurrency(metrics.totalSpent)}
             icon={<CreditCard className="h-6 w-6" />}
+            trend={timeframe !== "alltime" ? {
+              value: 0, // This would need to be calculated based on previous periods
+              positive: true,
+              periodLabel: periodLabels[timeframe as keyof typeof periodLabels]
+            } : undefined}
           />
         </div>
       </CardContent>

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import StatCard from "@/components/StatCard";
 import { formatCurrency, formatNumber } from "@/utils/formatters";
@@ -19,12 +19,22 @@ import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useSalesOverview } from "@/hooks/useSalesOverview";
 import { useTopProducts } from "@/hooks/useTopProducts";
 import { useRecentTransactions } from "@/hooks/useRecentTransactions";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type PeriodType = 'day' | 'week' | 'month';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [periodType, setPeriodType] = useState<PeriodType>('week');
   
   // Fetch dashboard data
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: stats, isLoading: statsLoading } = useDashboardStats(periodType);
   const { data: salesData, isLoading: salesLoading } = useSalesOverview();
   const { data: topProducts, isLoading: productsLoading } = useTopProducts();
   const { data: recentTransactions, isLoading: transactionsLoading } = useRecentTransactions();
@@ -33,11 +43,27 @@ const Dashboard = () => {
     navigate("/pos");
   };
   
+  const handlePeriodChange = (value: string) => {
+    setPeriodType(value as PeriodType);
+  };
+  
   return (
     <Layout>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <Button onClick={handleNewTransaction}>New Transaction</Button>
+        <div className="flex items-center gap-4">
+          <Select value={periodType} onValueChange={handlePeriodChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="day">Daily</SelectItem>
+              <SelectItem value="week">Weekly</SelectItem>
+              <SelectItem value="month">Monthly</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={handleNewTransaction}>New Transaction</Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -46,25 +72,41 @@ const Dashboard = () => {
           title="Today's Sales"
           description={!statsLoading ? stats?.formattedDate : undefined}
           value={statsLoading ? "Loading..." : formatCurrency(stats?.todaySales || 0)}
-          trend={!statsLoading && stats ? { value: stats.salesTrend, positive: stats.salesTrend > 0 } : undefined}
+          trend={!statsLoading && stats ? { 
+            value: stats.salesTrend, 
+            positive: stats.salesTrend > 0,
+            periodLabel: stats.periodLabel
+          } : undefined}
           icon={<DollarSign className="h-6 w-6" />}
         />
         <StatCard 
-          title="Transactions" 
+          title={`${periodType === 'day' ? 'Today' : periodType === 'week' ? 'This Week' : 'This Month'}'s Transactions`}
           value={statsLoading ? "Loading..." : formatNumber(stats?.transactionCount || 0)}
-          trend={!statsLoading && stats ? { value: stats.transactionTrend, positive: stats.transactionTrend > 0 } : undefined}
+          trend={!statsLoading && stats ? { 
+            value: stats.transactionTrend, 
+            positive: stats.transactionTrend > 0,
+            periodLabel: stats.periodLabel
+          } : undefined}
           icon={<CreditCard className="h-6 w-6" />}
         />
         <StatCard 
-          title="New Customers" 
+          title={`New Customers (${periodType === 'day' ? 'Today' : periodType === 'week' ? 'This Week' : 'This Month'})`}
           value={statsLoading ? "Loading..." : formatNumber(stats?.newCustomersCount || 0)}
-          trend={!statsLoading && stats ? { value: stats.customersTrend, positive: stats.customersTrend > 0 } : undefined}
+          trend={!statsLoading && stats ? { 
+            value: stats.customersTrend, 
+            positive: stats.customersTrend > 0,
+            periodLabel: stats.periodLabel
+          } : undefined}
           icon={<Users className="h-6 w-6" />}
         />
         <StatCard 
-          title="Items Sold" 
-          value={statsLoading ? "Loading..." : formatNumber(stats?.itemsSold || 0)}
-          trend={!statsLoading && stats ? { value: stats.itemsSoldTrend, positive: stats.itemsSoldTrend > 0 } : undefined}
+          title={`Items Sold (${periodType === 'day' ? 'Today' : periodType === 'week' ? 'This Week' : 'This Month'})`}
+          value={statsLoading ? "Loading..." : formatNumber(periodType === 'day' ? stats?.todayItemsSold || 0 : stats?.itemsSold || 0)}
+          trend={!statsLoading && stats ? { 
+            value: stats.itemsSoldTrend, 
+            positive: stats.itemsSoldTrend > 0,
+            periodLabel: stats.periodLabel
+          } : undefined}
           icon={<ShoppingCart className="h-6 w-6" />}
         />
       </div>

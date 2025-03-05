@@ -3,9 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DateRange } from "react-day-picker";
 
-export const useTransactionStats = (dateRange?: DateRange) => {
+type PeriodType = 'day' | 'week' | 'month';
+
+export const useTransactionStats = (dateRange?: DateRange, periodType: PeriodType = 'week') => {
   return useQuery({
-    queryKey: ["transaction-stats", dateRange],
+    queryKey: ["transaction-stats", dateRange, periodType],
     queryFn: async () => {
       let query = supabase
         .from('transactions')
@@ -49,38 +51,83 @@ export const useTransactionStats = (dateRange?: DateRange) => {
         ? totalSales / completedCount 
         : 0;
       
+      // Today's date at midnight
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+      
+      // Calculate today's sales
       const todayTransactions = transactions.filter(tx => 
         new Date(tx.created_at) >= today && 
         tx.status === 'completed'
       );
       const todaySales = todayTransactions.reduce((sum, tx) => sum + (tx.total || 0), 0);
       
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      sevenDaysAgo.setHours(0, 0, 0, 0);
+      // Get dates for comparison based on period type
+      let currentPeriodStart: Date;
+      let previousPeriodStart: Date;
+      let previousPeriodEnd: Date;
+      let periodLabel: string;
       
-      const fourteenDaysAgo = new Date();
-      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-      fourteenDaysAgo.setHours(0, 0, 0, 0);
+      if (periodType === 'day') {
+        // Compare today vs yesterday
+        currentPeriodStart = today;
+        
+        previousPeriodStart = new Date(today);
+        previousPeriodStart.setDate(previousPeriodStart.getDate() - 1);
+        
+        previousPeriodEnd = new Date(previousPeriodStart);
+        previousPeriodEnd.setHours(23, 59, 59, 999);
+        
+        periodLabel = "yesterday";
+      } else if (periodType === 'week') {
+        // Current week (starting Monday)
+        currentPeriodStart = new Date(today);
+        const dayOfWeek = currentPeriodStart.getDay();
+        const diff = currentPeriodStart.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        currentPeriodStart.setDate(diff);
+        
+        // Previous week
+        previousPeriodStart = new Date(currentPeriodStart);
+        previousPeriodStart.setDate(previousPeriodStart.getDate() - 7);
+        
+        previousPeriodEnd = new Date(currentPeriodStart);
+        previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1);
+        previousPeriodEnd.setHours(23, 59, 59, 999);
+        
+        periodLabel = "last week";
+      } else if (periodType === 'month') {
+        // Current month
+        currentPeriodStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        
+        // Previous month
+        previousPeriodStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        
+        previousPeriodEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+        previousPeriodEnd.setHours(23, 59, 59, 999);
+        
+        periodLabel = "last month";
+      }
       
-      const last7DaysTransactions = transactions.filter(tx => 
-        new Date(tx.created_at) >= sevenDaysAgo && 
+      // Calculate current period transactions
+      const currentPeriodTransactions = transactions.filter(tx => 
+        new Date(tx.created_at) >= currentPeriodStart && 
         tx.status === 'completed'
       );
       
-      const previous7DaysTransactions = transactions.filter(tx => 
-        new Date(tx.created_at) >= fourteenDaysAgo && 
-        new Date(tx.created_at) < sevenDaysAgo && 
+      const currentPeriodSales = currentPeriodTransactions.reduce((sum, tx) => sum + (tx.total || 0), 0);
+      
+      // Calculate previous period transactions
+      const previousPeriodTransactions = transactions.filter(tx => 
+        new Date(tx.created_at) >= previousPeriodStart && 
+        new Date(tx.created_at) <= previousPeriodEnd && 
         tx.status === 'completed'
       );
       
-      const last7DaysSales = last7DaysTransactions.reduce((sum, tx) => sum + (tx.total || 0), 0);
-      const previous7DaysSales = previous7DaysTransactions.reduce((sum, tx) => sum + (tx.total || 0), 0);
+      const previousPeriodSales = previousPeriodTransactions.reduce((sum, tx) => sum + (tx.total || 0), 0);
       
-      const salesTrend = previous7DaysSales > 0 
-        ? ((last7DaysSales - previous7DaysSales) / previous7DaysSales) * 100 
+      // Calculate trend percentage
+      const salesTrend = previousPeriodSales > 0 
+        ? ((currentPeriodSales - previousPeriodSales) / previousPeriodSales) * 100 
         : 0;
 
       return {
@@ -90,7 +137,10 @@ export const useTransactionStats = (dateRange?: DateRange) => {
         topPaymentMethod,
         avgTransactionValue,
         todaySales,
-        salesTrend
+        currentPeriodSales,
+        previousPeriodSales,
+        salesTrend,
+        periodLabel
       };
     }
   });
