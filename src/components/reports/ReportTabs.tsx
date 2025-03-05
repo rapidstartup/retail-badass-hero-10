@@ -18,6 +18,7 @@ interface ReportTabsProps {
     reorderLevel: number; 
     status: "Good" | "Low" | "Critical";
   }>;
+  isInventoryLoading?: boolean;
 }
 
 const ReportTabs: React.FC<ReportTabsProps> = ({
@@ -26,7 +27,8 @@ const ReportTabs: React.FC<ReportTabsProps> = ({
   topProducts,
   dailySales,
   topCustomers,
-  inventoryStatus
+  inventoryStatus,
+  isInventoryLoading = false
 }) => {
   return (
     <Tabs defaultValue="sales" value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -42,7 +44,7 @@ const ReportTabs: React.FC<ReportTabsProps> = ({
       </TabsContent>
       
       <TabsContent value="inventory" className="space-y-6">
-        <InventoryTab inventoryStatus={inventoryStatus} />
+        <InventoryTab inventoryStatus={inventoryStatus} isLoading={isInventoryLoading} />
       </TabsContent>
       
       <TabsContent value="customers" className="space-y-6">

@@ -5,6 +5,7 @@ import ReportHeader from "@/components/reports/ReportHeader";
 import ReportStatCards from "@/components/reports/ReportStatCards";
 import ReportTabs from "@/components/reports/ReportTabs";
 import { useReportData } from "@/hooks/reports/useReportData";
+import { useInventoryData } from "@/hooks/reports/useInventoryData";
 
 const Reports = () => {
   const {
@@ -15,10 +16,11 @@ const Reports = () => {
     topProducts,
     dailySales,
     topCustomers,
-    inventoryStatus,
     stats,
     isLoading
   } = useReportData();
+
+  const { inventoryStatus, isLoading: inventoryLoading } = useInventoryData();
 
   return (
     <Layout>
@@ -39,6 +41,7 @@ const Reports = () => {
         dailySales={dailySales}
         topCustomers={topCustomers}
         inventoryStatus={inventoryStatus}
+        isInventoryLoading={inventoryLoading}
       />
     </Layout>
   );
