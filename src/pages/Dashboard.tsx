@@ -46,6 +46,20 @@ const Dashboard = () => {
   const handlePeriodChange = (value: string) => {
     setPeriodType(value as PeriodType);
   };
+
+  // Get period subtitle text based on period type
+  const getPeriodSubtitle = (type: PeriodType): string => {
+    switch (type) {
+      case 'day':
+        return 'Today';
+      case 'week':
+        return 'This Week';
+      case 'month':
+        return 'This Month';
+      default:
+        return '';
+    }
+  };
   
   return (
     <Layout>
@@ -80,7 +94,8 @@ const Dashboard = () => {
           icon={<DollarSign className="h-6 w-6" />}
         />
         <StatCard 
-          title={`${periodType === 'day' ? 'Today' : periodType === 'week' ? 'This Week' : 'This Month'}'s Transactions`}
+          title="Transactions"
+          subtitle={getPeriodSubtitle(periodType)}
           value={statsLoading ? "Loading..." : formatNumber(stats?.transactionCount || 0)}
           trend={!statsLoading && stats ? { 
             value: stats.transactionTrend, 
@@ -90,7 +105,8 @@ const Dashboard = () => {
           icon={<CreditCard className="h-6 w-6" />}
         />
         <StatCard 
-          title={`New Customers (${periodType === 'day' ? 'Today' : periodType === 'week' ? 'This Week' : 'This Month'})`}
+          title="New Customers"
+          subtitle={getPeriodSubtitle(periodType)}
           value={statsLoading ? "Loading..." : formatNumber(stats?.newCustomersCount || 0)}
           trend={!statsLoading && stats ? { 
             value: stats.customersTrend, 
@@ -100,7 +116,8 @@ const Dashboard = () => {
           icon={<Users className="h-6 w-6" />}
         />
         <StatCard 
-          title={`Items Sold (${periodType === 'day' ? 'Today' : periodType === 'week' ? 'This Week' : 'This Month'})`}
+          title="Items Sold"
+          subtitle={getPeriodSubtitle(periodType)}
           value={statsLoading ? "Loading..." : formatNumber(periodType === 'day' ? stats?.todayItemsSold || 0 : stats?.itemsSold || 0)}
           trend={!statsLoading && stats ? { 
             value: stats.itemsSoldTrend, 

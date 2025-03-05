@@ -26,6 +26,20 @@ const ClientOverview: React.FC<ClientOverviewProps> = ({ metrics, timeframe, set
     "alltime": "all time"
   };
 
+  // Generate subtitle based on timeframe
+  const getSubtitle = (timeframe: string): string => {
+    switch (timeframe) {
+      case "30days":
+        return "Last 30 Days";
+      case "90days":
+        return "Last 90 Days";
+      case "alltime":
+        return "All Time";
+      default:
+        return "";
+    }
+  };
+
   return (
     <Card className="theme-container-bg border">
       <CardHeader>
@@ -61,6 +75,7 @@ const ClientOverview: React.FC<ClientOverviewProps> = ({ metrics, timeframe, set
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard 
             title="Avg. Transaction" 
+            subtitle={getSubtitle(timeframe)}
             value={formatCurrency(metrics.avgTransaction)}
             icon={<Receipt className="h-6 w-6" />}
             trend={timeframe !== "alltime" ? {
@@ -71,6 +86,7 @@ const ClientOverview: React.FC<ClientOverviewProps> = ({ metrics, timeframe, set
           />
           <StatCard 
             title="Transactions" 
+            subtitle={getSubtitle(timeframe)}
             value={metrics.numTransactions.toString()}
             icon={<ShoppingBag className="h-6 w-6" />}
             trend={timeframe !== "alltime" ? {
@@ -81,6 +97,7 @@ const ClientOverview: React.FC<ClientOverviewProps> = ({ metrics, timeframe, set
           />
           <StatCard 
             title="Total Spent" 
+            subtitle={getSubtitle(timeframe)}
             value={formatCurrency(metrics.totalSpent)}
             icon={<CreditCard className="h-6 w-6" />}
             trend={timeframe !== "alltime" ? {

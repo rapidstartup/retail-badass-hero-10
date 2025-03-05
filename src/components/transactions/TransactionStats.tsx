@@ -35,6 +35,20 @@ const TransactionStats: React.FC<TransactionStatsProps> = ({ dateRange }) => {
     
     return ` (${fromDate} - ${toDate})`;
   };
+
+  // Get period subtitle text based on period type
+  const getPeriodSubtitle = (type: PeriodType): string => {
+    switch (type) {
+      case 'day':
+        return 'Today';
+      case 'week':
+        return 'This Week';
+      case 'month':
+        return 'This Month';
+      default:
+        return '';
+    }
+  };
   
   return (
     <div className="mb-6">
@@ -53,7 +67,8 @@ const TransactionStats: React.FC<TransactionStatsProps> = ({ dateRange }) => {
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard
-          title={`Total Sales${getDateRangeDescription()}`}
+          title="Total Sales"
+          subtitle={getDateRangeDescription()}
           value={statsLoading ? "Loading..." : formatCurrency(stats?.totalSales || 0)}
           icon={<BanknoteIcon />}
         />
@@ -63,12 +78,14 @@ const TransactionStats: React.FC<TransactionStatsProps> = ({ dateRange }) => {
           icon={<CalendarIcon />}
         />
         <StatCard
-          title={`Avg. Transaction${getDateRangeDescription()}`}
+          title="Avg. Transaction"
+          subtitle={getDateRangeDescription()}
           value={statsLoading ? "Loading..." : formatCurrency(stats?.avgTransactionValue || 0)}
           icon={<TrendingUp />}
         />
         <StatCard
-          title={`${periodType === 'day' ? 'Daily' : periodType === 'week' ? 'Weekly' : 'Monthly'} Trend`}
+          title="Trend"
+          subtitle={getPeriodSubtitle(periodType)}
           value={statsLoading ? "Loading..." : `${stats?.salesTrend.toFixed(1) || 0}%`}
           icon={<TrendingUp />}
           trend={stats?.salesTrend ? { 
