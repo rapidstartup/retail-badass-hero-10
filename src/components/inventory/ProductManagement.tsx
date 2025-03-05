@@ -34,21 +34,32 @@ const ProductManagement = () => {
   );
 
   const handleAddProduct = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault(); // Prevent default behavior
-    console.log("Add product clicked");
+    console.log("handleAddProduct called");
+    if (e) {
+      e.preventDefault(); // Prevent default behavior
+      e.stopPropagation(); // Stop event propagation
+    }
     setSelectedProduct(null);
     setShowAddForm(true);
+    console.log("showAddForm set to true, state:", showAddForm);
   };
 
   const handleEditProduct = (product: any, e?: React.MouseEvent) => {
-    if (e) e.preventDefault(); // Prevent default behavior
-    console.log("Edit product clicked:", product);
+    console.log("handleEditProduct called");
+    if (e) {
+      e.preventDefault(); // Prevent default behavior
+      e.stopPropagation(); // Stop event propagation
+    }
     setSelectedProduct(product);
     setShowEditForm(true);
+    console.log("showEditForm set to true, state:", showEditForm);
   };
 
   const handleManageVariants = (product: any, e?: React.MouseEvent) => {
-    if (e) e.preventDefault(); // Prevent default behavior
+    if (e) {
+      e.preventDefault(); // Prevent default behavior
+      e.stopPropagation(); // Stop event propagation
+    }
     setSelectedProduct(product);
     setShowVariantsManager(true);
   };
@@ -69,6 +80,7 @@ const ProductManagement = () => {
   };
 
   const handleFormClose = () => {
+    console.log("Form close called");
     setShowAddForm(false);
     setShowEditForm(false);
     setSelectedProduct(null);
@@ -109,9 +121,11 @@ const ProductManagement = () => {
       <Dialog 
         open={showAddForm} 
         onOpenChange={(open) => {
+          console.log("Add dialog onOpenChange:", open);
+          setShowAddForm(open);
           if (!open) {
             console.log("Closing add dialog");
-            setShowAddForm(false);
+            setSelectedProduct(null);
           }
         }}
       >
@@ -124,9 +138,10 @@ const ProductManagement = () => {
       <Dialog 
         open={showEditForm} 
         onOpenChange={(open) => {
+          console.log("Edit dialog onOpenChange:", open);
+          setShowEditForm(open);
           if (!open) {
             console.log("Closing edit dialog");
-            setShowEditForm(false);
             setSelectedProduct(null);
           }
         }}

@@ -12,7 +12,12 @@ const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsPro
   return (
     <div className="flex space-x-2">
       <Button 
-        onClick={(e) => handleAddProduct(e)} 
+        onClick={(e) => {
+          console.log("Add Product button clicked");
+          e.preventDefault(); // Prevent any default navigation
+          e.stopPropagation(); // Stop event propagation
+          handleAddProduct(e);
+        }} 
         className="flex items-center gap-1"
       >
         <Plus className="h-4 w-4" />

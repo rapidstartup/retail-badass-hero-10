@@ -70,7 +70,12 @@ const ProductTable = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={(e) => handleManageVariants(product, e)}
+                    onClick={(e) => {
+                      console.log("Manage variants clicked");
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleManageVariants(product, e);
+                    }}
                     className="flex items-center gap-1"
                   >
                     <Eye className="h-3 w-3" />
@@ -85,7 +90,12 @@ const ProductTable = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={(e) => handleEditProduct(product, e)}
+                    onClick={(e) => {
+                      console.log("Edit product clicked");
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleEditProduct(product, e);
+                    }}
                     title="Edit product"
                     aria-label="Edit product"
                   >
