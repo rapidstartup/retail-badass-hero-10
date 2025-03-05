@@ -16,15 +16,16 @@ export const useInventoryData = (lowStockThreshold = 10) => {
     queryKey: ['inventory-status'],
     queryFn: async () => {
       try {
-        // Fetch products data
+        // Fetch products with no variants
         const { data: products, error: productsError } = await supabase
           .from('products')
           .select('*')
+          .eq('has_variants', false)
           .order('name');
           
         if (productsError) throw productsError;
         
-        // Fetch product variants data
+        // Fetch product variants
         const { data: variants, error: variantsError } = await supabase
           .from('product_variants')
           .select('*, products(name)')
@@ -32,7 +33,7 @@ export const useInventoryData = (lowStockThreshold = 10) => {
           
         if (variantsError) throw variantsError;
         
-        // Transform product data into the format needed for the inventory table
+        // Transform standard products data
         const inventoryItems: InventoryItem[] = products.map(product => {
           // Determine status based on stock levels
           let status: "Good" | "Low" | "Critical" = "Good";
@@ -51,7 +52,7 @@ export const useInventoryData = (lowStockThreshold = 10) => {
           };
         });
         
-        // Add variant data if it exists
+        // Add variant data
         variants.forEach(variant => {
           if (variant.products && variant.products.name) {
             let status: "Good" | "Low" | "Critical" = "Good";
@@ -62,9 +63,18 @@ export const useInventoryData = (lowStockThreshold = 10) => {
               status = "Low";
             }
             
-            const variantName = `${variant.products.name} - ${variant.color || ''} ${variant.size || ''}`.trim();
+            // Construct variant display name from attributes
+            const variantAttributes = [];
+            if (variant.color) variantAttributes.push(variant.color);
+            if (variant.size) variantAttributes.push(variant.size);
+            if (variant.flavor) variantAttributes.push(variant.flavor);
+            
+            const variantDisplay = variantAttributes.length > 0 
+              ? `${variant.products.name} (${variantAttributes.join(' / ')})`
+              : variant.products.name;
+              
             inventoryItems.push({
-              product: variantName,
+              product: variantDisplay,
               stock: variant.stock_count || 0,
               reorderLevel: lowStockThreshold,
               status

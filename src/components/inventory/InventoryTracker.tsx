@@ -14,12 +14,33 @@ interface InventoryTrackerProps {
   showVariants?: boolean;
 }
 
+interface ProductItem {
+  id: string;
+  name: string;
+  price: number;
+  category: string | null;
+  stock: number | null;
+  has_variants: boolean;
+}
+
+interface VariantItem {
+  id: string;
+  product_id: string;
+  sku: string | null;
+  price: number;
+  stock_count: number | null;
+  color: string | null;
+  size: string | null;
+  flavor: string | null;
+  product_name: string;
+}
+
 export function InventoryTracker({ 
   lowStockThreshold = 5, 
   showVariants = true 
 }: InventoryTrackerProps) {
-  const [inventory, setInventory] = useState<any[]>([]);
-  const [variants, setVariants] = useState<any[]>([]);
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [variants, setVariants] = useState<VariantItem[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Function to fetch inventory data
@@ -39,14 +60,31 @@ export function InventoryTracker({
       if (showVariants) {
         const { data: variantsData, error: variantsError } = await supabase
           .from("product_variants")
-          .select("*, products(name)")
+          .select(`
+            id, 
+            product_id, 
+            sku, 
+            price, 
+            stock_count, 
+            color, 
+            size, 
+            flavor,
+            products(name)
+          `)
           .order("product_id");
           
         if (variantsError) throw variantsError;
-        setVariants(variantsData || []);
+        
+        // Transform the variants data to include product name
+        const transformedVariants = variantsData.map(variant => ({
+          ...variant,
+          product_name: variant.products?.name || "Unknown Product"
+        }));
+        
+        setVariants(transformedVariants || []);
       }
       
-      setInventory(productsData || []);
+      setProducts(productsData || []);
     } catch (error) {
       console.error("Error fetching inventory:", error);
     } finally {
@@ -91,9 +129,21 @@ export function InventoryTracker({
     fetchInventory();
   };
   
-  // Filter low stock items
-  const lowStockItems = inventory.filter(item => item.stock <= lowStockThreshold);
-  const lowStockVariants = variants.filter(variant => variant.stock_count <= lowStockThreshold);
+  // Filter products to only show those without variants or that don't have the has_variants flag
+  const standardProducts = products.filter(product => !product.has_variants);
+  
+  // Filter for products with low stock
+  const lowStockProducts = standardProducts.filter(item => 
+    item.stock !== null && item.stock <= lowStockThreshold
+  );
+  
+  // Filter for variants with low stock
+  const lowStockVariants = variants.filter(variant => 
+    variant.stock_count !== null && variant.stock_count <= lowStockThreshold
+  );
+  
+  // Count total low stock items
+  const totalLowStockItems = lowStockProducts.length + lowStockVariants.length;
   
   return (
     <Card className="h-full">
@@ -113,18 +163,19 @@ export function InventoryTracker({
           </div>
         ) : (
           <div className="space-y-4">
-            {lowStockItems.length > 0 || (showVariants && lowStockVariants.length > 0) ? (
+            {totalLowStockItems > 0 && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Low Stock Alert</AlertTitle>
                 <AlertDescription>
-                  {lowStockItems.length} products and {showVariants ? lowStockVariants.length : 0} variants are low on stock.
+                  {totalLowStockItems} {totalLowStockItems === 1 ? 'item is' : 'items are'} low on stock.
                 </AlertDescription>
               </Alert>
-            ) : null}
+            )}
             
+            {/* Standard Products (without variants) */}
             <div>
-              <h3 className="text-sm font-medium mb-2">Product Inventory</h3>
+              <h3 className="text-sm font-medium mb-2">Standard Products</h3>
               <div className="border rounded-md">
                 <Table>
                   <TableHeader>
@@ -137,21 +188,21 @@ export function InventoryTracker({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {inventory.length === 0 ? (
+                    {standardProducts.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
-                          No products found
+                          No standard products found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      inventory.slice(0, 5).map((item) => (
+                      standardProducts.slice(0, 5).map((item) => (
                         <TableRow key={item.id}>
                           <TableCell className="font-medium">{item.name}</TableCell>
                           <TableCell>{item.category || "Uncategorized"}</TableCell>
                           <TableCell>{formatCurrency(item.price)}</TableCell>
-                          <TableCell>{item.stock}</TableCell>
+                          <TableCell>{item.stock ?? 0}</TableCell>
                           <TableCell>
-                            {item.stock <= 0 ? (
+                            {item.stock === null || item.stock <= 0 ? (
                               <Badge variant="destructive">Out of Stock</Badge>
                             ) : item.stock <= lowStockThreshold ? (
                               <Badge variant="destructive">Low Stock</Badge>
@@ -167,9 +218,10 @@ export function InventoryTracker({
               </div>
             </div>
             
+            {/* Product Variants */}
             {showVariants && (
               <div>
-                <h3 className="text-sm font-medium mb-2">Variant Inventory</h3>
+                <h3 className="text-sm font-medium mb-2">Product Variants</h3>
                 <div className="border rounded-md">
                   <Table>
                     <TableHeader>
@@ -177,6 +229,7 @@ export function InventoryTracker({
                         <TableHead>Product</TableHead>
                         <TableHead>Variant</TableHead>
                         <TableHead>SKU</TableHead>
+                        <TableHead>Price</TableHead>
                         <TableHead>Stock</TableHead>
                         <TableHead>Status</TableHead>
                       </TableRow>
@@ -184,32 +237,41 @@ export function InventoryTracker({
                     <TableBody>
                       {variants.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                          <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                             No variants found
                           </TableCell>
                         </TableRow>
                       ) : (
-                        variants.slice(0, 5).map((variant) => (
-                          <TableRow key={variant.id}>
-                            <TableCell className="font-medium">{variant.products?.name || "Unknown"}</TableCell>
-                            <TableCell>
-                              {variant.color && variant.size
-                                ? `${variant.color} / ${variant.size}`
-                                : variant.color || variant.size || "Default"}
-                            </TableCell>
-                            <TableCell>{variant.sku || "N/A"}</TableCell>
-                            <TableCell>{variant.stock_count}</TableCell>
-                            <TableCell>
-                              {variant.stock_count <= 0 ? (
-                                <Badge variant="destructive">Out of Stock</Badge>
-                              ) : variant.stock_count <= lowStockThreshold ? (
-                                <Badge variant="destructive">Low Stock</Badge>
-                              ) : (
-                                <Badge variant="default">In Stock</Badge>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))
+                        variants.slice(0, 5).map((variant) => {
+                          // Construct variant display name from attributes
+                          const variantAttributes = [];
+                          if (variant.color) variantAttributes.push(variant.color);
+                          if (variant.size) variantAttributes.push(variant.size);
+                          if (variant.flavor) variantAttributes.push(variant.flavor);
+                          
+                          const variantDisplay = variantAttributes.length > 0 
+                            ? variantAttributes.join(' / ') 
+                            : 'Default';
+                            
+                          return (
+                            <TableRow key={variant.id}>
+                              <TableCell className="font-medium">{variant.product_name}</TableCell>
+                              <TableCell>{variantDisplay}</TableCell>
+                              <TableCell>{variant.sku || "N/A"}</TableCell>
+                              <TableCell>{formatCurrency(variant.price)}</TableCell>
+                              <TableCell>{variant.stock_count ?? 0}</TableCell>
+                              <TableCell>
+                                {variant.stock_count === null || variant.stock_count <= 0 ? (
+                                  <Badge variant="destructive">Out of Stock</Badge>
+                                ) : variant.stock_count <= lowStockThreshold ? (
+                                  <Badge variant="destructive">Low Stock</Badge>
+                                ) : (
+                                  <Badge variant="default">In Stock</Badge>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
