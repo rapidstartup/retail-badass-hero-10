@@ -43,9 +43,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
             tabCustomerEligibility: data.tab_customer_eligibility as "all" | "registered" | "approved" || defaultSettings.tabCustomerEligibility,
             tabNotifications: data.tab_notifications !== null ? data.tab_notifications : defaultSettings.tabNotifications,
             storeName: data.store_name || defaultSettings.storeName,
-            storeAddress: data.store_address,
-            storePhone: data.store_phone,
-            logoUrl: data.logo_url,
+            storeAddress: data.store_address || "",
+            storePhone: data.store_phone || "",
+            logoUrl: data.logo_url || "",
             tierThresholdSilver: data.tier_threshold_silver || defaultSettings.tierThresholdSilver,
             tierThresholdGold: data.tier_threshold_gold || defaultSettings.tierThresholdGold,
           };

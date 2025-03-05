@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Image, Upload, X, Loader2 } from "lucide-react";
 
 const GeneralSettings = () => {
-  const { settings, updateSettings } = useSettings();
+  const { settings, updateSettings, saveSettings } = useSettings();
   const [storeName, setStoreName] = useState(settings.storeName || "NextPOS");
   const [storeAddress, setStoreAddress] = useState(settings.storeAddress || "");
   const [storePhone, setStorePhone] = useState(settings.storePhone || "");
@@ -32,6 +32,9 @@ const GeneralSettings = () => {
         storePhone,
         logoUrl
       });
+      
+      await saveSettings();
+      
       toast.success("General settings updated");
     } catch (error) {
       toast.error("Failed to update general settings");
@@ -148,6 +151,16 @@ const GeneralSettings = () => {
     }
   };
 
+  const handleStoreAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setStoreAddress(value);
+  };
+  
+  const handleStorePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setStorePhone(value);
+  };
+
   const handleStoreNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setStoreName(value);
@@ -179,7 +192,7 @@ const GeneralSettings = () => {
             id="store-address" 
             placeholder="Enter your store address" 
             value={storeAddress}
-            onChange={(e) => setStoreAddress(e.target.value)}
+            onChange={handleStoreAddressChange}
           />
         </div>
         
@@ -189,7 +202,7 @@ const GeneralSettings = () => {
             id="store-phone" 
             placeholder="Enter your store phone" 
             value={storePhone}
-            onChange={(e) => setStorePhone(e.target.value)}
+            onChange={handleStorePhoneChange}
           />
         </div>
         

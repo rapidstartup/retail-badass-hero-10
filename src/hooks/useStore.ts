@@ -36,7 +36,7 @@ export const useStore = () => {
           store_name: data?.store_name || DEFAULT_STORE.store_name,
           store_address: data?.store_address || DEFAULT_STORE.store_address,
           store_phone: data?.store_phone || DEFAULT_STORE.store_phone,
-          logo_url: data?.logo_url
+          logo_url: data?.logo_url || undefined
         } as StoreSettings;
       } catch (error) {
         console.error("Unexpected error fetching store settings:", error);
