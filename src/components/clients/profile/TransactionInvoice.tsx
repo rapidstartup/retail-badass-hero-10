@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { Transaction } from "@/types/transaction";
 import { useStore } from "@/hooks/useStore";
@@ -114,7 +113,7 @@ const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({
       {/* Invoice Content - Wrapped in a ref for PDF generation */}
       <div 
         ref={invoiceRef} 
-        className="theme-container-bg p-6 space-y-6 rounded-lg border border-border"
+        className="theme-container-bg p-6 space-y-6 rounded-lg"
         style={{ 
           backgroundColor: backgroundColor, 
           color: textColor
