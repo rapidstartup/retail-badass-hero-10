@@ -19,9 +19,8 @@ export const usePdfGenerator = () => {
         logging: false,
         useCORS: true,
         backgroundColor: '#ffffff',
-        allowTaint: true,
-        // Improve text rendering
-        letterRendering: true
+        allowTaint: true
+        // Removed the unsupported letterRendering property
       });
       
       const imgData = canvas.toDataURL('image/png', 1.0); // Use maximum quality
@@ -76,9 +75,8 @@ export const usePdfGenerator = () => {
         logging: false,
         useCORS: true,
         backgroundColor: '#ffffff',
-        allowTaint: true,
-        // Improve text rendering
-        letterRendering: true
+        allowTaint: true
+        // Removed the unsupported letterRendering property
       });
       
       const imgData = canvas.toDataURL('image/png', 1.0); // Use maximum quality
