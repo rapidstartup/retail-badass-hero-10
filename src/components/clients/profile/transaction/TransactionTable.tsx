@@ -69,14 +69,12 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                 <Mail className="h-4 w-4" />
               </Button>
               {transaction.status === 'completed' && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => onRefund(transaction)}
-                  className="flex items-center gap-1"
                 >
                   <ArrowDownLeft className="h-4 w-4" />
-                  Refund
                 </Button>
               )}
             </TableCell>
