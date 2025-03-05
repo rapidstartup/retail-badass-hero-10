@@ -45,6 +45,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
             storeName: data.store_name || defaultSettings.storeName,
             storeAddress: data.store_address,
             storePhone: data.store_phone,
+            logoUrl: data.logo_url,
             tierThresholdSilver: data.tier_threshold_silver || defaultSettings.tierThresholdSilver,
             tierThresholdGold: data.tier_threshold_gold || defaultSettings.tierThresholdGold,
           };
@@ -88,6 +89,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
             store_name: settings.storeName,
             store_address: settings.storeAddress,
             store_phone: settings.storePhone,
+            logo_url: settings.logoUrl,
             tier_threshold_silver: settings.tierThresholdSilver,
             tier_threshold_gold: settings.tierThresholdGold,
           })
@@ -116,6 +118,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
             store_name: settings.storeName,
             store_address: settings.storeAddress,
             store_phone: settings.storePhone,
+            logo_url: settings.logoUrl,
             tier_threshold_silver: settings.tierThresholdSilver,
             tier_threshold_gold: settings.tierThresholdGold,
           })

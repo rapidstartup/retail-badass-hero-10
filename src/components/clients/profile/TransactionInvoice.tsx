@@ -2,6 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { Transaction } from "@/types/transaction";
 import { useStore } from "@/hooks/useStore";
+import { useSettings } from "@/contexts/SettingsContext";
 
 // Import refactored components
 import InvoiceStoreInfo from './invoice/InvoiceStoreInfo';
@@ -14,14 +15,13 @@ import { useInvoiceEmail } from './invoice/useInvoiceEmail';
 
 interface TransactionInvoiceProps {
   transaction: Transaction;
-  logoUrl?: string;
 }
 
 const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({ 
-  transaction,
-  logoUrl 
+  transaction
 }) => {
   const { store } = useStore();
+  const { settings } = useSettings();
   const invoiceRef = useRef<HTMLDivElement>(null);
   
   // Custom hooks to handle PDF and email functionality
@@ -103,9 +103,9 @@ const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({
         {/* Store Information */}
         <InvoiceStoreInfo 
           storeName={store?.store_name || 'Store Name'} 
-          storeAddress={store?.store_address || 'No address provided'} 
-          storePhone={store?.store_phone || 'No phone provided'} 
-          logoUrl={logoUrl}
+          storeAddress={store?.store_address} 
+          storePhone={store?.store_phone} 
+          logoUrl={settings.logoUrl}
         />
 
         {/* Customer Information */}

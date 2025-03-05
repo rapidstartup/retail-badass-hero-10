@@ -71,6 +71,7 @@ serve(async (req) => {
             store_name: requestData.storeName,
             store_address: requestData.storeAddress,
             store_phone: requestData.storePhone,
+            logo_url: requestData.logoUrl,
             tier_threshold_silver: requestData.tierThresholdSilver,
             tier_threshold_gold: requestData.tierThresholdGold
           })
@@ -99,6 +100,7 @@ serve(async (req) => {
               store_name: requestData.storeName,
               store_address: requestData.storeAddress,
               store_phone: requestData.storePhone,
+              logo_url: requestData.logoUrl,
               tier_threshold_silver: requestData.tierThresholdSilver,
               tier_threshold_gold: requestData.tierThresholdGold
             })
@@ -120,6 +122,7 @@ serve(async (req) => {
               store_name: requestData.storeName,
               store_address: requestData.storeAddress,
               store_phone: requestData.storePhone,
+              logo_url: requestData.logoUrl,
               tier_threshold_silver: requestData.tierThresholdSilver,
               tier_threshold_gold: requestData.tierThresholdGold
             })

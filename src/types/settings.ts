@@ -1,4 +1,3 @@
-
 export interface ThemeColors {
   background: string;
   sidebar: string;
@@ -25,6 +24,7 @@ export interface POSSettings {
   storeName: string;
   storeAddress?: string;
   storePhone?: string;
+  logoUrl?: string;
   // Stripe Integration
   stripeLiveSecretKey?: string;
   stripeLivePublicKey?: string;

@@ -1,11 +1,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useSettings } from "@/contexts/SettingsContext";
 
 interface StoreSettings {
   store_name: string;
   store_address: string;
   store_phone: string;
+  logo_url?: string;
 }
 
 const DEFAULT_STORE = {
@@ -20,7 +22,7 @@ export const useStore = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("settings")
-        .select("store_name, store_address, store_phone")
+        .select("store_name, store_address, store_phone, logo_url")
         .single();
 
       if (error) throw error;
@@ -29,7 +31,8 @@ export const useStore = () => {
       return {
         store_name: data.store_name || DEFAULT_STORE.store_name,
         store_address: data.store_address || DEFAULT_STORE.store_address,
-        store_phone: data.store_phone || DEFAULT_STORE.store_phone
+        store_phone: data.store_phone || DEFAULT_STORE.store_phone,
+        logo_url: data.logo_url
       } as StoreSettings;
     },
     placeholderData: DEFAULT_STORE
