@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Table, 
@@ -12,12 +11,10 @@ import { formatCurrency, formatDateTime } from "@/utils/formatters";
 import { Transaction } from "@/types/index";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ArrowDownLeft } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { ChevronLeft, ChevronRight, ArrowDownLeft, Eye } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Card, CardContent } from "@/components/ui/card";
+import TransactionInvoice from "./TransactionInvoice";
 
 interface ClientTransactionHistoryProps {
   transactions: Transaction[];
@@ -44,26 +41,23 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
   const startItem = ((page - 1) * pageSize) + 1;
   const endItem = Math.min(page * pageSize, totalCount);
   
-  // States for refund dialog
   const [isRefundDialogOpen, setIsRefundDialogOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [refundAmount, setRefundAmount] = useState("");
   const [isProcessingRefund, setIsProcessingRefund] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  // Handler to open refund dialog
   const handleRefundClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setRefundAmount(transaction.total.toString());
     setIsRefundDialogOpen(true);
   };
 
-  // Handler to process refund
   const handleProcessRefund = async () => {
     if (!selectedTransaction) return;
     
     const amount = parseFloat(refundAmount);
     
-    // Validate refund amount
     if (isNaN(amount) || amount <= 0) {
       toast.error("Please enter a valid refund amount");
       return;
@@ -77,7 +71,6 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
     setIsProcessingRefund(true);
     
     try {
-      // Update transaction status to refunded and record refund amount
       const { error } = await supabase
         .from('transactions')
         .update({
@@ -89,7 +82,6 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
       
       if (error) throw error;
       
-      // Handle different payment methods
       const paymentMethod = selectedTransaction.payment_method;
       let refundMessage = "";
       
@@ -105,14 +97,10 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
       
       toast.success(refundMessage);
       
-      // Close the dialog and refresh
       setIsRefundDialogOpen(false);
       setSelectedTransaction(null);
       setRefundAmount("");
       
-      // Trigger a refresh of the transaction list
-      // This would normally come from the parent component, but for now we'll
-      // rely on the user refreshing the page
     } catch (error) {
       console.error("Error processing refund:", error);
       toast.error("Failed to process refund. Please try again.");
@@ -159,7 +147,17 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
                     </span>
                   </TableCell>
                   <TableCell>{transaction.payment_method || "—"}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setSelectedTransaction(transaction);
+                        setIsDetailsOpen(true);
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     {transaction.status === 'completed' && (
                       <Button 
                         variant="outline" 
@@ -176,6 +174,22 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
               ))}
             </TableBody>
           </Table>
+          
+          <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+            <SheetContent className="w-full sm:max-w-3xl overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Transaction Details</SheetTitle>
+                <SheetDescription>
+                  Transaction ID: {selectedTransaction?.id.slice(0, 8)}
+                </SheetDescription>
+              </SheetHeader>
+              {selectedTransaction && (
+                <div className="mt-6 space-y-6">
+                  <TransactionInvoice transaction={selectedTransaction} />
+                </div>
+              )}
+            </SheetContent>
+          </Sheet>
           
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
@@ -223,7 +237,6 @@ const ClientTransactionHistory: React.FC<ClientTransactionHistoryProps> = ({
             </div>
           </div>
           
-          {/* Refund Dialog */}
           <Dialog open={isRefundDialogOpen} onOpenChange={setIsRefundDialogOpen}>
             <DialogContent>
               <DialogHeader>
