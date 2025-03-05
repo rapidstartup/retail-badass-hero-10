@@ -17,8 +17,6 @@ import {
 } from "@/components/ui/select";
 import { PeriodType } from "@/hooks/dashboard";
 
-type PeriodType = 'day' | 'week' | 'month';
-
 interface TransactionStatsProps {
   dateRange?: DateRange;
 }

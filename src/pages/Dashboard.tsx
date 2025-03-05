@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Layout from "@/components/Layout";
 import StatCard from "@/components/StatCard";
@@ -26,8 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-type PeriodType = 'day' | 'week' | 'month';
 
 const Dashboard = () => {
   const navigate = useNavigate();
