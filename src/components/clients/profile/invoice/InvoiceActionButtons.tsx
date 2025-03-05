@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Download, Send, Loader2 } from "lucide-react";
+import { Download, Send, Printer, Loader2 } from "lucide-react";
 
 interface InvoiceActionButtonsProps {
   onDownload: () => void;
   onSend: () => void;
+  onPrint?: () => void;
   isGenerating: boolean;
   isSending: boolean;
 }
@@ -13,11 +14,24 @@ interface InvoiceActionButtonsProps {
 const InvoiceActionButtons: React.FC<InvoiceActionButtonsProps> = ({
   onDownload,
   onSend,
+  onPrint,
   isGenerating,
   isSending
 }) => {
   return (
-    <div className="flex justify-end space-x-4">
+    <div className="flex justify-end space-x-3">
+      {onPrint && (
+        <Button
+          variant="outline"
+          onClick={onPrint}
+          className="flex items-center gap-2"
+          disabled={isGenerating}
+        >
+          <Printer className="h-4 w-4" />
+          <span className="hidden sm:inline">Print</span>
+        </Button>
+      )}
+      
       <Button
         variant="outline"
         onClick={onDownload}
@@ -29,15 +43,20 @@ const InvoiceActionButtons: React.FC<InvoiceActionButtonsProps> = ({
         ) : (
           <Download className="h-4 w-4" />
         )}
-        Download PDF
+        <span className="hidden sm:inline">Download PDF</span>
       </Button>
+      
       <Button
         onClick={onSend}
         className="flex items-center gap-2"
         disabled={isGenerating || isSending}
       >
-        <Send className="h-4 w-4" />
-        Send Invoice
+        {isSending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Send className="h-4 w-4" />
+        )}
+        <span className="hidden sm:inline">Send Invoice</span>
       </Button>
     </div>
   );
