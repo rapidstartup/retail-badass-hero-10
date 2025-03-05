@@ -57,12 +57,14 @@ const TransactionDetailsSheet: React.FC<TransactionDetailsSheetProps> = ({
               )}
             </div>
             <SheetDescription>
-              Transaction ID: {transaction?.id.slice(0, 8)}
+              Transaction ID: {transaction?.id ? transaction.id.slice(0, 8) : ''}
             </SheetDescription>
           </SheetHeader>
           {transaction && (
             <div className="mt-6 space-y-6" id={invoiceId} ref={invoiceRef}>
-              <TransactionInvoice transaction={transaction} />
+              <TransactionInvoice 
+                transaction={transaction} 
+              />
             </div>
           )}
         </SheetContent>

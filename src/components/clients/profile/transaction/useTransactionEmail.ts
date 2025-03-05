@@ -18,10 +18,17 @@ export const useTransactionEmail = () => {
 
   const handleEmailClick = (transaction: Transaction, defaultEmail?: string) => {
     setSelectedTransaction(transaction);
-    // Use the customer email address when available
+    
+    // Prioritize the customer email from the transaction
     const customerEmail = transaction.customers?.email || defaultEmail || "";
+    
+    // Set the email recipient to the customer's email address
     setRecipientEmail(customerEmail);
+    
+    // Set transaction-specific subject
     setEmailSubject(`Receipt for transaction #${transaction.id.slice(0, 8)}`);
+    
+    // Open the email dialog
     setIsEmailDialogOpen(true);
   };
 

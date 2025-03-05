@@ -27,7 +27,7 @@ const InvoiceCustomerInfo: React.FC<InvoiceCustomerInfoProps> = ({
             {firstName || ''} {lastName || ''}
           </p>
         ) : (
-          <p className="text-muted-foreground italic">this would be the customer details int eh profile the email associated with the transaction</p>
+          <p className="text-muted-foreground italic">No customer information available</p>
         )}
         {email && (
           <p className="text-muted-foreground">{email}</p>
