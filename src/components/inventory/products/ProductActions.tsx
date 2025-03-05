@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 
 interface ProductActionsProps {
-  handleAddProduct: () => void;
+  handleAddProduct: (e: React.MouseEvent<HTMLButtonElement>) => void;
   refreshProducts: () => void;
 }
 
@@ -12,7 +12,7 @@ const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsPro
   return (
     <div className="flex space-x-2">
       <Button 
-        onClick={handleAddProduct} 
+        onClick={(e) => handleAddProduct(e)} 
         className="flex items-center gap-1"
       >
         <Plus className="h-4 w-4" />

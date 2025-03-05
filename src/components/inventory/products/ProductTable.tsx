@@ -11,8 +11,8 @@ import { Product } from "@/types";
 interface ProductTableProps {
   products: Product[];
   loading: boolean;
-  handleEditProduct: (product: Product) => void;
-  handleManageVariants: (product: Product) => void;
+  handleEditProduct: (product: Product, e?: React.MouseEvent) => void;
+  handleManageVariants: (product: Product, e?: React.MouseEvent) => void;
   handleDeleteProduct: (id: string) => Promise<void>;
 }
 
@@ -70,7 +70,7 @@ const ProductTable = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleManageVariants(product)}
+                    onClick={(e) => handleManageVariants(product, e)}
                     className="flex items-center gap-1"
                   >
                     <Eye className="h-3 w-3" />
@@ -85,7 +85,7 @@ const ProductTable = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => handleEditProduct(product)}
+                    onClick={(e) => handleEditProduct(product, e)}
                     title="Edit product"
                     aria-label="Edit product"
                   >

@@ -33,19 +33,22 @@ const ProductManagement = () => {
     (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const handleAddProduct = () => {
+  const handleAddProduct = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // Prevent default behavior
     console.log("Add product clicked");
     setSelectedProduct(null);
     setShowAddForm(true);
   };
 
-  const handleEditProduct = (product: any) => {
+  const handleEditProduct = (product: any, e?: React.MouseEvent) => {
+    if (e) e.preventDefault(); // Prevent default behavior
     console.log("Edit product clicked:", product);
     setSelectedProduct(product);
     setShowEditForm(true);
   };
 
-  const handleManageVariants = (product: any) => {
+  const handleManageVariants = (product: any, e?: React.MouseEvent) => {
+    if (e) e.preventDefault(); // Prevent default behavior
     setSelectedProduct(product);
     setShowVariantsManager(true);
   };
@@ -106,8 +109,10 @@ const ProductManagement = () => {
       <Dialog 
         open={showAddForm} 
         onOpenChange={(open) => {
-          console.log("Add Dialog onOpenChange:", open);
-          setShowAddForm(open);
+          if (!open) {
+            console.log("Closing add dialog");
+            setShowAddForm(false);
+          }
         }}
       >
         <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
@@ -116,18 +121,27 @@ const ProductManagement = () => {
       </Dialog>
       
       {/* Dialog for editing products */}
-      {showEditForm && selectedProduct && (
-        <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
-          <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
+      <Dialog 
+        open={showEditForm} 
+        onOpenChange={(open) => {
+          if (!open) {
+            console.log("Closing edit dialog");
+            setShowEditForm(false);
+            setSelectedProduct(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
+          {selectedProduct && (
             <ProductForm 
               product={selectedProduct} 
               onClose={handleFormClose} 
               onSave={refreshProducts} 
               threeColumns={true} 
             />
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
       
       {/* Dialog for managing variants */}
       {showVariantsManager && selectedProduct && (
