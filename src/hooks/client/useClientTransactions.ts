@@ -67,30 +67,52 @@ export const useClientTransactions = (clientId: string | undefined) => {
             try {
               const parsed = JSON.parse(transaction.items);
               if (Array.isArray(parsed)) {
-                parsedItems = parsed.map(item => ({
-                  id: item.id || `item-${Math.random().toString(36).substr(2, 9)}`,
-                  name: item.name || 'Unknown Item',
-                  price: Number(item.price) || 0,
-                  quantity: Number(item.quantity) || 1,
-                  subtotal: Number(item.subtotal) || 0,
-                  product_id: item.product_id,
-                  variant_id: item.variant_id
-                }));
+                parsedItems = parsed.map(item => {
+                  // Safely access properties with type checking
+                  const safeItem = typeof item === 'object' && item !== null ? item : {};
+                  return {
+                    id: safeItem.id?.toString() || `item-${Math.random().toString(36).substr(2, 9)}`,
+                    name: safeItem.name?.toString() || 'Unknown Item',
+                    price: typeof safeItem.price === 'number' ? safeItem.price : 
+                           typeof safeItem.price === 'string' ? parseFloat(safeItem.price) : 0,
+                    quantity: typeof safeItem.quantity === 'number' ? safeItem.quantity : 
+                              typeof safeItem.quantity === 'string' ? parseInt(safeItem.quantity, 10) : 1,
+                    subtotal: typeof safeItem.subtotal === 'number' ? safeItem.subtotal : 
+                              typeof safeItem.subtotal === 'string' ? parseFloat(safeItem.subtotal) : 0,
+                    product_id: safeItem.product_id?.toString(),
+                    variant_id: safeItem.variant_id?.toString()
+                  };
+                });
               }
             } catch (e) {
               console.error('Failed to parse items JSON:', e);
             }
           } else if (Array.isArray(transaction.items)) {
             parsedItems = transaction.items.map(item => {
-              const itemObj = typeof item === 'object' && item !== null ? item : {};
+              // Safe type checking for array items
+              if (typeof item !== 'object' || item === null) {
+                return {
+                  id: `item-${Math.random().toString(36).substr(2, 9)}`,
+                  name: 'Unknown Item',
+                  price: 0,
+                  quantity: 1,
+                  subtotal: 0
+                };
+              }
+              
+              // Now we can safely access properties
+              const safeItem = item as Record<string, any>;
               return {
-                id: itemObj.id || `item-${Math.random().toString(36).substr(2, 9)}`,
-                name: itemObj.name || 'Unknown Item',
-                price: Number(itemObj.price) || 0,
-                quantity: Number(itemObj.quantity) || 1,
-                subtotal: Number(itemObj.subtotal) || 0,
-                product_id: itemObj.product_id,
-                variant_id: itemObj.variant_id
+                id: safeItem.id?.toString() || `item-${Math.random().toString(36).substr(2, 9)}`,
+                name: safeItem.name?.toString() || 'Unknown Item',
+                price: typeof safeItem.price === 'number' ? safeItem.price : 
+                       typeof safeItem.price === 'string' ? parseFloat(safeItem.price) : 0,
+                quantity: typeof safeItem.quantity === 'number' ? safeItem.quantity : 
+                          typeof safeItem.quantity === 'string' ? parseInt(safeItem.quantity, 10) : 1,
+                subtotal: typeof safeItem.subtotal === 'number' ? safeItem.subtotal : 
+                          typeof safeItem.subtotal === 'string' ? parseFloat(safeItem.subtotal) : 0,
+                product_id: safeItem.product_id?.toString(),
+                variant_id: safeItem.variant_id?.toString()
               };
             });
           }
