@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Edit2, Trash2 } from "lucide-react";
 import { StaffMember } from "@/types/staff";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface StaffListProps {
   staffMembers: StaffMember[];
@@ -18,11 +19,44 @@ const StaffList = ({ staffMembers, loading, startEdit, handleDeleteStaff }: Staf
   console.log("StaffList received staffMembers:", staffMembers);
   
   if (loading) {
-    return <div className="py-6 text-center">Loading staff members...</div>;
+    return (
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[1, 2, 3].map((index) => (
+              <TableRow key={index}>
+                <TableCell><Skeleton className="h-5 w-[160px]" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-[200px]" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-[80px]" /></TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Skeleton className="h-8 w-8 rounded" />
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
   }
 
   if (!staffMembers || staffMembers.length === 0) {
-    return <div className="py-6 text-center">No staff members found. Add your first staff member to get started.</div>;
+    return (
+      <div className="py-8 text-center border rounded-md">
+        <p className="text-muted-foreground text-lg">No staff members found</p>
+        <p className="text-sm text-muted-foreground mt-1">Add your first staff member to get started</p>
+      </div>
+    );
   }
 
   return (

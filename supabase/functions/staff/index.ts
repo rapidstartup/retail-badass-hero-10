@@ -26,6 +26,12 @@ serve(async (req) => {
     // Create a Supabase client with the admin key
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    
+    console.log("Creating Supabase client with URL:", supabaseUrl)
+    if (!supabaseKey) {
+      console.error("Missing SUPABASE_SERVICE_ROLE_KEY env variable")
+    }
+    
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     // Parse the request body
@@ -58,7 +64,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Unhandled error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal Server Error' }),
+      JSON.stringify({ error: 'Internal Server Error', details: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }

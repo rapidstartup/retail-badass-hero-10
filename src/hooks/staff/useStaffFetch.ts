@@ -13,7 +13,7 @@ export function useStaffFetch() {
   const fetchStaffMembers = useCallback(async () => {
     // Prevent excessive fetching
     if (fetchAttempts.current > 5) {
-      console.warn("Too many fetch attempts, stopping to prevent infinite loop");
+      console.error("Too many fetch attempts, stopping to prevent infinite loop");
       setLoading(false);
       return;
     }
@@ -22,17 +22,22 @@ export function useStaffFetch() {
     setLoading(true);
     
     try {
-      console.log(`Fetching staff members (attempt ${fetchAttempts.current})...`);
+      console.log(`Attempting to fetch staff members (attempt ${fetchAttempts.current})...`);
+      
+      // Using a direct query without any filters to see if we can get any data
       const { data, error } = await supabase
         .from('staff')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
       
       if (error) {
         throw error;
       }
       
-      console.log(`Staff fetch successful. Found ${data?.length || 0} staff members:`, data);
+      if (data) {
+        console.log(`Staff fetch successful. Found ${data.length} staff members:`, data);
+      } else {
+        console.log("Staff fetch returned no data (data is null)");
+      }
       
       // Only update state if component is still mounted
       if (isMounted.current) {
@@ -42,8 +47,17 @@ export function useStaffFetch() {
     } catch (error: any) {
       console.error("Error fetching staff:", error);
       
+      // Check for specific error types to provide better feedback
+      let errorMessage = "Unknown error fetching staff";
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.error_description) {
+        errorMessage = error.error_description;
+      }
+      
       if (isMounted.current) {
-        toast.error(`Error fetching staff: ${error.message}`);
+        toast.error(`Error fetching staff: ${errorMessage}`);
         setLoading(false);
       }
     }
