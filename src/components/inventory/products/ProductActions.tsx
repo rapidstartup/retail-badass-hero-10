@@ -9,19 +9,14 @@ interface ProductActionsProps {
 }
 
 const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsProps) => {
-  const handleAddClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    console.log("Add Product button clicked");
-    // Prevent any default navigation and event bubbling
-    e.preventDefault();
-    e.stopPropagation();
-    // Call the provided handler
-    handleAddProduct(e);
-  };
-
   return (
     <div className="flex space-x-2">
       <Button 
-        onClick={handleAddClick}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleAddProduct(e);
+        }}
         className="flex items-center gap-1"
         type="button"
       >
@@ -30,7 +25,10 @@ const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsPro
       </Button>
       <Button 
         variant="outline" 
-        onClick={refreshProducts} 
+        onClick={(e) => {
+          e.preventDefault();
+          refreshProducts();
+        }} 
         className="flex items-center gap-1"
         type="button"
       >

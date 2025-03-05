@@ -34,25 +34,23 @@ const ProductManagement = () => {
   );
 
   const handleAddProduct = (e: React.MouseEvent<HTMLButtonElement>) => {
-    console.log("handleAddProduct called");
     if (e) {
       e.preventDefault(); // Prevent default behavior
       e.stopPropagation(); // Stop event propagation
     }
+    console.log("Opening Add Product dialog");
     setSelectedProduct(null);
     setShowAddForm(true);
-    console.log("showAddForm set to true, state:", showAddForm);
   };
 
   const handleEditProduct = (product: any, e?: React.MouseEvent) => {
-    console.log("handleEditProduct called");
     if (e) {
       e.preventDefault(); // Prevent default behavior
       e.stopPropagation(); // Stop event propagation
     }
+    console.log("Opening Edit Product dialog for:", product.name);
     setSelectedProduct(product);
     setShowEditForm(true);
-    console.log("showEditForm set to true, state:", showEditForm);
   };
 
   const handleManageVariants = (product: any, e?: React.MouseEvent) => {
@@ -80,7 +78,7 @@ const ProductManagement = () => {
   };
 
   const handleFormClose = () => {
-    console.log("Form close called");
+    console.log("Closing form dialog");
     setShowAddForm(false);
     setShowEditForm(false);
     setSelectedProduct(null);
@@ -121,9 +119,8 @@ const ProductManagement = () => {
       <Dialog 
         open={showAddForm} 
         onOpenChange={(open) => {
-          console.log("Add dialog onOpenChange:", open);
+          console.log("Add dialog open state changing to:", open);
           if (!open) {
-            console.log("Closing add dialog");
             setSelectedProduct(null);
           }
           setShowAddForm(open);
@@ -139,9 +136,8 @@ const ProductManagement = () => {
       <Dialog 
         open={showEditForm} 
         onOpenChange={(open) => {
-          console.log("Edit dialog onOpenChange:", open);
+          console.log("Edit dialog open state changing to:", open);
           if (!open) {
-            console.log("Closing edit dialog");
             setSelectedProduct(null);
           }
           setShowEditForm(open);

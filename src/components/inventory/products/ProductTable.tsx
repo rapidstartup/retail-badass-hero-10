@@ -25,16 +25,16 @@ const ProductTable = ({
 }: ProductTableProps) => {
   
   const handleEditClick = (product: Product, e: React.MouseEvent) => {
-    console.log("Edit product clicked");
     e.preventDefault();
     e.stopPropagation();
+    console.log("Edit product clicked for:", product.name);
     handleEditProduct(product, e);
   };
   
   const handleVariantsClick = (product: Product, e: React.MouseEvent) => {
-    console.log("Manage variants clicked");
     e.preventDefault();
     e.stopPropagation();
+    console.log("Manage variants clicked for:", product.name);
     handleManageVariants(product, e);
   };
 
