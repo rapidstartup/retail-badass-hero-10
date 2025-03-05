@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { formatDateRange } from '@/utils/formatters';
+import { formatDate } from '@/utils/formatters';
 import { 
   PeriodType, 
   DashboardStats 
@@ -21,7 +21,7 @@ export const useDashboardStats = (periodType: PeriodType) => {
     queryKey: ['dashboardStats', periodType],
     queryFn: async () => {
       // Get the date ranges for the selected period
-      const { currentStart, currentEnd, previousStart, previousEnd } = calculatePeriodRanges(periodType);
+      const { today, currentPeriodStart, previousPeriodStart, previousPeriodEnd, periodLabel } = calculatePeriodRanges(periodType);
       
       // Fetch transactions for current and previous periods
       const [
@@ -31,11 +31,11 @@ export const useDashboardStats = (periodType: PeriodType) => {
         currentPeriodCustomers,
         previousPeriodCustomers
       ] = await Promise.all([
-        fetchCurrentPeriodTransactions(currentStart, currentEnd),
-        fetchPreviousPeriodTransactions(previousStart, previousEnd),
-        fetchTodayTransactions(),
-        fetchCurrentPeriodCustomers(currentStart, currentEnd),
-        fetchPreviousPeriodCustomers(previousStart, previousEnd)
+        fetchCurrentPeriodTransactions(currentPeriodStart),
+        fetchPreviousPeriodTransactions(previousPeriodStart, previousPeriodEnd),
+        fetchTodayTransactions(today),
+        fetchCurrentPeriodCustomers(currentPeriodStart),
+        fetchPreviousPeriodCustomers(previousPeriodStart, previousPeriodEnd)
       ]);
       
       // Calculate sales amount for each period
@@ -60,22 +60,8 @@ export const useDashboardStats = (periodType: PeriodType) => {
       );
       const itemsSoldTrend = calculateTrendPercentage(currentPeriodItemsSold, previousPeriodItemsSold);
       
-      // Get formatted date range for display
-      const formattedDate = formatDateRange(currentStart, currentEnd);
-      
-      // Generate period label for trend comparison
-      let periodLabel = '';
-      switch (periodType) {
-        case 'day':
-          periodLabel = 'vs. Yesterday';
-          break;
-        case 'week':
-          periodLabel = 'vs. Last Week';
-          break;
-        case 'month':
-          periodLabel = 'vs. Last Month';
-          break;
-      }
+      // Format date range string for display - using start and end dates
+      const formattedDate = `${formatDate(currentPeriodStart)} - ${formatDate(new Date())}`;
       
       // Prepare dashboard stats object
       const dashboardStats: DashboardStats = {

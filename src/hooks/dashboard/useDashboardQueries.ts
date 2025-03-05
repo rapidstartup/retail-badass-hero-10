@@ -21,7 +21,7 @@ export const fetchPreviousPeriodTransactions = async (
 ) => {
   const { data, error } = await supabase
     .from('transactions')
-    .select('total')
+    .select('total, items')
     .gte('created_at', previousPeriodStart.toISOString())
     .lt('created_at', previousPeriodEnd.toISOString())
     .eq('status', 'completed');

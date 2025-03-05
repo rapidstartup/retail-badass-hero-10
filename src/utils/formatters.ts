@@ -1,4 +1,3 @@
-
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -35,6 +34,10 @@ export const formatDateTime = (date: Date | string): string => {
     date = new Date(date);
   }
   return `${formatDate(date)} at ${formatTime(date)}`;
+};
+
+export const formatDateRange = (startDate: Date, endDate: Date): string => {
+  return `${formatDate(startDate)} - ${formatDate(endDate)}`;
 };
 
 export const formatNumber = (number: number): string => {
