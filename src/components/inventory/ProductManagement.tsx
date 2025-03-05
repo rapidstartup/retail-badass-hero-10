@@ -4,6 +4,7 @@ import { useProducts } from "@/contexts/ProductContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { deleteProduct } from "@/api/productApi";
+import { toast } from "sonner";
 import ProductForm from "./ProductForm";
 import ProductVariantsManager from "./ProductVariantsManager";
 import ProductTable from "./products/ProductTable";
@@ -38,6 +39,7 @@ const ProductManagement = () => {
   };
 
   const handleEditProduct = (product: any) => {
+    console.log("Edit product clicked:", product);
     setSelectedProduct(product);
     setShowEditForm(true);
   };
@@ -48,9 +50,17 @@ const ProductManagement = () => {
   };
 
   const handleDeleteProduct = async (id: string) => {
-    const success = await deleteProduct(id);
-    if (success) {
-      refreshProducts();
+    try {
+      const success = await deleteProduct(id);
+      if (success) {
+        toast.success("Product deleted successfully");
+        refreshProducts();
+      } else {
+        toast.error("Failed to delete product");
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error("An error occurred while deleting the product");
     }
   };
 
@@ -100,7 +110,7 @@ const ProductManagement = () => {
       
       {showEditForm && selectedProduct && (
         <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
-          <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto">
+          <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
             <ProductForm 
               product={selectedProduct} 
               onClose={handleFormClose} 
