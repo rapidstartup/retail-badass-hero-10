@@ -13,6 +13,36 @@ export const usePdfGenerator = () => {
     setIsGenerating(true);
     
     try {
+      // Save the current element styles
+      const originalStyles = window.getComputedStyle(elementRef.current);
+      
+      // Temporarily enforce light theme styles for PDF generation
+      elementRef.current.style.backgroundColor = 'white';
+      elementRef.current.style.color = '#333';
+      
+      // Find all child elements and ensure they have light theme colors
+      const allElements = elementRef.current.querySelectorAll('*');
+      const originalElementStyles: { [key: string]: { color: string, backgroundColor: string } } = {};
+      
+      allElements.forEach((el, index) => {
+        const styles = window.getComputedStyle(el);
+        // Store original styles for restoration
+        originalElementStyles[index] = {
+          color: styles.color,
+          backgroundColor: styles.backgroundColor
+        };
+        
+        // Apply light theme styles to element
+        (el as HTMLElement).style.color = '#333';
+        if (styles.backgroundColor !== 'rgba(0, 0, 0, 0)' && styles.backgroundColor !== 'transparent') {
+          if (styles.backgroundColor.includes('rgba') && parseFloat(styles.backgroundColor.split(',')[3]) < 0.1) {
+            // Don't change very transparent backgrounds
+          } else {
+            (el as HTMLElement).style.backgroundColor = 'white';
+          }
+        }
+      });
+      
       // Capture the element with better quality
       const canvas = await html2canvas(elementRef.current, {
         scale: 3, // Higher scale for better quality
@@ -20,7 +50,17 @@ export const usePdfGenerator = () => {
         useCORS: true,
         backgroundColor: '#ffffff',
         allowTaint: true
-        // Removed the unsupported letterRendering property
+      });
+      
+      // Restore original styles
+      elementRef.current.style.backgroundColor = originalStyles.backgroundColor;
+      elementRef.current.style.color = originalStyles.color;
+      
+      allElements.forEach((el, index) => {
+        if (originalElementStyles[index]) {
+          (el as HTMLElement).style.color = originalElementStyles[index].color;
+          (el as HTMLElement).style.backgroundColor = originalElementStyles[index].backgroundColor;
+        }
       });
       
       const imgData = canvas.toDataURL('image/png', 1.0); // Use maximum quality
@@ -69,6 +109,36 @@ export const usePdfGenerator = () => {
     setIsGenerating(true);
     
     try {
+      // Save the current element styles
+      const originalStyles = window.getComputedStyle(elementRef.current);
+      
+      // Temporarily enforce light theme styles for PDF generation
+      elementRef.current.style.backgroundColor = 'white';
+      elementRef.current.style.color = '#333';
+      
+      // Find all child elements and ensure they have light theme colors
+      const allElements = elementRef.current.querySelectorAll('*');
+      const originalElementStyles: { [key: string]: { color: string, backgroundColor: string } } = {};
+      
+      allElements.forEach((el, index) => {
+        const styles = window.getComputedStyle(el);
+        // Store original styles for restoration
+        originalElementStyles[index] = {
+          color: styles.color,
+          backgroundColor: styles.backgroundColor
+        };
+        
+        // Apply light theme styles to element
+        (el as HTMLElement).style.color = '#333';
+        if (styles.backgroundColor !== 'rgba(0, 0, 0, 0)' && styles.backgroundColor !== 'transparent') {
+          if (styles.backgroundColor.includes('rgba') && parseFloat(styles.backgroundColor.split(',')[3]) < 0.1) {
+            // Don't change very transparent backgrounds
+          } else {
+            (el as HTMLElement).style.backgroundColor = 'white';
+          }
+        }
+      });
+      
       // Capture the element with better quality
       const canvas = await html2canvas(elementRef.current, {
         scale: 3, // Higher scale for better quality
@@ -76,7 +146,17 @@ export const usePdfGenerator = () => {
         useCORS: true,
         backgroundColor: '#ffffff',
         allowTaint: true
-        // Removed the unsupported letterRendering property
+      });
+      
+      // Restore original styles
+      elementRef.current.style.backgroundColor = originalStyles.backgroundColor;
+      elementRef.current.style.color = originalStyles.color;
+      
+      allElements.forEach((el, index) => {
+        if (originalElementStyles[index]) {
+          (el as HTMLElement).style.color = originalElementStyles[index].color;
+          (el as HTMLElement).style.backgroundColor = originalElementStyles[index].backgroundColor;
+        }
       });
       
       const imgData = canvas.toDataURL('image/png', 1.0); // Use maximum quality

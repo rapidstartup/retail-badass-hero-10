@@ -67,10 +67,10 @@ const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({
           <head>
             <title>Print Invoice</title>
             <style>
-              body { font-family: Arial, sans-serif; color: #333; }
-              .invoice-container { padding: 20px; max-width: 800px; margin: 0 auto; }
+              body { font-family: Arial, sans-serif; color: #333; background-color: white; }
+              .invoice-container { padding: 20px; max-width: 800px; margin: 0 auto; background-color: white; }
               table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-              th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+              th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; color: #333; }
               th { background-color: #f2f2f2; }
             </style>
           </head>
@@ -99,7 +99,11 @@ const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({
   return (
     <div className="space-y-6">
       {/* Invoice Content - Wrapped in a ref for PDF generation */}
-      <div ref={invoiceRef} className="theme-container-bg p-6 space-y-6 rounded-lg border">
+      <div 
+        ref={invoiceRef} 
+        className="bg-white p-6 space-y-6 rounded-lg border text-black"
+        style={{ backgroundColor: 'white', color: '#333' }}
+      >
         {/* Store Information */}
         <InvoiceStoreInfo 
           storeName={store?.store_name || 'Store Name'} 
