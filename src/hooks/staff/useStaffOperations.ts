@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { StaffMember } from "@/types/staff";
 import { supabase } from "@/integrations/supabase/client";
 
-export function useStaffOperations(fetchStaffMembers: () => Promise<void>) {
+export function useStaffOperations(refetch: () => void) {
   const handleAddStaff = async (
     e: React.FormEvent, 
     email: string, 
@@ -38,7 +38,7 @@ export function useStaffOperations(fetchStaffMembers: () => Promise<void>) {
       console.log("Staff member created:", data);
       toast.success("Staff member added successfully");
       resetForm();
-      fetchStaffMembers();
+      refetch();
     } catch (error: any) {
       console.error("Error adding staff:", error);
       toast.error(`Error adding staff: ${error.message}`);
@@ -79,7 +79,7 @@ export function useStaffOperations(fetchStaffMembers: () => Promise<void>) {
       console.log("Staff member updated:", data);
       toast.success("Staff member updated successfully");
       resetForm();
-      fetchStaffMembers();
+      refetch();
     } catch (error: any) {
       console.error("Error updating staff:", error);
       toast.error(`Error updating staff: ${error.message}`);
@@ -105,7 +105,7 @@ export function useStaffOperations(fetchStaffMembers: () => Promise<void>) {
       
       console.log("Staff deleted successfully:", data);
       toast.success("Staff member deleted successfully");
-      fetchStaffMembers();
+      refetch();
     } catch (error: any) {
       console.error("Error deleting staff:", error);
       toast.error(`Error deleting staff: ${error.message}`);

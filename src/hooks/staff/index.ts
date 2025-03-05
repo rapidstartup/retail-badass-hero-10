@@ -5,7 +5,7 @@ import { useStaffOperations } from "./useStaffOperations";
 import { useStaffSync } from "./useStaffSync";
 
 export function useStaffManagement() {
-  const { staffMembers, loading, fetchStaffMembers } = useStaffFetch();
+  const { staffMembers, loading, fetchStaffMembers, refetch } = useStaffFetch();
   
   const {
     isEditing,
@@ -23,13 +23,13 @@ export function useStaffManagement() {
     resetForm
   } = useStaffForm();
   
-  const { syncing, syncWithGoHighLevel } = useStaffSync(fetchStaffMembers);
+  const { syncing, syncWithGoHighLevel } = useStaffSync(refetch);
   
   const {
     handleAddStaff: baseHandleAddStaff,
     handleEditStaff: baseHandleEditStaff,
     handleDeleteStaff
-  } = useStaffOperations(fetchStaffMembers);
+  } = useStaffOperations(refetch);
 
   // Create wrapper functions with simpler signatures for component use
   const handleAddStaff = async (e: React.FormEvent) => {
@@ -61,7 +61,8 @@ export function useStaffManagement() {
     startEdit,
     resetForm,
     syncWithGoHighLevel,
-    fetchStaffMembers
+    fetchStaffMembers,
+    refetch
   };
 }
 

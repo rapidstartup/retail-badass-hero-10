@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-export function useStaffSync(fetchStaffMembers: () => Promise<void>) {
+export function useStaffSync(refetch: () => void) {
   const [syncing, setSyncing] = useState(false);
 
   const syncWithGoHighLevel = async (goHighLevelApiKey: string | undefined) => {
@@ -29,7 +29,7 @@ export function useStaffSync(fetchStaffMembers: () => Promise<void>) {
       
       console.log("Staff synchronized with GoHighLevel successfully:", data);
       toast.success("Staff synchronized with GoHighLevel successfully");
-      fetchStaffMembers();
+      refetch();
     } catch (error: any) {
       console.error("Error syncing with GoHighLevel:", error);
       toast.error(`Error syncing with GoHighLevel: ${error.message}`);
