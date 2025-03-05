@@ -14,7 +14,6 @@ import { supabase } from "@/integrations/supabase/client";
 const StaffSettings = () => {
   const { settings } = useSettings();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [supabaseConnected, setSupabaseConnected] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   
   const {
@@ -41,36 +40,9 @@ const StaffSettings = () => {
     refetch
   } = useStaffManagement();
 
-  // Check Supabase connection on mount and after staff changes
+  // Debug: Log staff members whenever they change
   useEffect(() => {
-    const checkConnection = async () => {
-      try {
-        console.log("Checking Supabase connection...");
-        
-        // Simple query to check connection
-        const { error } = await supabase.from('staff').select('id').limit(1);
-        
-        if (error) {
-          console.error("Supabase connection check failed:", error);
-          setSupabaseConnected(false);
-          toast.error("Cannot connect to staff database - please check your network");
-        } else {
-          console.log("Supabase connection confirmed");
-          setSupabaseConnected(true);
-        }
-      } catch (err) {
-        console.error("Supabase connection error:", err);
-        setSupabaseConnected(false);
-        toast.error("Database connection error");
-      }
-    };
-    
-    checkConnection();
-  }, [lastRefresh]);
-
-  // Check if we have staff data
-  useEffect(() => {
-    console.log("Current staff members:", staffMembers);
+    console.log("StaffSettings component - Current staff members:", staffMembers);
   }, [staffMembers]);
 
   const goHighLevelApiKey = settings.goHighLevelApiKey;
@@ -95,10 +67,37 @@ const StaffSettings = () => {
   };
 
   const handleRefresh = () => {
+    console.log("Manually refreshing staff list...");
     toast.info("Refreshing staff list...");
+    // Force refetch data
     refetch();
+    // Update last refresh timestamp to trigger any effects that depend on it
     setLastRefresh(Date.now());
   };
+
+  // Debug check to directly query Supabase on component mount
+  useEffect(() => {
+    const checkDatabaseDirectly = async () => {
+      try {
+        console.log("Directly querying staff table from component...");
+        const { data, error, count } = await supabase.from('staff').select('*');
+        
+        if (error) {
+          console.error("Direct query error:", error);
+        } else {
+          console.log("Direct query results:", {
+            received: !!data,
+            count: count || (data?.length || 0),
+            data
+          });
+        }
+      } catch (err) {
+        console.error("Exception during direct query:", err);
+      }
+    };
+    
+    checkDatabaseDirectly();
+  }, [lastRefresh]);
 
   return (
     <Card>
@@ -111,11 +110,6 @@ const StaffSettings = () => {
       <CardContent>
         <div className="mb-4 flex justify-between">
           <div>
-            {!supabaseConnected && (
-              <div className="text-destructive mb-2">
-                Warning: Cannot connect to staff database table
-              </div>
-            )}
             <div className="text-muted-foreground text-sm">
               Found {Array.isArray(staffMembers) ? staffMembers.length : 0} staff members
             </div>
