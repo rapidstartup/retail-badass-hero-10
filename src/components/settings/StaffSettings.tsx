@@ -79,31 +79,32 @@ const StaffSettings = () => {
   const fetchStaffDirectly = async () => {
     setIsDirectFetching(true);
     try {
-      console.log("Directly querying staff table...");
-      toast.info("Directly querying staff data...");
+      console.log("Directly querying staff through edge function...");
+      toast.info("Querying staff data via edge function...");
       
-      const { data, error } = await supabase
-        .from('staff')
-        .select('*');
+      // Use the edge function instead of direct query
+      const { data, error } = await supabase.functions.invoke('staff', {
+        body: { action: 'list-staff' }
+      });
       
-      console.log("Direct query response:", { data, error });
+      console.log("Edge function direct query response:", { data, error });
       
       if (error) {
-        toast.error(`Direct query error: ${error.message}`);
+        toast.error(`Edge function error: ${error.message}`);
         return;
       }
       
-      if (!data || data.length === 0) {
-        toast.info("No staff records found in database");
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        toast.info("No staff records found via edge function");
         setDirectStaffData([]);
         return;
       }
       
       setDirectStaffData(data);
-      toast.success(`Found ${data.length} staff members directly`);
+      toast.success(`Found ${data.length} staff members via edge function`);
     } catch (err: any) {
-      console.error("Exception during direct query:", err);
-      toast.error(`Exception during direct query: ${err.message}`);
+      console.error("Exception during edge function query:", err);
+      toast.error(`Exception during edge function query: ${err.message}`);
     } finally {
       setIsDirectFetching(false);
     }
@@ -127,7 +128,7 @@ const StaffSettings = () => {
           <div>
             <div className="text-muted-foreground text-sm">
               Found {displayStaffMembers.length} staff members
-              {directStaffData.length > 0 && " (direct query)"}
+              {directStaffData.length > 0 && " (via edge function)"}
             </div>
           </div>
           <div className="flex gap-2">
@@ -138,7 +139,7 @@ const StaffSettings = () => {
               disabled={isDirectFetching}
             >
               <Database className={`mr-2 h-4 w-4 ${isDirectFetching ? 'animate-spin' : ''}`} />
-              {isDirectFetching ? "Querying..." : "Direct Query"}
+              {isDirectFetching ? "Querying..." : "Edge Function Query"}
             </Button>
             
             <Button 

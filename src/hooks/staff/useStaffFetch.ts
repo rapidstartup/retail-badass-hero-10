@@ -12,11 +12,14 @@ export function useStaffFetch() {
     setLoading(true);
     
     try {
-      console.log("Fetching staff members from Supabase...");
+      console.log("Fetching staff members using edge function...");
       
-      const { data, error } = await supabase
-        .from('staff')
-        .select('*');
+      // Use the edge function instead of direct query to bypass RLS
+      const { data, error } = await supabase.functions.invoke('staff', {
+        body: { 
+          action: 'list-staff'
+        }
+      });
       
       if (error) {
         console.error("Error fetching staff members:", error);
@@ -25,10 +28,10 @@ export function useStaffFetch() {
         return;
       }
       
-      console.log("Staff data received:", data);
+      console.log("Staff data received from edge function:", data);
       
-      if (!data || data.length === 0) {
-        console.log("No staff members found in the database");
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        console.log("No staff members found or invalid response format");
         setStaffMembers([]);
         return;
       }

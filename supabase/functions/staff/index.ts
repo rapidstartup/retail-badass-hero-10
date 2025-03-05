@@ -6,6 +6,7 @@ import {
   handleUpdateStaff, 
   handleDeleteStaff, 
   handleSyncGoHighLevel,
+  handleListStaff,
   CorsHeaders
 } from "./handlers.ts"
 
@@ -53,6 +54,9 @@ serve(async (req) => {
       
       case 'sync-gohighlevel':
         return await handleSyncGoHighLevel(requestBody, corsHeaders)
+      
+      case 'list-staff':
+        return await handleListStaff(supabase, corsHeaders)
       
       default:
         return new Response(
