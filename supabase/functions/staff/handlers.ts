@@ -23,6 +23,28 @@ export async function handleCreateStaff(
     )
   }
   
+  // Check if a user with this email already exists
+  const { data: existingUsers, error: searchError } = await supabase
+    .from('staff')
+    .select('email')
+    .eq('email', email)
+    .limit(1)
+  
+  if (searchError) {
+    console.error('Error checking for existing user:', searchError)
+    return new Response(
+      JSON.stringify({ error: searchError.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    )
+  }
+  
+  if (existingUsers && existingUsers.length > 0) {
+    return new Response(
+      JSON.stringify({ error: 'A staff member with this email already exists' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    )
+  }
+  
   // 1. Create auth user
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email,
@@ -31,11 +53,73 @@ export async function handleCreateStaff(
   })
   
   if (authError) {
-    console.error('Error creating auth user:', authError)
-    return new Response(
-      JSON.stringify({ error: authError.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-    )
+    // Special handling for already existing auth users
+    if (authError.message.includes('already been registered')) {
+      // Try to find the user's ID to link to staff record
+      const { data: existingAuthUser } = await supabase.auth.admin.listUsers({
+        filters: {
+          email: email
+        }
+      })
+      
+      if (existingAuthUser && existingAuthUser.users && existingAuthUser.users.length > 0) {
+        const existingUser = existingAuthUser.users[0]
+        
+        // Check if staff record already exists for this auth user
+        const { data: existingStaff } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('auth_id', existingUser.id)
+          .limit(1)
+        
+        if (existingStaff && existingStaff.length > 0) {
+          return new Response(
+            JSON.stringify({ error: 'A staff member with this email already exists' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+          )
+        }
+        
+        // Create a staff record linked to the existing auth user
+        const { data: staffData, error: staffError } = await supabase
+          .from('staff')
+          .insert([
+            {
+              auth_id: existingUser.id,
+              email,
+              first_name: firstName,
+              last_name: lastName,
+              role
+            }
+          ])
+          .select()
+          .single()
+          
+        if (staffError) {
+          console.error('Error creating staff record:', staffError)
+          return new Response(
+            JSON.stringify({ error: staffError.message }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+          )
+        }
+        
+        return new Response(
+          JSON.stringify(staffData),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      } else {
+        console.error('Error creating auth user:', authError)
+        return new Response(
+          JSON.stringify({ error: authError.message }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        )
+      }
+    } else {
+      console.error('Error creating auth user:', authError)
+      return new Response(
+        JSON.stringify({ error: authError.message }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
   }
   
   // 2. Add staff record
