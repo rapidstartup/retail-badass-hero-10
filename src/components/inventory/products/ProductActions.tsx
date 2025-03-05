@@ -11,7 +11,10 @@ interface ProductActionsProps {
 const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsProps) => {
   return (
     <div className="flex space-x-2">
-      <Button onClick={handleAddProduct} className="flex items-center gap-1">
+      <Button 
+        onClick={handleAddProduct} 
+        className="flex items-center gap-1"
+      >
         <Plus className="h-4 w-4" />
         Add Product
       </Button>

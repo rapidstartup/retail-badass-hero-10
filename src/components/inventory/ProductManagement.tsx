@@ -34,6 +34,7 @@ const ProductManagement = () => {
   );
 
   const handleAddProduct = () => {
+    console.log("Add product clicked");
     setSelectedProduct(null);
     setShowAddForm(true);
   };
@@ -101,13 +102,20 @@ const ProductManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Dialogs for adding/editing products and managing variants */}
-      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
-        <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto">
+      {/* Dialog for adding products */}
+      <Dialog 
+        open={showAddForm} 
+        onOpenChange={(open) => {
+          console.log("Add Dialog onOpenChange:", open);
+          setShowAddForm(open);
+        }}
+      >
+        <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
           <ProductForm onClose={handleFormClose} onSave={refreshProducts} threeColumns={true} />
         </DialogContent>
       </Dialog>
       
+      {/* Dialog for editing products */}
       {showEditForm && selectedProduct && (
         <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
           <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
@@ -121,6 +129,7 @@ const ProductManagement = () => {
         </Dialog>
       )}
       
+      {/* Dialog for managing variants */}
       {showVariantsManager && selectedProduct && (
         <ProductVariantsManager 
           product={selectedProduct} 
