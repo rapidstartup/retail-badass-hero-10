@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for managing PDF styling
  */
@@ -22,11 +21,10 @@ export const applyLightThemeStyles = (element: HTMLElement): {
   // Save the current element styles
   const originalStyles = window.getComputedStyle(element);
   
-  // Temporarily enforce light theme styles for PDF generation
-  element.style.backgroundColor = 'white';
-  element.style.color = '#333';
+  // We're keeping the original background colors and text colors
+  // No style modifications here anymore
   
-  // Find all child elements and ensure they have light theme colors
+  // Find all child elements to store their original styles
   const allElements = element.querySelectorAll('*');
   const originalElementStyles: Record<number, ElementStyles> = {};
   
@@ -38,15 +36,7 @@ export const applyLightThemeStyles = (element: HTMLElement): {
       backgroundColor: styles.backgroundColor
     };
     
-    // Apply light theme styles to element
-    (el as HTMLElement).style.color = '#333';
-    if (styles.backgroundColor !== 'rgba(0, 0, 0, 0)' && styles.backgroundColor !== 'transparent') {
-      if (styles.backgroundColor.includes('rgba') && parseFloat(styles.backgroundColor.split(',')[3]) < 0.1) {
-        // Don't change very transparent backgrounds
-      } else {
-        (el as HTMLElement).style.backgroundColor = 'white';
-      }
-    }
+    // No style modifications anymore - we preserve the original theme
   });
 
   return { originalStyles, originalElementStyles };

@@ -16,15 +16,19 @@ export const generateCanvas = async (element: HTMLElement): Promise<{
   canvas: HTMLCanvasElement;
   restoreStyles: () => void;
 }> => {
-  // Apply light theme styles and save originals for restoration
+  // Store original styles but don't apply light theme anymore
   const { originalStyles, originalElementStyles } = applyLightThemeStyles(element);
+  
+  // Get background color from the element
+  const computedStyle = window.getComputedStyle(element);
+  const backgroundColor = computedStyle.backgroundColor;
   
   // Capture the element with better quality
   const canvas = await html2canvas(element, {
     scale: 3, // Higher scale for better quality
     logging: false,
     useCORS: true,
-    backgroundColor: '#ffffff',
+    backgroundColor: backgroundColor, // Use the actual background color
     allowTaint: true
   });
   
