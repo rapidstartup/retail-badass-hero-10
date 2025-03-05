@@ -145,7 +145,7 @@ const TransactionInvoice: React.FC<TransactionInvoiceProps> = ({ transaction }) 
   return (
     <div className="space-y-6">
       {/* Invoice Content - Wrapped in a ref for PDF generation */}
-      <div ref={invoiceRef} className="bg-white p-6 space-y-6">
+      <div ref={invoiceRef} className="theme-container-bg p-6 space-y-6">
         {/* Store Information */}
         <Card>
           <CardHeader>
