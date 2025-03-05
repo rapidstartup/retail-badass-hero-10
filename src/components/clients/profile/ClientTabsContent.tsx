@@ -3,7 +3,8 @@ import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientTransactionHistory from "./ClientTransactionHistory";
 import ClientPaymentMethods from "./ClientPaymentMethods";
-import type { Transaction, Customer } from "@/types/index";
+import type { Transaction } from "@/types/transaction";
+import type { Customer } from "@/types/index";
 
 interface ClientTabsContentProps {
   transactions: Transaction[];
