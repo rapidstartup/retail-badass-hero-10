@@ -43,12 +43,12 @@ const TransactionDetailsSheet: React.FC<TransactionDetailsSheetProps> = ({
   // Fetch customer details from Supabase when transaction changes
   useEffect(() => {
     const fetchCustomerDetails = async () => {
-      if (transaction?.customer_id) {
+      if (transaction?.customers?.id) {
         try {
           const { data, error } = await supabase
             .from('customers')
             .select('*')
-            .eq('id', transaction.customer_id)
+            .eq('id', transaction.customers.id)
             .single();
           
           if (error) {

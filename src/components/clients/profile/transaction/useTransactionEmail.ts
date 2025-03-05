@@ -21,13 +21,13 @@ export const useTransactionEmail = () => {
     
     let customerEmail = defaultEmail || "";
     
-    // If no email provided and we have a customer_id, fetch from Supabase
-    if (!customerEmail && transaction.customer_id) {
+    // If no email provided and we have a customers.id, fetch from Supabase
+    if (!customerEmail && transaction.customers?.id) {
       try {
         const { data, error } = await supabase
           .from('customers')
           .select('email')
-          .eq('id', transaction.customer_id)
+          .eq('id', transaction.customers.id)
           .single();
         
         if (!error && data) {
