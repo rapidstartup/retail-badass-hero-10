@@ -14,57 +14,42 @@ export function useStaffFetch() {
     try {
       console.log("Fetching staff members from Supabase...");
       
-      // Instead of checking connection, let's directly query and see the raw response
-      const { data, error, status, statusText, count } = await supabase
+      const { data, error } = await supabase
         .from('staff')
         .select('*');
       
-      // Log complete information about the response
-      console.log("Supabase query response:", {
-        status,
-        statusText,
-        errorMessage: error?.message,
-        errorDetails: error?.details,
-        dataReceived: !!data,
-        dataLength: data?.length || 0,
-        count
-      });
-      
       if (error) {
-        console.error("Supabase query error details:", error);
-        throw error;
+        console.error("Error fetching staff members:", error);
+        toast.error(`Failed to load staff: ${error.message}`);
+        setStaffMembers([]);
+        return;
       }
       
-      // Log the actual data received
       console.log("Staff data received:", data);
       
-      // Debug check - is the data in the expected format?
-      if (data) {
-        if (data.length === 0) {
-          console.log("Query successful but no staff records found in the database");
-        } else {
-          console.log(`Found ${data.length} staff records:`, data);
-          data.forEach((staff, index) => {
-            console.log(`Staff #${index + 1}:`, {
-              id: staff.id,
-              email: staff.email,
-              firstName: staff.first_name,
-              lastName: staff.last_name,
-              role: staff.role
-            });
-          });
-        }
-      } else {
-        console.log("No data returned from query (data is null/undefined)");
+      if (!data || data.length === 0) {
+        console.log("No staff members found in the database");
+        setStaffMembers([]);
+        return;
       }
       
-      // Ensure we're setting the state with a valid array
-      setStaffMembers(Array.isArray(data) ? data : []);
+      // Map the data to ensure the correct shape
+      const formattedStaff = data.map(staff => ({
+        id: staff.id,
+        email: staff.email,
+        first_name: staff.first_name,
+        last_name: staff.last_name,
+        role: staff.role,
+        auth_id: staff.auth_id,
+        gohighlevel_id: staff.gohighlevel_id
+      }));
+      
+      console.log("Formatted staff data:", formattedStaff);
+      setStaffMembers(formattedStaff);
       
     } catch (error: any) {
-      console.error("Error fetching staff data:", error);
+      console.error("Exception during staff fetch:", error);
       toast.error(`Failed to load staff: ${error.message}`);
-      // Set empty array to prevent undefined errors in the UI
       setStaffMembers([]);
     } finally {
       setLoading(false);

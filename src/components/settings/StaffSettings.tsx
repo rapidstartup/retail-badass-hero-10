@@ -7,14 +7,16 @@ import StaffHeader from "./staff/StaffHeader";
 import StaffFormDialog from "./staff/StaffFormDialog";
 import { useStaffManagement } from "@/hooks/staff";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Database } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { StaffMember } from "@/types/staff";
 
 const StaffSettings = () => {
   const { settings } = useSettings();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [lastRefresh, setLastRefresh] = useState(Date.now());
+  const [directStaffData, setDirectStaffData] = useState<StaffMember[]>([]);
+  const [isDirectFetching, setIsDirectFetching] = useState(false);
   
   const {
     staffMembers,
@@ -69,35 +71,48 @@ const StaffSettings = () => {
   const handleRefresh = () => {
     console.log("Manually refreshing staff list...");
     toast.info("Refreshing staff list...");
-    // Force refetch data
     refetch();
-    // Update last refresh timestamp to trigger any effects that depend on it
-    setLastRefresh(Date.now());
+    // Clear any direct data we might have
+    setDirectStaffData([]);
   };
 
-  // Debug check to directly query Supabase on component mount
-  useEffect(() => {
-    const checkDatabaseDirectly = async () => {
-      try {
-        console.log("Directly querying staff table from component...");
-        const { data, error, count } = await supabase.from('staff').select('*');
-        
-        if (error) {
-          console.error("Direct query error:", error);
-        } else {
-          console.log("Direct query results:", {
-            received: !!data,
-            count: count || (data?.length || 0),
-            data
-          });
-        }
-      } catch (err) {
-        console.error("Exception during direct query:", err);
+  const fetchStaffDirectly = async () => {
+    setIsDirectFetching(true);
+    try {
+      console.log("Directly querying staff table...");
+      toast.info("Directly querying staff data...");
+      
+      const { data, error } = await supabase
+        .from('staff')
+        .select('*');
+      
+      console.log("Direct query response:", { data, error });
+      
+      if (error) {
+        toast.error(`Direct query error: ${error.message}`);
+        return;
       }
-    };
-    
-    checkDatabaseDirectly();
-  }, [lastRefresh]);
+      
+      if (!data || data.length === 0) {
+        toast.info("No staff records found in database");
+        setDirectStaffData([]);
+        return;
+      }
+      
+      setDirectStaffData(data);
+      toast.success(`Found ${data.length} staff members directly`);
+    } catch (err: any) {
+      console.error("Exception during direct query:", err);
+      toast.error(`Exception during direct query: ${err.message}`);
+    } finally {
+      setIsDirectFetching(false);
+    }
+  };
+
+  // Determine which staff data to display (direct fetch takes precedence if available)
+  const displayStaffMembers = directStaffData.length > 0 
+    ? directStaffData 
+    : Array.isArray(staffMembers) ? staffMembers : [];
 
   return (
     <Card>
@@ -111,18 +126,31 @@ const StaffSettings = () => {
         <div className="mb-4 flex justify-between">
           <div>
             <div className="text-muted-foreground text-sm">
-              Found {Array.isArray(staffMembers) ? staffMembers.length : 0} staff members
+              Found {displayStaffMembers.length} staff members
+              {directStaffData.length > 0 && " (direct query)"}
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            {loading ? "Refreshing..." : "Refresh Staff List"}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={fetchStaffDirectly}
+              disabled={isDirectFetching}
+            >
+              <Database className={`mr-2 h-4 w-4 ${isDirectFetching ? 'animate-spin' : ''}`} />
+              {isDirectFetching ? "Querying..." : "Direct Query"}
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              {loading ? "Refreshing..." : "Refresh"}
+            </Button>
+          </div>
         </div>
         
         {/* Staff Form Dialog */}
@@ -146,8 +174,8 @@ const StaffSettings = () => {
         />
         
         <StaffList
-          staffMembers={Array.isArray(staffMembers) ? staffMembers : []}
-          loading={loading}
+          staffMembers={displayStaffMembers}
+          loading={loading || isDirectFetching}
           startEdit={handleStartEdit}
           handleDeleteStaff={handleDeleteStaff}
         />
