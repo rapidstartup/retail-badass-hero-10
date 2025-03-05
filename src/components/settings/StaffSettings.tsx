@@ -44,7 +44,9 @@ const StaffSettings = () => {
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        const { data, error } = await supabase.from('staff').select('count');
+        // Simple query to check connection
+        const { error } = await supabase.from('staff').select('id').limit(1);
+        
         if (error) {
           console.error("Supabase connection check failed:", error);
           setSupabaseConnected(false);

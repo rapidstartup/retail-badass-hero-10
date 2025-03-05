@@ -12,16 +12,15 @@ export function useStaffFetch() {
     setLoading(true);
     
     try {
-      console.log("Fetching staff members directly from Supabase staff table...");
+      console.log("Fetching staff members from Supabase staff table...");
       
-      // Check Supabase connection
-      console.log("Supabase URL:", supabase.supabaseUrl);
+      // Instead of accessing protected property or using timeout
+      // Just log the connection attempt
+      console.log("Attempting to connect to Supabase staff table...");
       
-      // Explicitly set timeout for fetch operation
       const { data, error } = await supabase
         .from('staff')
-        .select('*')
-        .timeout(10000); // 10 second timeout
+        .select('*');
       
       if (error) {
         console.error("Supabase error:", error);
