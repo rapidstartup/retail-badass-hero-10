@@ -14,8 +14,8 @@ export function useStaffFetch() {
     try {
       console.log("Fetching staff members from Supabase...");
       
-      // First check if we can connect to Supabase
-      const connectionCheck = await supabase.from('staff').select('count(*)');
+      // First check if we can connect to Supabase - use a simpler query
+      const connectionCheck = await supabase.from('staff').select('id').limit(1);
       
       if (connectionCheck.error) {
         console.error("Supabase connection error:", connectionCheck.error);
