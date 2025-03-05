@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatters";
+import { PeriodType } from "@/hooks/dashboard/types";
 
 interface Transaction {
   id: string;
@@ -16,19 +17,35 @@ interface Transaction {
 interface RecentTransactionsTableProps {
   transactions: Transaction[] | undefined;
   isLoading: boolean;
+  periodType: PeriodType;
 }
 
 const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = ({ 
   transactions, 
-  isLoading 
+  isLoading,
+  periodType
 }) => {
   const navigate = useNavigate();
+
+  // Get appropriate description based on period type
+  const getDescription = () => {
+    switch (periodType) {
+      case 'day':
+        return "Today's transactions";
+      case 'week':
+        return "This week's transactions";
+      case 'month':
+        return "This month's transactions";
+      default:
+        return "Latest sales activity";
+    }
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Recent Transactions</CardTitle>
-        <CardDescription>Latest sales activity</CardDescription>
+        <CardDescription>{getDescription()}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

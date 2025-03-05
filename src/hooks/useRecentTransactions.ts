@@ -2,11 +2,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Transaction } from "@/types/transaction";
+import { PeriodType } from "@/hooks/dashboard/types";
+import { calculatePeriodRanges } from "@/hooks/dashboard";
 
-export const useRecentTransactions = (limit = 5) => {
+export const useRecentTransactions = (limit = 5, periodType: PeriodType = 'week') => {
   return useQuery({
-    queryKey: ["recent-transactions", limit],
+    queryKey: ["recent-transactions", limit, periodType],
     queryFn: async () => {
+      // Get date range for the selected period
+      const { currentPeriodStart } = calculatePeriodRanges(periodType);
+      
       const { data: transactions, error } = await supabase
         .from('transactions')
         .select(`
@@ -20,6 +25,7 @@ export const useRecentTransactions = (limit = 5) => {
         `)
         .order('created_at', { ascending: false })
         .eq('status', 'completed')
+        .gte('created_at', currentPeriodStart.toISOString())
         .limit(limit);
       
       if (error) throw error;

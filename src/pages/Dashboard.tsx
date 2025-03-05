@@ -19,7 +19,7 @@ const Dashboard = () => {
   const { data: stats, isLoading: statsLoading } = useDashboardStats(periodType);
   const { data: salesData, isLoading: salesLoading } = useSalesOverview();
   const { data: topProducts, isLoading: productsLoading } = useTopProducts();
-  const { data: recentTransactions, isLoading: transactionsLoading } = useRecentTransactions();
+  const { data: recentTransactions, isLoading: transactionsLoading } = useRecentTransactions(5, periodType);
   
   const handlePeriodChange = (value: string) => {
     setPeriodType(value as PeriodType);
@@ -48,6 +48,7 @@ const Dashboard = () => {
       <RecentTransactionsTable
         transactions={recentTransactions}
         isLoading={transactionsLoading}
+        periodType={periodType}
       />
     </Layout>
   );
