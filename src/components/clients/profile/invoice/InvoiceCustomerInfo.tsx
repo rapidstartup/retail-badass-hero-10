@@ -22,9 +22,13 @@ const InvoiceCustomerInfo: React.FC<InvoiceCustomerInfoProps> = ({
         <CardTitle className="text-lg font-semibold">Customer Details</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-2 text-sm pt-0">
-        <p className="font-medium">
-          {firstName} {lastName}
-        </p>
+        {(firstName || lastName) ? (
+          <p className="font-medium">
+            {firstName || ''} {lastName || ''}
+          </p>
+        ) : (
+          <p className="text-muted-foreground italic">Guest Customer</p>
+        )}
         {email && (
           <p className="text-muted-foreground">{email}</p>
         )}

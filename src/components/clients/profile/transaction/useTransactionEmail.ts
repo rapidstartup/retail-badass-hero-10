@@ -18,7 +18,9 @@ export const useTransactionEmail = () => {
 
   const handleEmailClick = (transaction: Transaction, defaultEmail?: string) => {
     setSelectedTransaction(transaction);
-    setRecipientEmail(defaultEmail || transaction.customers?.email || "");
+    // Use the customer email address when available
+    const customerEmail = transaction.customers?.email || defaultEmail || "";
+    setRecipientEmail(customerEmail);
     setEmailSubject(`Receipt for transaction #${transaction.id.slice(0, 8)}`);
     setIsEmailDialogOpen(true);
   };
