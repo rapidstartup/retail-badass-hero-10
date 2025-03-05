@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { Transaction } from "@/types/index";
+import type { Transaction } from "@/types/transaction";
 
 interface PaginationState {
   page: number;
@@ -57,7 +57,15 @@ export const useClientTransactions = (clientId: string | undefined) => {
           .range(from, to);
         
         if (error) throw error;
-        setTransactions(data || []);
+        
+        // Convert string status to the correct type
+        const typedData = data?.map(transaction => ({
+          ...transaction,
+          status: transaction.status as 'open' | 'completed' | 'refunded',
+          items: transaction.items || []
+        })) as Transaction[];
+        
+        setTransactions(typedData || []);
         
         setPagination(prev => ({
           ...prev,
