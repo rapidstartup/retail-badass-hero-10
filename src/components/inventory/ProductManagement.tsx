@@ -34,29 +34,43 @@ const ProductManagement = () => {
   );
 
   const handleAddProduct = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Ensure we capture and cancel the event completely
     if (e) {
-      e.preventDefault(); // Prevent default behavior
-      e.stopPropagation(); // Stop event propagation
+      e.preventDefault();
+      e.stopPropagation();
     }
-    console.log("Opening Add Product dialog");
+    console.log("handleAddProduct called in ProductManagement");
+    
+    // First set selected product to null, then open the form
     setSelectedProduct(null);
-    setShowAddForm(true);
+    // Use setTimeout to ensure state updates have been processed
+    setTimeout(() => {
+      setShowAddForm(true);
+      console.log("Set showAddForm to true");
+    }, 0);
   };
 
   const handleEditProduct = (product: any, e?: React.MouseEvent) => {
+    // Stop event propagation
     if (e) {
-      e.preventDefault(); // Prevent default behavior
-      e.stopPropagation(); // Stop event propagation
+      e.preventDefault();
+      e.stopPropagation();
     }
-    console.log("Opening Edit Product dialog for:", product.name);
+    console.log("handleEditProduct called in ProductManagement for:", product.name);
+    
+    // Set the selected product first, then show the form
     setSelectedProduct(product);
-    setShowEditForm(true);
+    // Use setTimeout to ensure state updates have been processed
+    setTimeout(() => {
+      setShowEditForm(true);
+      console.log("Set showEditForm to true");
+    }, 0);
   };
 
   const handleManageVariants = (product: any, e?: React.MouseEvent) => {
     if (e) {
-      e.preventDefault(); // Prevent default behavior
-      e.stopPropagation(); // Stop event propagation
+      e.preventDefault();
+      e.stopPropagation();
     }
     setSelectedProduct(product);
     setShowVariantsManager(true);
@@ -120,10 +134,14 @@ const ProductManagement = () => {
         open={showAddForm} 
         onOpenChange={(open) => {
           console.log("Add dialog open state changing to:", open);
+          // If dialog is closing
           if (!open) {
+            setShowAddForm(false);
             setSelectedProduct(null);
+          } else {
+            // If dialog is opening
+            setShowAddForm(true);
           }
-          setShowAddForm(open);
         }}
       >
         <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
@@ -137,10 +155,14 @@ const ProductManagement = () => {
         open={showEditForm} 
         onOpenChange={(open) => {
           console.log("Edit dialog open state changing to:", open);
+          // If dialog is closing
           if (!open) {
+            setShowEditForm(false);
             setSelectedProduct(null);
+          } else {
+            // If dialog is opening
+            setShowEditForm(true);
           }
-          setShowEditForm(open);
         }}
       >
         <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
