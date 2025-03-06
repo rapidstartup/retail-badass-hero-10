@@ -44,24 +44,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, onClick, type = "button", ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     
-    // Wrap onClick to prevent default navigation behavior
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      // Prevent default button behavior
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Call the original onClick handler if provided
-      if (onClick) {
-        onClick(e);
-      }
-    };
+    // We're removing the automatic preventDefault here to avoid breaking normal button behavior
+    // Let individual components manage their own event handling instead
     
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         type={type}
-        onClick={handleClick}
+        onClick={onClick}
         {...props}
       />
     )

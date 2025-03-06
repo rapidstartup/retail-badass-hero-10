@@ -10,16 +10,13 @@ interface ProductActionsProps {
 
 const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsProps) => {
   const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Completely prevent any default behavior and stop propagation
+    // Prevent default behavior and stop propagation
     e.preventDefault();
     e.stopPropagation();
     console.log("Add Product button clicked in ProductActions");
     
     // Call the handler with the event
     handleAddProduct(e);
-    
-    // Return false to ensure no further navigation
-    return false;
   };
 
   const handleRefresh = (e: React.MouseEvent<HTMLButtonElement>) => {

@@ -48,9 +48,6 @@ const ProductManagement = () => {
     // Explicitly set dialog state
     setShowAddForm(true);
     console.log("Set showAddForm to true:", showAddForm);
-    
-    // Return false to prevent any potential navigation
-    return false;
   }, [setSelectedProduct]);
 
   const handleEditProduct = useCallback((product: any, e?: React.MouseEvent) => {
@@ -67,9 +64,6 @@ const ProductManagement = () => {
     // Open the edit form modal
     setShowEditForm(true);
     console.log("Set showEditForm to true");
-    
-    // Return false to prevent any potential navigation
-    return false;
   }, [setSelectedProduct]);
 
   const handleManageVariants = useCallback((product: any, e?: React.MouseEvent) => {
@@ -146,9 +140,6 @@ const ProductManagement = () => {
           if (!open) {
             setShowAddForm(false);
             setSelectedProduct(null);
-          } else {
-            // If dialog is opening
-            setShowAddForm(true);
           }
         }}
       >
@@ -167,9 +158,6 @@ const ProductManagement = () => {
           if (!open) {
             setShowEditForm(false);
             setSelectedProduct(null);
-          } else {
-            // If dialog is opening
-            setShowEditForm(true);
           }
         }}
       >
