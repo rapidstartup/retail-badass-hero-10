@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useProducts } from "@/contexts/ProductContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -33,7 +33,8 @@ const ProductManagement = () => {
     (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const handleAddProduct = (e: React.MouseEvent<HTMLButtonElement>) => {
+  // Use useCallback to ensure the handler doesn't change between renders
+  const handleAddProduct = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     // Ensure we capture and cancel the event completely
     if (e) {
       e.preventDefault();
@@ -43,12 +44,16 @@ const ProductManagement = () => {
     
     // First set selected product to null, then open the form
     setSelectedProduct(null);
-    // Open the form modal immediately
+    
+    // Explicitly set dialog state
     setShowAddForm(true);
     console.log("Set showAddForm to true:", showAddForm);
-  };
+    
+    // Return false to prevent any potential navigation
+    return false;
+  }, [setSelectedProduct]);
 
-  const handleEditProduct = (product: any, e?: React.MouseEvent) => {
+  const handleEditProduct = useCallback((product: any, e?: React.MouseEvent) => {
     // Stop event propagation
     if (e) {
       e.preventDefault();
@@ -58,19 +63,24 @@ const ProductManagement = () => {
     
     // Set the selected product first, then show the form
     setSelectedProduct(product);
+    
     // Open the edit form modal
     setShowEditForm(true);
     console.log("Set showEditForm to true");
-  };
+    
+    // Return false to prevent any potential navigation
+    return false;
+  }, [setSelectedProduct]);
 
-  const handleManageVariants = (product: any, e?: React.MouseEvent) => {
+  const handleManageVariants = useCallback((product: any, e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     setSelectedProduct(product);
     setShowVariantsManager(true);
-  };
+    return false;
+  }, [setSelectedProduct]);
 
   const handleDeleteProduct = async (id: string) => {
     try {
@@ -100,6 +110,8 @@ const ProductManagement = () => {
     setSelectedProduct(null);
     refreshProducts();
   };
+
+  console.log("Current add form dialog state:", showAddForm);
 
   return (
     <div className="space-y-4">
