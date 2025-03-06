@@ -1,6 +1,6 @@
 
 import React from "react";
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Product } from "@/types";
 
 interface VariantManagerHeaderProps {
@@ -13,6 +13,9 @@ const VariantManagerHeader = ({ product }: VariantManagerHeaderProps) => {
       <DialogTitle>
         Variants for {product.name}
       </DialogTitle>
+      <DialogDescription>
+        Manage different product options like size, color, and other attributes
+      </DialogDescription>
     </DialogHeader>
   );
 };

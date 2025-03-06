@@ -29,7 +29,7 @@ const VariantManagerActions = ({
       <div className="flex space-x-2">
         <Button 
           onClick={() => {
-            setShowAddVariant(prev => !prev);
+            setShowAddVariant(!showAddVariant);
             if (!showAddVariant) {
               resetForm();
               initializeBulkGenerator();
