@@ -1,34 +1,83 @@
 
 import React from "react";
-import { UserRound, CalendarRange } from "lucide-react";
+import { UserRound, CalendarRange, Receipt, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { formatPhoneNumber } from "@/utils/formatters";
+import { formatPhoneNumber, formatCurrency } from "@/utils/formatters";
 import type { Customer } from "@/types/index";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 interface ClientInformationProps {
   customer: Customer;
 }
 
+// Custom hook to fetch client tab information
+const useClientTabInfo = (customerId: string) => {
+  return useQuery({
+    queryKey: ['client-tab', customerId],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('total')
+          .eq('customer_id', customerId)
+          .eq('status', 'open')
+          .eq('payment_method', 'tab');
+          
+        if (error) throw error;
+        
+        const totalTabAmount = data?.reduce((sum, tx) => sum + (tx.total || 0), 0) || 0;
+        return {
+          hasOpenTab: data && data.length > 0,
+          tabCount: data?.length || 0,
+          totalAmount: totalTabAmount
+        };
+      } catch (error) {
+        console.error('Error fetching client tab info:', error);
+        return { hasOpenTab: false, tabCount: 0, totalAmount: 0 };
+      }
+    },
+    staleTime: 60000 // 1 minute
+  });
+}
+
 const ClientInformation: React.FC<ClientInformationProps> = ({ customer }) => {
+  const { data: tabInfo, isLoading } = useClientTabInfo(customer.id);
+  
   return (
     <Card className="theme-container-bg border">
       <CardHeader>
         <CardTitle>Client Information</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Tab Balance Widget - replacing the profile photo */}
         <div className="flex justify-center mb-6">
-          {customer.photo_url ? (
-            <img 
-              src={customer.photo_url} 
-              alt={`${customer.first_name} ${customer.last_name}`} 
-              className="rounded-full w-32 h-32 object-cover border-4 border-theme-accent/20" 
-            />
-          ) : (
-            <div className="rounded-full w-32 h-32 bg-theme-accent/10 flex items-center justify-center">
-              <UserRound className="h-16 w-16 text-theme-accent/40" />
-            </div>
-          )}
+          <div className={`rounded-full w-32 h-32 flex flex-col items-center justify-center ${
+            tabInfo?.hasOpenTab 
+              ? tabInfo.totalAmount > 100 
+                ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400" 
+                : "bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400"
+              : "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+          }`}>
+            {isLoading ? (
+              <div className="animate-pulse">
+                <Receipt className="h-12 w-12 opacity-50" />
+              </div>
+            ) : (
+              <>
+                <Receipt className="h-8 w-8 mb-1" />
+                <div className="text-lg font-bold">
+                  {formatCurrency(tabInfo?.totalAmount || 0)}
+                </div>
+                <div className="text-xs text-center px-2">
+                  {tabInfo?.hasOpenTab 
+                    ? `${tabInfo.tabCount} open tab${tabInfo.tabCount !== 1 ? 's' : ''}`
+                    : "No open tabs"}
+                </div>
+              </>
+            )}
+          </div>
         </div>
         
         <div className="space-y-2">
@@ -82,6 +131,20 @@ const ClientInformation: React.FC<ClientInformationProps> = ({ customer }) => {
               <div className="text-sm text-muted-foreground">Customer since</div>
             </div>
           </div>
+          
+          {tabInfo?.hasOpenTab && (
+            <div className="mt-4 p-2 rounded border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+              <div className="flex items-start gap-2">
+                <div className="flex-shrink-0 pt-0.5">
+                  <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div className="text-sm text-amber-700 dark:text-amber-400">
+                  <p className="font-medium">Open Tab Alert</p>
+                  <p>This customer has an open tab of {formatCurrency(tabInfo.totalAmount)}.</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
