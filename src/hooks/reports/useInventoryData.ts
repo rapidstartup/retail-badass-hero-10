@@ -16,10 +16,10 @@ export const useInventoryData = (lowStockThreshold = 10) => {
     queryKey: ['inventory-status'],
     queryFn: async () => {
       try {
-        // Fetch products with no variants
+        // Optimized query for standard products - fetch only what's needed
         const { data: products, error: productsError } = await supabase
           .from('products')
-          .select('id, name, stock, has_variants')
+          .select('name, stock')
           .eq('has_variants', false);
           
         if (productsError) {
@@ -27,18 +27,15 @@ export const useInventoryData = (lowStockThreshold = 10) => {
           throw productsError;
         }
         
-        // Fetch product variants
+        // Optimized query for variants - better join structure
         const { data: variants, error: variantsError } = await supabase
           .from('product_variants')
           .select(`
-            id,
             stock_count,
             color,
             size,
             flavor,
-            products (
-              name
-            )
+            products!inner(name)
           `);
           
         if (variantsError) {
@@ -46,8 +43,11 @@ export const useInventoryData = (lowStockThreshold = 10) => {
           throw variantsError;
         }
         
-        // Transform standard products data
-        const inventoryItems: InventoryItem[] = (products || []).map(product => {
+        // Transform and combine data efficiently
+        const inventoryItems: InventoryItem[] = [];
+        
+        // Add standard products to inventory items
+        (products || []).forEach(product => {
           let status: "Good" | "Low" | "Critical" = "Good";
           
           if (!product.stock || product.stock <= 0) {
@@ -56,15 +56,15 @@ export const useInventoryData = (lowStockThreshold = 10) => {
             status = "Low";
           }
           
-          return {
+          inventoryItems.push({
             product: product.name,
             stock: product.stock || 0,
             reorderLevel: lowStockThreshold,
             status
-          };
+          });
         });
         
-        // Add variant data
+        // Add variants to inventory items
         (variants || []).forEach(variant => {
           if (variant.products?.name) {
             let status: "Good" | "Low" | "Critical" = "Good";
@@ -75,7 +75,7 @@ export const useInventoryData = (lowStockThreshold = 10) => {
               status = "Low";
             }
             
-            // Construct variant display name from attributes
+            // Efficiently construct variant display name from attributes
             const variantAttributes = [];
             if (variant.color) variantAttributes.push(variant.color);
             if (variant.size) variantAttributes.push(variant.size);

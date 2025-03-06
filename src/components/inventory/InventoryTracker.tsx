@@ -9,6 +9,7 @@ import VariantProductTable from "./tables/VariantProductTable";
 import LowStockAlert from "./alerts/LowStockAlert";
 import SectionHeader from "./ui/SectionHeader";
 import LoadingIndicator from "./ui/LoadingIndicator";
+import { toast } from "sonner";
 
 interface InventoryTrackerProps {
   lowStockThreshold?: number;
@@ -44,20 +45,25 @@ export function InventoryTracker({
   const [variants, setVariants] = useState<VariantItem[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Function to fetch inventory data
+  // Optimized function to fetch inventory data - reduced data fetching and improved query structure
   const fetchInventory = async () => {
     try {
       setLoading(true);
       
-      // Fetch products
+      // Fetch only standard products (without variants) - optimized query
       const { data: productsData, error: productsError } = await supabase
         .from("products")
-        .select("*")
+        .select("id, name, price, category, stock, has_variants")
+        .eq("has_variants", false)
         .order("name");
         
-      if (productsError) throw productsError;
+      if (productsError) {
+        console.error("Error fetching products:", productsError);
+        toast.error("Failed to load products");
+        throw productsError;
+      }
       
-      // Fetch variants if enabled
+      // Fetch variants if enabled - optimized with a more targeted join
       if (showVariants) {
         const { data: variantsData, error: variantsError } = await supabase
           .from("product_variants")
@@ -70,24 +76,31 @@ export function InventoryTracker({
             color, 
             size, 
             flavor,
-            products(name)
+            products!inner(name)
           `)
           .order("product_id");
           
-        if (variantsError) throw variantsError;
+        if (variantsError) {
+          console.error("Error fetching variants:", variantsError);
+          toast.error("Failed to load product variants");
+          throw variantsError;
+        }
         
         // Transform the variants data to include product name
-        const transformedVariants = variantsData.map(variant => ({
+        const transformedVariants = (variantsData || []).map(variant => ({
           ...variant,
           product_name: variant.products?.name || "Unknown Product"
         }));
         
-        setVariants(transformedVariants || []);
+        setVariants(transformedVariants);
+      } else {
+        setVariants([]);
       }
       
       setProducts(productsData || []);
     } catch (error) {
       console.error("Error fetching inventory:", error);
+      toast.error("Failed to load inventory data");
     } finally {
       setLoading(false);
     }
@@ -98,31 +111,40 @@ export function InventoryTracker({
     fetchInventory();
   }, [showVariants]);
   
-  // Set up realtime subscription for inventory updates
+  // Set up realtime subscription for inventory updates - optimized to use specific channel names
   useEffect(() => {
+    // Subscribe to product changes only for standard products
     const productsChannel = supabase
-      .channel('public:products')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, 
+      .channel('products-inventory-tracker')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'products', filter: 'has_variants=eq.false' }, 
         () => {
+          console.log("Products changed, refreshing inventory");
           fetchInventory();
         }
       )
       .subscribe();
       
-    const variantsChannel = supabase
-      .channel('public:product_variants')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'product_variants' }, 
-        () => {
-          if (showVariants) {
+    // Subscribe to variant changes only if we're showing variants
+    let variantsChannel;
+    if (showVariants) {
+      variantsChannel = supabase
+        .channel('variants-inventory-tracker')
+        .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'product_variants' }, 
+          () => {
+            console.log("Variants changed, refreshing inventory");
             fetchInventory();
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
+    }
       
     return () => {
       supabase.removeChannel(productsChannel);
-      supabase.removeChannel(variantsChannel);
+      if (variantsChannel) {
+        supabase.removeChannel(variantsChannel);
+      }
     };
   }, [showVariants]);
   
@@ -130,20 +152,17 @@ export function InventoryTracker({
     fetchInventory();
   };
   
-  // Filter products to only show those without variants or that don't have the has_variants flag
-  const standardProducts = products.filter(product => !product.has_variants);
-  
-  // Filter for products with low stock
-  const lowStockProducts = standardProducts.filter(item => 
+  // Filter for products with low stock - no change needed
+  const lowStockProducts = products.filter(item => 
     item.stock !== null && item.stock <= lowStockThreshold
   );
   
-  // Filter for variants with low stock
+  // Filter for variants with low stock - no change needed
   const lowStockVariants = variants.filter(variant => 
     variant.stock_count !== null && variant.stock_count <= lowStockThreshold
   );
   
-  // Count total low stock items
+  // Count total low stock items - no change needed
   const totalLowStockItems = lowStockProducts.length + lowStockVariants.length;
   
   return (
@@ -169,7 +188,7 @@ export function InventoryTracker({
               <SectionHeader title="Standard Products" />
               <div className="border rounded-md">
                 <StandardProductTable 
-                  products={standardProducts} 
+                  products={products} 
                   lowStockThreshold={lowStockThreshold}
                   loading={loading}
                 />
