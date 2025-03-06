@@ -43,7 +43,7 @@ const TopProductsChart: React.FC<TopProductsChartProps> = ({ topProducts, isLoad
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="quantity" fill="var(--theme-accent-color)" />
+              <Bar dataKey="sales" fill="var(--theme-accent-color)" />
             </BarChart>
           )}
         </ResponsiveContainer>

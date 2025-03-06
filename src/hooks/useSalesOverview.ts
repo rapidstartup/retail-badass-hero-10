@@ -8,7 +8,6 @@ export const useSalesOverview = () => {
     queryFn: async () => {
       // Get the current month and year
       const now = new Date();
-      const currentYear = now.getFullYear();
       
       // Initialize month data array (past 6 months)
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

@@ -65,12 +65,26 @@ export const useRecentTransactions = (limit = 5, periodType: PeriodType = 'week'
           }
         }
         
+        let date;
+        try {
+          date = new Date(transaction.created_at);
+          // Validate the date
+          if (isNaN(date.getTime())) {
+            // If date is invalid, use current date as fallback
+            date = new Date();
+          }
+        } catch (error) {
+          console.error(`Error parsing date for transaction ${transaction.id}:`, error);
+          // Use current date as fallback
+          date = new Date();
+        }
+        
         return {
           id: transaction.id,
           customer: customerName,
           amount: transaction.total || 0,
           items: itemsCount,
-          date: new Date(transaction.created_at || new Date())
+          date: date
         };
       });
     }

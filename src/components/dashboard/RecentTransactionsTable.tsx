@@ -41,6 +41,16 @@ const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = ({
     }
   };
 
+  // Safe date formatting function
+  const formatTime = (date: Date) => {
+    try {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (error) {
+      console.error("Error formatting date:", error, date);
+      return "Invalid date";
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -73,7 +83,7 @@ const RecentTransactionsTable: React.FC<RecentTransactionsTableProps> = ({
                     <td className="py-3 px-4">{transaction.items}</td>
                     <td className="py-3 px-4">{formatCurrency(transaction.amount)}</td>
                     <td className="py-3 px-4">
-                      {transaction.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {formatTime(transaction.date)}
                     </td>
                     <td className="py-3 px-4">
                       <Button 
