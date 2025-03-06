@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      client_wallets: {
+        Row: {
+          created_at: string
+          current_balance: number
+          customer_id: string
+          id: string
+          last_charged_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_balance?: number
+          customer_id: string
+          id?: string
+          last_charged_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_balance?: number
+          customer_id?: string
+          id?: string
+          last_charged_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_wallets_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           created_at: string | null
@@ -258,7 +293,11 @@ export type Database = {
           store_address: string | null
           store_name: string | null
           store_phone: string | null
+          tab_auto_charge_enabled: boolean | null
+          tab_auto_charge_threshold: number | null
           tab_auto_close_policy: string | null
+          tab_charge_day_of_month: number | null
+          tab_charge_frequency: string | null
           tab_customer_eligibility: string | null
           tab_enabled: boolean | null
           tab_max_days: number | null
@@ -276,7 +315,11 @@ export type Database = {
           store_address?: string | null
           store_name?: string | null
           store_phone?: string | null
+          tab_auto_charge_enabled?: boolean | null
+          tab_auto_charge_threshold?: number | null
           tab_auto_close_policy?: string | null
+          tab_charge_day_of_month?: number | null
+          tab_charge_frequency?: string | null
           tab_customer_eligibility?: string | null
           tab_enabled?: boolean | null
           tab_max_days?: number | null
@@ -294,7 +337,11 @@ export type Database = {
           store_address?: string | null
           store_name?: string | null
           store_phone?: string | null
+          tab_auto_charge_enabled?: boolean | null
+          tab_auto_charge_threshold?: number | null
           tab_auto_close_policy?: string | null
+          tab_charge_day_of_month?: number | null
+          tab_charge_frequency?: string | null
           tab_customer_eligibility?: string | null
           tab_enabled?: boolean | null
           tab_max_days?: number | null
@@ -403,6 +450,44 @@ export type Database = {
           },
         ]
       }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          type: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "client_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -411,6 +496,10 @@ export type Database = {
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      sync_tab_balances_to_wallets: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {

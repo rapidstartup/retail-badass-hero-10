@@ -138,10 +138,75 @@ export function usePaymentLogic(onSuccess: () => void, onClose: () => void) {
   // New function to save transaction to Supabase
   const saveTransactionToSupabase = async () => {
     // This function needs context from the POSPaymentModal component
-    // We'll modify it to accept the necessary parameters in a future update
-    
-    // For now, let's set up a stub to be replaced with the actual implementation
+    // We'll modify it to be replaced with the actual implementation
     return { error: null };
+  };
+
+  // Function to update wallet when a customer makes a tab payment
+  const updateCustomerWallet = async (customerId: string, amount: number, transactionId: string) => {
+    if (!customerId || !amount) return;
+    
+    try {
+      // First, check if the customer has a wallet
+      const { data: wallet, error: walletError } = await supabase
+        .from('client_wallets')
+        .select('id, current_balance')
+        .eq('customer_id', customerId)
+        .single();
+        
+      if (walletError) {
+        // Create a new wallet if it doesn't exist
+        const { data: newWallet, error: createError } = await supabase
+          .from('client_wallets')
+          .insert([{ 
+            customer_id: customerId, 
+            current_balance: amount 
+          }])
+          .select()
+          .single();
+          
+        if (createError) throw createError;
+        
+        // Add transaction record
+        await supabase
+          .from('wallet_transactions')
+          .insert([{
+            wallet_id: newWallet.id,
+            amount: amount,
+            type: 'charge',
+            description: 'Added to tab during checkout',
+            reference_id: transactionId
+          }]);
+      } else {
+        // Update existing wallet
+        const newBalance = (wallet.current_balance || 0) + amount;
+        
+        await supabase
+          .from('client_wallets')
+          .update({ 
+            current_balance: newBalance,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', wallet.id);
+          
+        // Add transaction record
+        await supabase
+          .from('wallet_transactions')
+          .insert([{
+            wallet_id: wallet.id,
+            amount: amount,
+            type: 'charge',
+            description: 'Added to tab during checkout',
+            reference_id: transactionId
+          }]);
+      }
+      
+      console.log('Customer wallet updated successfully');
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating customer wallet:', error);
+      return { success: false, error };
+    }
   };
 
   return {
@@ -165,6 +230,7 @@ export function usePaymentLogic(onSuccess: () => void, onClose: () => void) {
     handleNumpadInput,
     handleGiftCardPaymentComplete,
     processPayment,
-    initializePayment
+    initializePayment,
+    updateCustomerWallet
   };
 }

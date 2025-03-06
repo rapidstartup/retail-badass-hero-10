@@ -12,26 +12,53 @@ interface ClientInformationProps {
   customer: Customer;
 }
 
-// Custom hook to fetch client tab information
+// Custom hook to fetch client tab information - now using the client_wallets table
 const useClientTabInfo = (customerId: string) => {
   return useQuery({
     queryKey: ['client-tab', customerId],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
+        // First try to get the wallet information
+        const { data: wallet, error: walletError } = await supabase
+          .from('client_wallets')
+          .select('*')
+          .eq('customer_id', customerId)
+          .single();
+          
+        if (walletError) {
+          console.error('Wallet error:', walletError);
+          // Fallback to the old method if wallet doesn't exist yet
+          const { data, error } = await supabase
+            .from('transactions')
+            .select('total')
+            .eq('customer_id', customerId)
+            .eq('status', 'open')
+            .eq('payment_method', 'tab');
+            
+          if (error) throw error;
+          
+          const totalTabAmount = data?.reduce((sum, tx) => sum + (tx.total || 0), 0) || 0;
+          return {
+            hasOpenTab: data && data.length > 0,
+            tabCount: data?.length || 0,
+            totalAmount: totalTabAmount
+          };
+        }
+        
+        // If we have a wallet, get the open transactions count
+        const { data: transactions, error: txError } = await supabase
           .from('transactions')
-          .select('total')
+          .select('id')
           .eq('customer_id', customerId)
           .eq('status', 'open')
           .eq('payment_method', 'tab');
           
-        if (error) throw error;
+        if (txError) throw txError;
         
-        const totalTabAmount = data?.reduce((sum, tx) => sum + (tx.total || 0), 0) || 0;
         return {
-          hasOpenTab: data && data.length > 0,
-          tabCount: data?.length || 0,
-          totalAmount: totalTabAmount
+          hasOpenTab: wallet.current_balance > 0,
+          tabCount: transactions?.length || 0,
+          totalAmount: wallet.current_balance
         };
       } catch (error) {
         console.error('Error fetching client tab info:', error);

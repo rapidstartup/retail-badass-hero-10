@@ -51,7 +51,8 @@ export function POSPaymentModal({
     handleNumpadInput,
     handleGiftCardPaymentComplete,
     processPayment: processPaymentBase,
-    initializePayment
+    initializePayment,
+    updateCustomerWallet
   } = usePaymentLogic(onSuccess, onClose);
 
   // Initialize the amount tendered when the modal opens or total changes
@@ -84,6 +85,11 @@ export function POSPaymentModal({
         // Continue with payment processing but log the error
       } else {
         console.log('Transaction saved successfully:', data);
+        
+        // If it's a tab payment, update the customer's wallet
+        if (paymentMethod === 'tab' && customer?.id && data?.[0]?.id) {
+          await updateCustomerWallet(customer.id, total, data[0].id);
+        }
       }
 
       // Continue with the base payment processing

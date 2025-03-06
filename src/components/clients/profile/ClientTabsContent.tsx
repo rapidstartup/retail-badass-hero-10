@@ -3,6 +3,7 @@ import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientTransactionHistory from "./ClientTransactionHistory";
 import ClientPaymentMethods from "./ClientPaymentMethods";
+import ClientTabManagement from "./ClientTabManagement";
 import type { Transaction } from "@/types/transaction";
 import type { Customer } from "@/types/index";
 
@@ -28,11 +29,17 @@ const ClientTabsContent: React.FC<ClientTabsContentProps> = ({
   onPageSizeChange,
   loading
 }) => {
+  const handleTabPaid = () => {
+    // Force refresh of transaction history after tab is paid
+    onPageChange(pagination.page);
+  };
+
   return (
     <Tabs defaultValue="history">
       <TabsList className="mb-4 theme-container-bg">
         <TabsTrigger value="history">Transaction History</TabsTrigger>
         <TabsTrigger value="payment">Payment Methods</TabsTrigger>
+        <TabsTrigger value="tab">Tab Management</TabsTrigger>
       </TabsList>
       
       <TabsContent value="history">
@@ -47,6 +54,13 @@ const ClientTabsContent: React.FC<ClientTabsContentProps> = ({
       
       <TabsContent value="payment">
         <ClientPaymentMethods customer={customer} />
+      </TabsContent>
+      
+      <TabsContent value="tab">
+        <ClientTabManagement 
+          customer={customer}
+          onTabPaid={handleTabPaid}
+        />
       </TabsContent>
     </Tabs>
   );
