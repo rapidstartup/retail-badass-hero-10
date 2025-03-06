@@ -43,11 +43,9 @@ const ProductManagement = () => {
     
     // First set selected product to null, then open the form
     setSelectedProduct(null);
-    // Use setTimeout to ensure state updates have been processed
-    setTimeout(() => {
-      setShowAddForm(true);
-      console.log("Set showAddForm to true");
-    }, 0);
+    // Open the form modal immediately
+    setShowAddForm(true);
+    console.log("Set showAddForm to true:", showAddForm);
   };
 
   const handleEditProduct = (product: any, e?: React.MouseEvent) => {
@@ -60,11 +58,9 @@ const ProductManagement = () => {
     
     // Set the selected product first, then show the form
     setSelectedProduct(product);
-    // Use setTimeout to ensure state updates have been processed
-    setTimeout(() => {
-      setShowEditForm(true);
-      console.log("Set showEditForm to true");
-    }, 0);
+    // Open the edit form modal
+    setShowEditForm(true);
+    console.log("Set showEditForm to true");
   };
 
   const handleManageVariants = (product: any, e?: React.MouseEvent) => {
