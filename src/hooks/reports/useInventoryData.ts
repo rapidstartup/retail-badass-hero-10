@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -19,26 +19,38 @@ export const useInventoryData = (lowStockThreshold = 10) => {
         // Fetch products with no variants
         const { data: products, error: productsError } = await supabase
           .from('products')
-          .select('*')
-          .eq('has_variants', false)
-          .order('name');
+          .select('id, name, stock, has_variants')
+          .eq('has_variants', false);
           
-        if (productsError) throw productsError;
+        if (productsError) {
+          console.error("Products fetch error:", productsError);
+          throw productsError;
+        }
         
         // Fetch product variants
         const { data: variants, error: variantsError } = await supabase
           .from('product_variants')
-          .select('*, products(name)')
-          .order('product_id');
+          .select(`
+            id,
+            stock_count,
+            color,
+            size,
+            flavor,
+            products (
+              name
+            )
+          `);
           
-        if (variantsError) throw variantsError;
+        if (variantsError) {
+          console.error("Variants fetch error:", variantsError);
+          throw variantsError;
+        }
         
         // Transform standard products data
-        const inventoryItems: InventoryItem[] = products.map(product => {
-          // Determine status based on stock levels
+        const inventoryItems: InventoryItem[] = (products || []).map(product => {
           let status: "Good" | "Low" | "Critical" = "Good";
           
-          if (product.stock <= 0) {
+          if (!product.stock || product.stock <= 0) {
             status = "Critical";
           } else if (product.stock <= lowStockThreshold) {
             status = "Low";
@@ -53,11 +65,11 @@ export const useInventoryData = (lowStockThreshold = 10) => {
         });
         
         // Add variant data
-        variants.forEach(variant => {
-          if (variant.products && variant.products.name) {
+        (variants || []).forEach(variant => {
+          if (variant.products?.name) {
             let status: "Good" | "Low" | "Critical" = "Good";
             
-            if (variant.stock_count <= 0) {
+            if (!variant.stock_count || variant.stock_count <= 0) {
               status = "Critical";
             } else if (variant.stock_count <= lowStockThreshold) {
               status = "Low";
