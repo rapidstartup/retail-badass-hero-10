@@ -29,6 +29,7 @@ const VariantManagerActions = ({
       <div className="flex space-x-2">
         <Button 
           onClick={() => {
+            // Use the direct boolean negation instead of a function
             setShowAddVariant(!showAddVariant);
             if (!showAddVariant) {
               resetForm();
