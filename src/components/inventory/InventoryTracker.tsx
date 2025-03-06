@@ -2,12 +2,13 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, RefreshCw, Package } from "lucide-react";
-import { formatCurrency } from "@/utils/formatters";
+import { RefreshCw, Package } from "lucide-react";
+import StandardProductTable from "./tables/StandardProductTable";
+import VariantProductTable from "./tables/VariantProductTable";
+import LowStockAlert from "./alerts/LowStockAlert";
+import SectionHeader from "./ui/SectionHeader";
+import LoadingIndicator from "./ui/LoadingIndicator";
 
 interface InventoryTrackerProps {
   lowStockThreshold?: number;
@@ -158,123 +159,32 @@ export function InventoryTracker({
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="flex items-center justify-center h-[200px]">
-            <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
-          </div>
+          <LoadingIndicator />
         ) : (
           <div className="space-y-4">
-            {totalLowStockItems > 0 && (
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Low Stock Alert</AlertTitle>
-                <AlertDescription>
-                  {totalLowStockItems} {totalLowStockItems === 1 ? 'item is' : 'items are'} low on stock.
-                </AlertDescription>
-              </Alert>
-            )}
+            <LowStockAlert totalLowStockItems={totalLowStockItems} />
             
             {/* Standard Products (without variants) */}
             <div>
-              <h3 className="text-sm font-medium mb-2">Standard Products</h3>
+              <SectionHeader title="Standard Products" />
               <div className="border rounded-md">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Product</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Stock</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {standardProducts.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
-                          No standard products found
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      standardProducts.slice(0, 5).map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.name}</TableCell>
-                          <TableCell>{item.category || "Uncategorized"}</TableCell>
-                          <TableCell>{formatCurrency(item.price)}</TableCell>
-                          <TableCell>{item.stock ?? 0}</TableCell>
-                          <TableCell>
-                            {item.stock === null || item.stock <= 0 ? (
-                              <Badge variant="destructive">Out of Stock</Badge>
-                            ) : item.stock <= lowStockThreshold ? (
-                              <Badge variant="destructive">Low Stock</Badge>
-                            ) : (
-                              <Badge variant="default">In Stock</Badge>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                <StandardProductTable 
+                  products={standardProducts} 
+                  lowStockThreshold={lowStockThreshold}
+                  loading={loading}
+                />
               </div>
             </div>
             
             {/* Product Variants */}
             {showVariants && (
               <div>
-                <h3 className="text-sm font-medium mb-2">Product Variants</h3>
+                <SectionHeader title="Product Variants" />
                 <div className="border rounded-md">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Variant</TableHead>
-                        <TableHead>SKU</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Stock</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {variants.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
-                            No variants found
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        variants.slice(0, 5).map((variant) => {
-                          // Construct variant display name from attributes
-                          const variantAttributes = [];
-                          if (variant.color) variantAttributes.push(variant.color);
-                          if (variant.size) variantAttributes.push(variant.size);
-                          if (variant.flavor) variantAttributes.push(variant.flavor);
-                          
-                          const variantDisplay = variantAttributes.length > 0 
-                            ? variantAttributes.join(' / ') 
-                            : 'Default';
-                            
-                          return (
-                            <TableRow key={variant.id}>
-                              <TableCell className="font-medium">{variant.product_name}</TableCell>
-                              <TableCell>{variantDisplay}</TableCell>
-                              <TableCell>{variant.sku || "N/A"}</TableCell>
-                              <TableCell>{formatCurrency(variant.price)}</TableCell>
-                              <TableCell>{variant.stock_count ?? 0}</TableCell>
-                              <TableCell>
-                                {variant.stock_count === null || variant.stock_count <= 0 ? (
-                                  <Badge variant="destructive">Out of Stock</Badge>
-                                ) : variant.stock_count <= lowStockThreshold ? (
-                                  <Badge variant="destructive">Low Stock</Badge>
-                                ) : (
-                                  <Badge variant="default">In Stock</Badge>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
-                      )}
-                    </TableBody>
-                  </Table>
+                  <VariantProductTable 
+                    variants={variants} 
+                    lowStockThreshold={lowStockThreshold} 
+                  />
                 </div>
               </div>
             )}
