@@ -2,14 +2,12 @@
 import React, { useState, useCallback } from "react";
 import { useProducts } from "@/contexts/ProductContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { deleteProduct } from "@/api/productApi";
 import { toast } from "sonner";
-import ProductForm from "./ProductForm";
-import ProductVariantsManager from "./ProductVariantsManager";
 import ProductTable from "./products/ProductTable";
 import ProductSearch from "./products/ProductSearch";
 import ProductHeader from "./products/ProductHeader";
+import ProductModals from "./products/ProductModals";
 
 const ProductManagement = () => {
   const {
@@ -91,20 +89,6 @@ const ProductManagement = () => {
     }
   };
 
-  const handleFormClose = () => {
-    console.log("Closing form dialog");
-    setShowAddForm(false);
-    setShowEditForm(false);
-    setSelectedProduct(null);
-    refreshProducts();
-  };
-
-  const handleVariantsClose = () => {
-    setShowVariantsManager(false);
-    setSelectedProduct(null);
-    refreshProducts();
-  };
-
   console.log("Current add form dialog state:", showAddForm);
 
   return (
@@ -131,56 +115,18 @@ const ProductManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Dialog for adding products */}
-      <Dialog 
-        open={showAddForm} 
-        onOpenChange={(open) => {
-          console.log("Add dialog open state changing to:", open);
-          // If dialog is closing
-          if (!open) {
-            setShowAddForm(false);
-            setSelectedProduct(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
-          <DialogTitle>Add New Product</DialogTitle>
-          <ProductForm onClose={handleFormClose} onSave={refreshProducts} threeColumns={true} />
-        </DialogContent>
-      </Dialog>
-      
-      {/* Dialog for editing products */}
-      <Dialog 
-        open={showEditForm} 
-        onOpenChange={(open) => {
-          console.log("Edit dialog open state changing to:", open);
-          // If dialog is closing
-          if (!open) {
-            setShowEditForm(false);
-            setSelectedProduct(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
-          <DialogTitle>Edit Product</DialogTitle>
-          {selectedProduct && (
-            <ProductForm 
-              product={selectedProduct} 
-              onClose={handleFormClose} 
-              onSave={refreshProducts} 
-              threeColumns={true} 
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-      
-      {/* Dialog for managing variants */}
-      {showVariantsManager && selectedProduct && (
-        <ProductVariantsManager 
-          product={selectedProduct} 
-          onClose={handleVariantsClose} 
-        />
-      )}
+      {/* Product modals (Add, Edit, Variants) */}
+      <ProductModals
+        selectedProduct={selectedProduct}
+        showAddForm={showAddForm}
+        showEditForm={showEditForm}
+        showVariantsManager={showVariantsManager}
+        setShowAddForm={setShowAddForm}
+        setShowEditForm={setShowEditForm}
+        setShowVariantsManager={setShowVariantsManager}
+        setSelectedProduct={setSelectedProduct}
+        refreshProducts={refreshProducts}
+      />
     </div>
   );
 };
