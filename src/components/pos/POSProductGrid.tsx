@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { formatCurrency } from "@/utils/formatters";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { RefreshCw } from "lucide-react";
-import VariantSelectionModal from "./VariantSelectionModal";
+import VariantSelectionModal from "./variant-selection/VariantSelectionModal";
 
 // Product interface for type safety
 interface Product {

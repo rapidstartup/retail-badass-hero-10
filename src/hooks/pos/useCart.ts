@@ -9,7 +9,7 @@ import { prepareCartItem, updateCartWithNewItem, calculateSubtotal } from "./uti
 import { processTransaction as processTransactionUtil } from "./utils/transactionUtils";
 import { loadTabItems } from "./utils/transactionUtils";
 
-export { CartItem, Product, isValidCartItem } from "./types/cartTypes";
+export { type CartItem, type Product, isValidCartItem } from "./types/cartTypes";
 
 export const useCart = (taxRate: number) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
