@@ -21,7 +21,8 @@ const POS = () => {
     getSubtotal,
     getTaxAmount,
     getTotal,
-    handleCheckoutTab
+    handleCheckoutTab,
+    processTransaction
   } = useCart(settings.taxRate);
 
   return (

@@ -6,11 +6,12 @@ import { Separator } from "@/components/ui/separator";
 import { X, Minus, Plus, User, CreditCard, DollarSign, CheckCircle, Gift } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 import { POSPaymentModal } from "./POSPaymentModal";
+import { CartItem } from "@/hooks/pos/useCart";
 
 interface POSCartProps {
-  items: any[];
-  updateItemQuantity: (itemId: string, newQuantity: number) => void;
-  removeItem: (itemId: string) => void;
+  items: CartItem[];
+  updateItemQuantity: (index: number, newQuantity: number) => void;
+  removeItem: (index: number) => void;
   clearCart: () => void;
   subtotal: number;
   tax: number;
@@ -33,6 +34,18 @@ const POSCart: React.FC<POSCartProps> = ({
   storeName = "NextPOS"
 }) => {
   const [paymentModalOpen, setPaymentModalOpen] = React.useState(false);
+  
+  // Format variant display text
+  const getVariantText = (item: CartItem): string => {
+    if (!item.variant) return "";
+    
+    const parts = [];
+    if (item.variant.color) parts.push(item.variant.color);
+    if (item.variant.size) parts.push(item.variant.size);
+    if (item.variant.flavor) parts.push(item.variant.flavor);
+    
+    return parts.length > 0 ? `(${parts.join(', ')})` : "";
+  };
   
   return (
     <>
@@ -58,10 +71,17 @@ const POSCart: React.FC<POSCartProps> = ({
             </div>
           ) : (
             <ul className="space-y-2">
-              {items.map((item) => (
-                <li key={item.id} className="flex items-center justify-between py-2">
+              {items.map((item, index) => (
+                <li key={`${item.id}-${item.variant_id || 'no-variant'}`} className="flex items-center justify-between py-2">
                   <div className="flex-1">
-                    <div className="font-medium">{item.name}</div>
+                    <div className="font-medium">
+                      {item.name} 
+                      {item.variant && (
+                        <span className="text-sm font-normal text-muted-foreground ml-1">
+                          {getVariantText(item)}
+                        </span>
+                      )}
+                    </div>
                     <div className="text-sm text-muted-foreground">
                       {formatCurrency(item.price)} × {item.quantity}
                     </div>
@@ -72,7 +92,7 @@ const POSCart: React.FC<POSCartProps> = ({
                       variant="outline"
                       size="icon"
                       className="h-7 w-7"
-                      onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
+                      onClick={() => updateItemQuantity(index, item.quantity - 1)}
                     >
                       <Minus size={14} />
                     </Button>
@@ -83,7 +103,7 @@ const POSCart: React.FC<POSCartProps> = ({
                       variant="outline"
                       size="icon"
                       className="h-7 w-7"
-                      onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
+                      onClick={() => updateItemQuantity(index, item.quantity + 1)}
                     >
                       <Plus size={14} />
                     </Button>
@@ -92,7 +112,7 @@ const POSCart: React.FC<POSCartProps> = ({
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeItem(index)}
                     >
                       <X size={14} />
                     </Button>
