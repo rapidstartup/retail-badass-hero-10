@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useProducts } from "@/contexts/ProductContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { deleteProduct } from "@/api/productApi";
@@ -31,6 +31,11 @@ const ProductManagement = () => {
     (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  // Debug state changes
+  useEffect(() => {
+    console.log("showAddForm state changed:", showAddForm);
+  }, [showAddForm]);
+
   // Use useCallback to ensure the handler doesn't change between renders
   const handleAddProduct = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     // Ensure we capture and cancel the event completely
@@ -45,7 +50,7 @@ const ProductManagement = () => {
     
     // Explicitly set dialog state
     setShowAddForm(true);
-    console.log("Set showAddForm to true:", showAddForm);
+    console.log("Attempted to set showAddForm to true, new value:", true);
   }, [setSelectedProduct]);
 
   const handleEditProduct = useCallback((product: any, e?: React.MouseEvent) => {

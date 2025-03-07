@@ -49,9 +49,8 @@ const ProductModals: React.FC<ProductModalsProps> = ({
         open={showAddForm} 
         onOpenChange={(open) => {
           console.log("Add dialog open state changing to:", open);
-          // If dialog is closing
+          setShowAddForm(open);
           if (!open) {
-            setShowAddForm(false);
             setSelectedProduct(null);
           }
         }}
@@ -67,9 +66,8 @@ const ProductModals: React.FC<ProductModalsProps> = ({
         open={showEditForm} 
         onOpenChange={(open) => {
           console.log("Edit dialog open state changing to:", open);
-          // If dialog is closing
+          setShowEditForm(open);
           if (!open) {
-            setShowEditForm(false);
             setSelectedProduct(null);
           }
         }}
