@@ -3,7 +3,7 @@ import React from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Product } from "@/types";
 import ProductForm from "../ProductForm";
-import ProductVariantsManager from "../ProductVariantsManager";
+import { ProductVariantsManager } from "../ProductVariantsManager";
 
 interface ProductModalsProps {
   selectedProduct: Product | null;
@@ -47,34 +47,28 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       {/* Dialog for adding products */}
       <Dialog 
         open={showAddForm} 
-        onOpenChange={(open) => {
-          console.log("Add dialog open state changing to:", open);
-          setShowAddForm(open);
-          if (!open) {
-            setSelectedProduct(null);
-          }
-        }}
+        onOpenChange={setShowAddForm}
       >
         <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
           <DialogTitle>Add New Product</DialogTitle>
-          <ProductForm onClose={handleFormClose} onSave={refreshProducts} threeColumns={true} />
+          {showAddForm && (
+            <ProductForm 
+              onClose={handleFormClose} 
+              onSave={refreshProducts} 
+              threeColumns={true} 
+            />
+          )}
         </DialogContent>
       </Dialog>
       
       {/* Dialog for editing products */}
       <Dialog 
         open={showEditForm} 
-        onOpenChange={(open) => {
-          console.log("Edit dialog open state changing to:", open);
-          setShowEditForm(open);
-          if (!open) {
-            setSelectedProduct(null);
-          }
-        }}
+        onOpenChange={setShowEditForm}
       >
         <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
           <DialogTitle>Edit Product</DialogTitle>
-          {selectedProduct && (
+          {showEditForm && selectedProduct && (
             <ProductForm 
               product={selectedProduct} 
               onClose={handleFormClose} 
@@ -86,12 +80,19 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       </Dialog>
       
       {/* Dialog for managing variants */}
-      {showVariantsManager && selectedProduct && (
-        <ProductVariantsManager 
-          product={selectedProduct} 
-          onClose={handleVariantsClose} 
-        />
-      )}
+      <Dialog 
+        open={showVariantsManager} 
+        onOpenChange={setShowVariantsManager}
+      >
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh]">
+          {showVariantsManager && selectedProduct && (
+            <ProductVariantsManager 
+              product={selectedProduct} 
+              onClose={handleVariantsClose} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

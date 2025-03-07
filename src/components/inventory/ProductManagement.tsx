@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { useProducts } from "@/contexts/ProductContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { deleteProduct } from "@/api/productApi";
@@ -31,18 +31,8 @@ const ProductManagement = () => {
     (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Debug state changes
-  useEffect(() => {
-    console.log("showAddForm state changed:", showAddForm);
-  }, [showAddForm]);
-
   // Use useCallback to ensure the handler doesn't change between renders
-  const handleAddProduct = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    // Ensure we capture and cancel the event completely
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  const handleAddProduct = useCallback(() => {
     console.log("handleAddProduct called in ProductManagement");
     
     // First set selected product to null, then open the form
@@ -50,15 +40,10 @@ const ProductManagement = () => {
     
     // Explicitly set dialog state
     setShowAddForm(true);
-    console.log("Attempted to set showAddForm to true, new value:", true);
+    console.log("Set showAddForm to true");
   }, [setSelectedProduct]);
 
-  const handleEditProduct = useCallback((product: any, e?: React.MouseEvent) => {
-    // Stop event propagation
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  const handleEditProduct = useCallback((product: any) => {
     console.log("handleEditProduct called in ProductManagement for:", product.name);
     
     // Set the selected product first, then show the form
@@ -69,11 +54,7 @@ const ProductManagement = () => {
     console.log("Set showEditForm to true");
   }, [setSelectedProduct]);
 
-  const handleManageVariants = useCallback((product: any, e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  const handleManageVariants = useCallback((product: any) => {
     setSelectedProduct(product);
     setShowVariantsManager(true);
     return false;

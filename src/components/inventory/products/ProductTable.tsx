@@ -11,8 +11,8 @@ import { Product } from "@/types";
 interface ProductTableProps {
   products: Product[];
   loading: boolean;
-  handleEditProduct: (product: Product, e?: React.MouseEvent) => void;
-  handleManageVariants: (product: Product, e?: React.MouseEvent) => void;
+  handleEditProduct: (product: Product) => void;
+  handleManageVariants: (product: Product) => void;
   handleDeleteProduct: (id: string) => Promise<void>;
 }
 
@@ -23,25 +23,6 @@ const ProductTable = ({
   handleManageVariants,
   handleDeleteProduct
 }: ProductTableProps) => {
-  
-  const handleEditClick = (product: Product, e: React.MouseEvent) => {
-    // Prevent default and stop propagation immediately
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Edit button clicked for:", product.name);
-    // Pass the event to the handler
-    handleEditProduct(product, e);
-  };
-  
-  const handleVariantsClick = (product: Product, e: React.MouseEvent) => {
-    // Prevent default and stop propagation immediately
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Variants button clicked for:", product.name);
-    // Pass the event to the handler
-    handleManageVariants(product, e);
-  };
-
   return (
     <Table>
       <TableHeader>
@@ -89,7 +70,7 @@ const ProductTable = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={(e) => handleVariantsClick(product, e)}
+                    onClick={() => handleManageVariants(product)}
                     className="flex items-center gap-1"
                     type="button"
                   >
@@ -105,7 +86,7 @@ const ProductTable = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={(e) => handleEditClick(product, e)}
+                    onClick={() => handleEditProduct(product)}
                     title="Edit product"
                     aria-label="Edit product"
                     type="button"

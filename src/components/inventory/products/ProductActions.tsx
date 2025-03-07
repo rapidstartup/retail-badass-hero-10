@@ -4,29 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw } from "lucide-react";
 
 interface ProductActionsProps {
-  handleAddProduct: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  handleAddProduct: () => void;
   refreshProducts: () => void;
 }
 
 const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsProps) => {
-  const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
-    console.log("Add Product button clicked in ProductActions");
-    
-    // Call the handler with the event
-    handleAddProduct(e);
-  };
-
-  const handleRefresh = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Refresh button clicked");
-    refreshProducts();
-  };
-
   return (
     <div className="flex space-x-2">
       <Button 
-        onClick={handleAdd}
+        onClick={handleAddProduct}
         className="flex items-center gap-1"
         type="button"
       >
@@ -35,7 +21,7 @@ const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsPro
       </Button>
       <Button 
         variant="outline" 
-        onClick={handleRefresh}
+        onClick={refreshProducts}
         className="flex items-center gap-1"
         type="button"
       >
