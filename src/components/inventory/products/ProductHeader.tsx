@@ -4,7 +4,7 @@ import { Package } from "lucide-react";
 import ProductActions from "./ProductActions";
 
 interface ProductHeaderProps {
-  handleAddProduct: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  handleAddProduct: () => void;
   refreshProducts: () => void;
 }
 

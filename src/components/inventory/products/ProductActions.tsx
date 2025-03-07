@@ -12,7 +12,7 @@ const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsPro
   return (
     <div className="flex space-x-2">
       <Button 
-        onClick={handleAddProduct}
+        onClick={() => handleAddProduct()}
         className="flex items-center gap-1"
         type="button"
       >
