@@ -493,6 +493,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement: {
+        Args: {
+          x: number
+        }
+        Returns: number
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean

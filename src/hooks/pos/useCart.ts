@@ -238,13 +238,13 @@ export const useCart = (taxRate: number) => {
         }
       }
       
-      // Create transaction record
+      // Create transaction record - we need to convert CartItem[] to Json compatible type
       const transactionData = {
         customer_id: selectedCustomer?.id || null,
         subtotal: getSubtotal(),
         tax: getTaxAmount(),
         total: getTotal(),
-        items: cartItems,
+        items: cartItems as unknown as Json, // Type assertion to match Supabase's Json type
         status: 'completed',
         payment_method: paymentDetails.method,
         cashier_id: null, // You would get this from auth context
@@ -263,22 +263,26 @@ export const useCart = (taxRate: number) => {
       for (const item of cartItems) {
         if (item.variant_id) {
           // Update variant stock
-          await supabase
+          const { error } = await supabase
             .from('product_variants')
             .update({ 
-              stock_count: supabase.rpc('decrement', { x: item.quantity }),
+              stock_count: item.variant?.stock_count ? Math.max(0, item.variant.stock_count - item.quantity) : null,
               updated_at: new Date().toISOString()
             })
             .eq('id', item.variant_id);
+            
+          if (error) console.error('Error updating variant stock:', error);
         } else {
           // Update regular product stock
-          await supabase
+          const { error } = await supabase
             .from('products')
             .update({ 
-              stock: supabase.rpc('decrement', { x: item.quantity }),
+              stock: item.stock ? Math.max(0, item.stock - item.quantity) : null,
               updated_at: new Date().toISOString()
             })
             .eq('id', item.id);
+            
+          if (error) console.error('Error updating product stock:', error);
         }
       }
       
